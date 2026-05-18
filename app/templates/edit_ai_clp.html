@@ -1,0 +1,488 @@
+{% extends "base.html" %}
+
+{% block title %}Edit CLP Draft{% endblock %}
+
+{% from "_loading_overlay.html" import loading_overlay with context %}
+
+{% block content %}
+<div x-data="clpEditor()" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+
+    {{ loading_overlay(
+        overlay_id='loading-overlay',
+        title_prefix='AI Refining',
+        stage_text='Synchronizing your draft',
+        message_text='AI is verifying curriculum consistency and updating your draft.',
+        hint_text='Do not close or navigate away from this page',
+        show_log=false
+    ) }}
+
+    {# --- STICKY TOOLBAR --- #}
+    <div class="sticky top-4 z-50 mb-8">
+        <div
+            class="bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl border border-gray-200 dark:border-gray-700 rounded-3xl shadow-2xl p-4 flex flex-wrap items-center justify-between gap-4">
+            <div class="flex items-center gap-4">
+                <a href="{{ url_for('teacher.view_clp', plan_id=plan.id) }}"
+                    class="p-3 bg-gray-100 dark:bg-gray-700 text-gray-500 hover:text-red-500 rounded-2xl transition-all">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </a>
+                <div>
+                    <h1 class="text-lg font-black text-gray-900 dark:text-white tracking-tight leading-none mb-1">
+                        Editor: {{ plan.subject }}</h1>
+                    <div class="flex items-center gap-2">
+                        <span
+                            class="text-[10px] font-black text-indigo-600 dark:text-indigo-400 uppercase tracking-widest">{{
+                            plan.department }}</span>
+                        <span x-text="autoSaveStatus"
+                            class="text-[9px] text-emerald-500 font-bold uppercase tracking-tighter transition-opacity duration-500"></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-3">
+                <button type="submit" form="edit-form" name="action" value="save_draft"
+                    class="px-6 py-3 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 text-xs font-black rounded-xl hover:bg-gray-200 dark:hover:bg-gray-600 transition-all uppercase tracking-widest">
+                    Save Draft
+                </button>
+                <button type="submit" form="edit-form" name="action" value="refine"
+                    class="px-8 py-3 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-black rounded-xl transition-all shadow-lg shadow-indigo-200 dark:shadow-none uppercase tracking-widest flex items-center gap-2 group">
+                    <svg class="w-4 h-4 group-hover:rotate-12 transition-transform" fill="none" stroke="currentColor"
+                        viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M13 10V3L4 14h7v7l9-11h-7z" />
+                    </svg>
+                    Update & Refine
+                </button>
+            </div>
+        </div>
+    </div>
+
+    {# --- TAB NAVIGATION --- #}
+    <div
+        class="flex gap-2 mb-8 bg-gray-100 dark:bg-gray-900/50 p-1.5 rounded-[2rem] w-fit border border-gray-200/50 dark:border-gray-800">
+        <button @click="activeTab = 'basic'"
+            :class="activeTab === 'basic' ? 'bg-white dark:bg-gray-800 text-indigo-600 shadow-sm' : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'"
+            class="px-6 py-3 rounded-2xl text-xs font-black uppercase tracking-widest transition-all">Basic
+            Info</button>
+        <button @click="activeTab = 'weekly'"
+            :class="activeTab === 'weekly' ? 'bg-white dark:bg-gray-800 text-indigo-600 shadow-sm' : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'"
+            class="px-6 py-3 rounded-2xl text-xs font-black uppercase tracking-widest transition-all">Weekly
+            Roadmap</button>
+        <button @click="activeTab = 'outcomes'"
+            :class="activeTab === 'outcomes' ? 'bg-white dark:bg-gray-800 text-indigo-600 shadow-sm' : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'"
+            class="px-6 py-3 rounded-2xl text-xs font-black uppercase tracking-widest transition-all">Outcome
+            Mapping</button>
+    </div>
+
+    <form id="edit-form" method="POST" action="{{ url_for('teacher.edit_clp', plan_id=plan.id) }}"
+        @submit="saving = true; document.getElementById('loading-overlay').classList.remove('hidden')">
+        {{ form.hidden_tag() }}
+
+        {# --- TAB 1: BASIC INFO --- #}
+        <div x-show="activeTab === 'basic'" x-transition:enter="transition ease-out duration-300"
+            x-transition:enter-start="opacity-0 translate-y-4" x-transition:enter-end="opacity-100 translate-y-0"
+            class="space-y-8">
+            <section
+                class="bg-white dark:bg-gray-800 rounded-[2.5rem] p-8 md:p-10 shadow-sm border border-gray-100 dark:border-gray-700">
+                <h2
+                    class="text-2xl font-black text-gray-900 dark:text-white mb-8 flex items-center gap-3 tracking-tighter">
+                    <div class="w-2 h-8 bg-indigo-600 rounded-full"></div>
+                    Core Course Identification
+                </h2>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div class="space-y-2">
+                        <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Course
+                            Title</label>
+                        <input type="text" name="descriptive_title"
+                            value="{{ content_data.descriptive_title or plan.subject }}"
+                            class="w-full bg-gray-50 dark:bg-gray-900 border-none rounded-2xl p-4 font-bold text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 transition-all">
+                    </div>
+                    <div class="space-y-2">
+                        <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Course
+                            Number / Code</label>
+                        <input type="text" name="course_number"
+                            value="{{ content_data.course_number or content_data.course_code }}"
+                            class="w-full bg-gray-50 dark:bg-gray-900 border-none rounded-2xl p-4 font-bold text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 transition-all">
+                    </div>
+                    <div class="grid grid-cols-3 gap-4 md:col-span-2">
+                        <div class="space-y-2">
+                            <label
+                                class="block text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Units</label>
+                            <input type="text" name="units" value="{{ content_data.units }}"
+                                class="w-full bg-gray-50 dark:bg-gray-900 border-none rounded-2xl p-4 font-bold text-center">
+                        </div>
+                        <div class="space-y-2">
+                            <label
+                                class="block text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Contact
+                                Hours</label>
+                            <input type="text" name="Contact_hours_per_week"
+                                value="{{ content_data.Contact_hours_per_week }}"
+                                class="w-full bg-gray-50 dark:bg-gray-900 border-none rounded-2xl p-4 font-bold text-center">
+                        </div>
+                        <div class="space-y-2">
+                            <label
+                                class="block text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Type</label>
+                            <input type="text" name="type_of_course" value="{{ content_data.type_of_course }}"
+                                class="w-full bg-gray-50 dark:bg-gray-900 border-none rounded-2xl p-4 font-bold text-center">
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section
+                class="bg-white dark:bg-gray-800 rounded-[2.5rem] p-8 md:p-10 shadow-sm border border-gray-100 dark:border-gray-700">
+                <div class="flex items-center justify-between mb-8">
+                    <h2
+                        class="text-2xl font-black text-gray-900 dark:text-white flex items-center gap-3 tracking-tighter">
+                        <div class="w-2 h-8 bg-purple-600 rounded-full"></div>
+                        Pedagogical Context
+                    </h2>
+                    <button type="button" @click="suggestRephrase('course_description', 'Course Description', $event)"
+                        class="text-[10px] font-black text-gray-400 hover:text-purple-600 uppercase tracking-widest flex items-center gap-1 transition-colors">
+                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M13 10V3L4 14h7v7l9-11h-7z" />
+                        </svg>
+                        AI Rephrase
+                    </button>
+                </div>
+                <div class="space-y-6">
+                    <div class="space-y-2">
+                        <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Course
+                            Description</label>
+                        <textarea name="course_description" rows="6"
+                            class="w-full bg-gray-50 dark:bg-gray-900 border-none rounded-2xl p-6 font-medium text-gray-700 dark:text-gray-300 leading-relaxed focus:ring-2 focus:ring-purple-500 transition-all">{{ content_data.get('course_description', '') | replace('\\n', '\n') }}</textarea>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="space-y-2">
+                            <label
+                                class="block text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Prerequisites</label>
+                            <input type="text" name="pre_requisite" value="{{ content_data.pre_requisite }}"
+                                class="w-full bg-gray-50 dark:bg-gray-900 border-none rounded-2xl p-4 font-bold">
+                        </div>
+                        <div class="space-y-2">
+                            <label
+                                class="block text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Co-requisites</label>
+                            <input type="text" name="co_requisite" value="{{ content_data.co_requisite }}"
+                                class="w-full bg-gray-50 dark:bg-gray-900 border-none rounded-2xl p-4 font-bold">
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        {# --- TAB 2: WEEKLY ROADMAP --- #}
+        <div x-show="activeTab === 'weekly'" x-transition:enter="transition ease-out duration-300"
+            x-transition:enter-start="opacity-0 translate-y-4" x-transition:enter-end="opacity-100 translate-y-0"
+            class="space-y-6">
+            {% for i in range(1, 19) %}
+            {% set prefix = 'W' ~ i %}
+            {% if i == 10 or i == 11 %}{% set prefix = 'W1011' %}{% endif %}
+            {% if i == 14 or i == 15 %}{% set prefix = 'W1415' %}{% endif %}
+            {% if i == 16 or i == 17 %}{% set prefix = 'W1617' %}{% endif %}
+            {% if i not in [11, 15, 17] %}
+            <div
+                class="bg-white dark:bg-gray-800 rounded-[2rem] p-6 md:p-8 shadow-sm border border-gray-100 dark:border-gray-700 transition-all hover:border-indigo-200 dark:hover:border-indigo-900/50 group">
+                <div class="flex items-center justify-between mb-6">
+                    <h3 class="text-xl font-black text-indigo-600 dark:text-indigo-400 uppercase tracking-tighter">Week
+                        {{ i }}{% if i==10 %}-11{% elif i==14 %}-15{% elif i==16 %}-17{% endif %}</h3>
+                    <button type="button" @click="suggestRephrase('{{ prefix }}_TO', 'Course Topic', $event)"
+                        class="text-[10px] font-black text-gray-400 hover:text-indigo-600 uppercase tracking-widest flex items-center gap-1 transition-colors">
+                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M13 10V3L4 14h7v7l9-11h-7z" />
+                        </svg>
+                        AI Suggest
+                    </button>
+                </div>
+
+                <div class="grid grid-cols-1 gap-6">
+                    <div class="space-y-2">
+                        <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Topic
+                            Outline</label>
+                        <input type="text" name="{{ prefix }}_TO" value="{{ content_data.get(prefix ~ '_TO', '') }}"
+                            class="w-full bg-gray-50 dark:bg-gray-900 border-none rounded-xl p-4 font-black text-gray-900 dark:text-white">
+                    </div>
+                    <div class="space-y-2">
+                        <div class="flex items-center justify-between">
+                            <label
+                                class="block text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Learning
+                                Outcomes</label>
+                            <button type="button"
+                                @click="suggestRephrase('{{ prefix }}_LO', 'Learning Outcome', $event)"
+                                class="text-[9px] font-black text-indigo-400 hover:text-indigo-600 uppercase tracking-tighter">AI
+                                Rephrase</button>
+                        </div>
+                        <textarea name="{{ prefix }}_LO" rows="3"
+                            class="w-full bg-gray-50 dark:bg-gray-900 border-none rounded-xl p-4 text-sm font-medium leading-relaxed">{{ content_data.get(prefix ~ '_LO', '') | replace('\\n', '\n') }}</textarea>
+                    </div>
+                    <div class="space-y-2">
+                        <div class="flex items-center justify-between">
+                            <label
+                                class="block text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Assessment
+                                Strategy</label>
+                            <button type="button"
+                                @click="suggestRephrase('{{ prefix }}_Assesment', 'Assessment Method', $event)"
+                                class="text-[9px] font-black text-indigo-400 hover:text-indigo-600 uppercase tracking-tighter">AI
+                                Rephrase</button>
+                        </div>
+                        <textarea name="{{ prefix }}_Assesment" rows="3"
+                            class="w-full bg-indigo-50/30 dark:bg-indigo-900/10 border-none rounded-xl p-4 text-sm font-bold text-indigo-700 dark:text-indigo-300 leading-relaxed">{{ content_data.get(prefix ~ '_Assesment', '') | replace('\\n', '\n') }}</textarea>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="space-y-2">
+                            <label
+                                class="block text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Methodology</label>
+                            <input type="text" name="{{ prefix }}_Method"
+                                value="{{ content_data.get(prefix ~ '_Method', '') }}"
+                                class="w-full bg-gray-50 dark:bg-gray-900 border-none rounded-xl p-4 text-sm font-bold italic">
+                        </div>
+                        <div class="space-y-2">
+                            <label
+                                class="block text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Resources</label>
+                            <input type="text" name="{{ prefix }}_LR" value="{{ content_data.get(prefix ~ '_LR', '') }}"
+                                class="w-full bg-gray-50 dark:bg-gray-900 border-none rounded-xl p-4 text-sm">
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="space-y-2">
+                            <label
+                                class="block text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Mapped CO Codes</label>
+                            <input type="text" name="{{ prefix }}_Mapped_COs"
+                                value="{{ content_data.get(prefix ~ '_Mapped_COs', '') }}"
+                                placeholder="e.g. CO1, CO3"
+                                class="w-full bg-gray-50 dark:bg-gray-900 border-none rounded-xl p-4 text-sm font-bold">
+                        </div>
+                        <div class="space-y-2">
+                            <label
+                                class="block text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Assessed CO Codes</label>
+                            <input type="text" name="{{ prefix }}_Assessment_COs"
+                                value="{{ content_data.get(prefix ~ '_Assessment_COs', '') }}"
+                                placeholder="e.g. CO1"
+                                class="w-full bg-gray-50 dark:bg-gray-900 border-none rounded-xl p-4 text-sm font-bold">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+            {% endfor %}
+        </div>
+
+        {# --- TAB 3: OUTCOME MAPPING --- #}
+        <div x-show="activeTab === 'outcomes'" x-transition:enter="transition ease-out duration-300"
+            x-transition:enter-start="opacity-0 translate-y-4" x-transition:enter-end="opacity-100 translate-y-0"
+            class="space-y-8">
+            <section
+                class="bg-white dark:bg-gray-800 rounded-[2.5rem] p-8 md:p-10 shadow-sm border border-gray-100 dark:border-gray-700">
+                <h2
+                    class="text-2xl font-black text-gray-900 dark:text-white mb-2 tracking-tighter flex items-center gap-3">
+                    <div class="w-2 h-8 bg-amber-500 rounded-full"></div>
+                    Matrix Alignment Engine
+                </h2>
+                <p class="text-gray-400 text-[10px] font-black uppercase tracking-widest mb-10 ml-5">Click cells to
+                    cycle through alignment markers</p>
+
+                <div class="space-y-12">
+                    {# Matrix 1: PO vs IO #}
+                    <div>
+                        <h4
+                            class="text-sm font-black text-gray-400 uppercase tracking-widest mb-6 px-4 py-2 bg-gray-50 dark:bg-gray-900/50 rounded-xl w-fit">
+                            1. Program (PO) vs Institutional (IO)</h4>
+                        <div
+                            class="overflow-x-auto custom-scrollbar border border-gray-100 dark:border-gray-700 rounded-3xl">
+                            <table class="min-w-full text-center border-collapse">
+                                <thead>
+                                    <tr
+                                        class="bg-gray-50 dark:bg-gray-900/50 border-b border-gray-100 dark:border-gray-700">
+                                        <th
+                                            class="p-6 text-left font-black text-[10px] uppercase tracking-widest text-indigo-600">
+                                            PO CODE</th>
+                                        <template x-for="h in outcomes.institutional_headers" :key="h">
+                                            <th class="p-6 font-black text-[10px] uppercase" x-text="h"></th>
+                                        </template>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-50 dark:divide-gray-800">
+                                    <template x-for="po in outcomes.program_outcomes" :key="po.code">
+                                        <tr class="hover:bg-indigo-50/20 dark:hover:bg-indigo-900/10 transition-colors">
+                                            <td class="p-6 text-left font-black text-indigo-600 uppercase text-xs"
+                                                x-text="po.code"></td>
+                                            <template x-for="h in outcomes.institutional_headers" :key="h">
+                                                <td class="p-2">
+                                                    <input type="hidden" :name="po.code + '_' + h"
+                                                        x-model="mapping[po.code + '_' + h]">
+                                                    <button type="button"
+                                                        @click="toggleValue(po.code + '_' + h, ['', '✔'])"
+                                                        class="w-12 h-12 rounded-xl border-2 border-transparent hover:border-indigo-500 hover:bg-white dark:hover:bg-gray-700 transition-all font-black text-lg text-indigo-600 flex items-center justify-center mx-auto"
+                                                        x-text="mapping[po.code + '_' + h] || ' '">
+                                                    </button>
+                                                </td>
+                                            </template>
+                                        </tr>
+                                    </template>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    {# Matrix 2: CO vs PO #}
+                    <div>
+                        <h4
+                            class="text-sm font-black text-gray-400 uppercase tracking-widest mb-6 px-4 py-2 bg-gray-50 dark:bg-gray-900/50 rounded-xl w-fit">
+                            2. Course (CO) vs Program (PO)</h4>
+                        <div
+                            class="overflow-x-auto custom-scrollbar border border-gray-100 dark:border-gray-700 rounded-3xl">
+                            <table class="min-w-full text-center border-collapse">
+                                <thead>
+                                    <tr
+                                        class="bg-gray-50 dark:bg-gray-900/50 border-b border-gray-100 dark:border-gray-700">
+                                        <th
+                                            class="p-6 text-left font-black text-[10px] uppercase tracking-widest text-purple-600 min-w-[250px]">
+                                            COURSE OUTCOME</th>
+                                        <template x-for="ph in outcomes.program_headers" :key="ph">
+                                            <th class="p-6 font-black text-[10px] uppercase" x-text="ph"></th>
+                                        </template>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-50 dark:divide-gray-800">
+                                    <template x-for="co in outcomes.course_outcomes" :key="co.code">
+                                        <tr class="hover:bg-purple-50/20 dark:hover:bg-purple-900/10 transition-colors">
+                                            <td class="p-6 text-left font-bold text-gray-600 dark:text-gray-400 text-[11px] leading-tight"
+                                                x-text="co.description"></td>
+                                            <template x-for="ph in outcomes.program_headers" :key="ph">
+                                                <td class="p-2">
+                                                    <input type="hidden" :name="co.code + '_' + ph"
+                                                        x-model="mapping[co.code + '_' + ph]">
+                                                    <button type="button"
+                                                        @click="toggleValue(co.code + '_' + ph, ['', 'I', 'R', 'M'])"
+                                                        class="w-12 h-12 rounded-xl border-2 border-transparent hover:border-purple-500 hover:bg-white dark:hover:bg-gray-700 transition-all font-black text-sm text-purple-600 flex items-center justify-center mx-auto"
+                                                        x-text="mapping[co.code + '_' + ph] || ' '">
+                                                    </button>
+                                                </td>
+                                            </template>
+                                        </tr>
+                                    </template>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        {# Preserve existing hidden inputs for legacy form handling if JS is slow to load #}
+        <div class="hidden">
+            {% for po in program_outcomes %}{% for h in institutional_headers %}
+            <input type="text" name="{{ po.code }}_{{ h }}" value="{{ content_data.get(po.code ~ '_' ~ h, '') }}">
+            {% endfor %}{% endfor %}
+            {% for co in course_outcomes %}{% for ph in program_headers %}
+            <input type="text" name="{{ co.code }}_{{ ph }}" value="{{ content_data.get(co.code ~ '_' ~ ph, '') }}">
+            {% endfor %}{% endfor %}
+        </div>
+    </form>
+</div>
+
+<style>
+    .custom-scrollbar::-webkit-scrollbar {
+        height: 8px;
+        width: 8px;
+    }
+
+    .custom-scrollbar::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+        background-color: #e2e8f0;
+        border-radius: 20px;
+    }
+
+    .dark .custom-scrollbar::-webkit-scrollbar-thumb {
+        background-color: #334155;
+    }
+</style>
+
+<script>
+    document.addEventListener('alpine:init', () => {
+        Alpine.data('clpEditor', () => ({
+            activeTab: 'basic',
+            outcomes: {
+                program_outcomes: {{ (program_outcomes or[]) | tojson | safe }},
+        course_outcomes: {{ (course_outcomes or[]) | tojson | safe }},
+        institutional_headers: {{ (institutional_headers or[]) | tojson | safe }},
+        program_headers: {{ (program_outcomes or[]) | map(attribute = "code") | list | tojson | safe }}
+            },
+        mapping: {{ content_data | tojson | safe if content_data else '{}' }},
+    loading: false,
+        saving: false,
+            autoSaveStatus: '',
+
+                async fetchOutcomes() {
+        this.loading = false;
+    },
+
+            async toggleValue(key, options) {
+        const current = this.mapping[key] || '';
+        const index = options.indexOf(current);
+        const next = options[(index + 1) % options.length];
+        this.mapping[key] = next;
+    },
+
+            async suggestRephrase(fieldName, context, event) {
+        const input = document.getElementsByName(fieldName)[0];
+        if (!input || !input.value) return;
+
+        const originalText = input.value;
+        // Use passed event if available, otherwise fallback to window.event
+        const btn = (event && event.currentTarget) ? event.currentTarget : (window.event ? window.event.currentTarget : null);
+        if (!btn) return;
+
+        const originalHtml = btn.innerHTML;
+
+        btn.disabled = true;
+        btn.innerHTML = '<svg class="animate-spin h-3 w-3 mr-1" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Rephrasing...';
+
+        try {
+            const res = await fetch('/teacher/api/ai_suggest_rephrase', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify({ text: originalText, context: context })
+            });
+            const data = await res.json();
+            if (data.suggestion) {
+                if (confirm(`AI Suggestion:\n\n'${data.suggestion}'\n\nApply this change?`)) {
+                    input.value = data.suggestion;
+                }
+            } else {
+                alert(data.error || 'AI Suggestion failed.');
+            }
+        } catch (e) {
+            alert('Network error during AI rephrasing.');
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = originalHtml;
+        }
+    },
+
+    init() {
+        setInterval(() => {
+            if (this.saving) return;
+            const form = document.getElementById('edit-form');
+            if (!form) return;
+            const formData = new FormData(form);
+            const data = Object.fromEntries(formData.entries());
+            localStorage.setItem(`clp_draft_{{ plan.id }}`, JSON.stringify(data));
+            this.autoSaveStatus = 'Draft saved locally at ' + new Date().toLocaleTimeString();
+            setTimeout(() => { this.autoSaveStatus = ''; }, 3000);
+        }, 30000);
+    }
+        }));
+    });
+</script>
+{% endblock %}

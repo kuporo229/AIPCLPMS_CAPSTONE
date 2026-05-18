@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block title %}Profile Version History{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto space-y-6">
+    <div class="space-y-1">
+        <a href="{{ url_for('teacher.list_template_profiles') }}" class="text-[10px] uppercase tracking-widest font-black text-primary-600 hover:text-primary-700">&larr; Back to Profiles</a>
+        <h1 class="text-2xl font-black text-gray-900 dark:text-white">Version History</h1>
+        <p class="text-sm text-gray-500 dark:text-gray-400">{{ profile_row.name }} &middot; {{ profile_row.department or 'General' }}</p>
+    </div>
+
+    {% if versions %}
+    <div class="space-y-3">
+        {% for v in versions %}
+        <div class="bg-white dark:bg-[#111827] border border-gray-200 dark:border-gray-800 rounded-2xl p-4">
+            <div class="flex items-center justify-between gap-3">
+                <div>
+                    <p class="text-sm font-black text-gray-900 dark:text-white">Version {{ v.version_number }}</p>
+                    <p class="text-xs text-gray-500 dark:text-gray-400">{{ v.source_filename or 'No source file' }} &middot; {{ v.created_at[:16] if v.created_at else '—' }}</p>
+                    {% if v.note %}
+                    <p class="text-xs text-gray-400 italic mt-1">{{ v.note }}</p>
+                    {% endif %}
+                </div>
+                <span class="text-[10px] px-2 py-1 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-500 font-black uppercase tracking-widest">{{ v.source_file_hash[:8] if v.source_file_hash else '—' }}</span>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="bg-white dark:bg-[#111827] border border-gray-200 dark:border-gray-800 rounded-2xl p-6 text-center">
+        <p class="text-sm text-gray-500 dark:text-gray-400">No previous versions found. Versions are created automatically when you re-profile a template.</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,182 @@
+{% extends "base.html" %}
+
+{% block title %}AI Generator{% endblock %}
+
+{% from "_loading_overlay.html" import loading_overlay with context %}
+
+{% block content %}
+{{ loading_overlay(
+    overlay_id='loading-overlay',
+    title_prefix='AI Co-Pilot',
+    stage_text='Initializing your learning plan',
+    message_text="We're preparing the AI engine to architect your learning plan. This will take just a moment.",
+    hint_text='Do not close or navigate away from this page',
+    show_log=false
+) }}
+
+<div class="space-y-8 max-w-4xl mx-auto">
+    <!-- Header -->
+    <div class="flex flex-col gap-2">
+        <div class="flex items-center gap-3">
+            <div class="w-12 h-12 bg-primary-600 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-primary-200 dark:shadow-none">
+                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20"><path d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+            </div>
+            <h1 class="text-3xl font-black text-gray-900 dark:text-white tracking-tight">AI Plan Generator</h1>
+        </div>
+        <p class="text-gray-500 dark:text-gray-400 font-medium ml-1">Input your course details and let our AI co-pilot handle the heavy lifting.</p>
+    </div>
+
+    <div class="bg-white dark:bg-[#111827] rounded-[2.5rem] border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden">
+        <form method="POST" class="p-8 md:p-10 space-y-8">
+            {{ form.hidden_tag() }}
+
+            <!-- Primary Course Info -->
+            <div class="space-y-6">
+                <p class="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] ml-1">Basic Identification</p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="space-y-2">
+                        {{ form.department.label(class="text-xs font-black text-gray-400 uppercase tracking-widest ml-1") }}
+                        {{ form.department(class="w-full bg-gray-50 dark:bg-gray-800/50 border-gray-200 dark:border-gray-700 rounded-2xl px-4 py-3.5 text-sm font-bold focus:ring-primary-500 focus:border-primary-500 transition-all") }}
+                        {% for error in form.department.errors %}
+                            <p class="text-red-500 text-[10px] font-bold mt-1 ml-1">{{ error }}</p>
+                        {% endfor %}
+                    </div>
+
+                    <div class="space-y-2">
+                        {{ form.course_title.label(class="text-xs font-black text-gray-400 uppercase tracking-widest ml-1") }}
+                        {{ form.course_title(class="w-full bg-gray-50 dark:bg-gray-800/50 border-gray-200 dark:border-gray-700 rounded-2xl px-4 py-3.5 text-sm font-bold focus:ring-primary-500 focus:border-primary-500 transition-all", placeholder="e.g. Introduction to Psychology") }}
+                        {% for error in form.course_title.errors %}
+                            <p class="text-red-500 text-[10px] font-bold mt-1 ml-1">{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="space-y-2">
+                        {{ form.course_code.label(class="text-xs font-black text-gray-400 uppercase tracking-widest ml-1") }}
+                        {{ form.course_code(class="w-full bg-gray-50 dark:bg-gray-800/50 border-gray-200 dark:border-gray-700 rounded-2xl px-4 py-3.5 text-sm font-bold focus:ring-primary-500 focus:border-primary-500 transition-all", placeholder="PSY 101") }}
+                    </div>
+                    <div class="space-y-2">
+                        {{ form.type_of_course.label(class="text-xs font-black text-gray-400 uppercase tracking-widest ml-1") }}
+                        {{ form.type_of_course(class="w-full bg-gray-50 dark:bg-gray-800/50 border-gray-200 dark:border-gray-700 rounded-2xl px-4 py-3.5 text-sm font-bold focus:ring-primary-500 focus:border-primary-500 transition-all") }}
+                    </div>
+                    <div class="space-y-2">
+                        {{ form.unit.label(class="text-xs font-black text-gray-400 uppercase tracking-widest ml-1") }}
+                        {{ form.unit(class="w-full bg-gray-50 dark:bg-gray-800/50 border-gray-200 dark:border-gray-700 rounded-2xl px-4 py-3.5 text-sm font-bold focus:ring-primary-500 focus:border-primary-500 transition-all", placeholder="3.0") }}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Description with AI Toggle -->
+            <div class="space-y-4">
+                <div class="flex justify-between items-center px-1">
+                    <p class="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">Academic Context</p>
+                    <button type="button" id="btn-generate-draft" class="group flex items-center gap-2 px-3 py-1.5 bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 rounded-xl hover:bg-primary-600 hover:text-white transition-all duration-300">
+                        <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20"><path d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                        <span class="text-[10px] font-black uppercase tracking-widest">Auto-Draft Description</span>
+                    </button>
+                </div>
+                <div class="space-y-2">
+                    {{ form.course_description(class="w-full bg-gray-50 dark:bg-gray-800/50 border-gray-200 dark:border-gray-700 rounded-[2rem] p-6 text-sm font-medium focus:ring-primary-500 focus:border-primary-500 transition-all leading-relaxed", rows="5", placeholder="Describe the course goals and scope...") }}
+                    {% for error in form.course_description.errors %}
+                        <p class="text-red-500 text-[10px] font-bold mt-1 ml-1">{{ error }}</p>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Logistics -->
+            <div class="space-y-6">
+                <p class="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] ml-1">Course Logistics</p>
+                <div class="space-y-2">
+                    {{ form.contact_hours_per_week.label(class="text-xs font-black text-gray-400 uppercase tracking-widest ml-1") }}
+                    {{ form.contact_hours_per_week(class="w-full bg-gray-50 dark:bg-gray-800/50 border-gray-200 dark:border-gray-700 rounded-2xl px-4 py-3.5 text-sm font-bold focus:ring-primary-500 focus:border-primary-500 transition-all", placeholder="e.g. 3 hours lecture, 2 hours lab") }}
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="space-y-2">
+                        {{ form.pre_requisites.label(class="text-xs font-black text-gray-400 uppercase tracking-widest ml-1") }}
+                        {{ form.pre_requisites(class="w-full bg-gray-50 dark:bg-gray-800/50 border-gray-200 dark:border-gray-700 rounded-2xl px-4 py-3.5 text-sm font-bold focus:ring-primary-500 focus:border-primary-500 transition-all", placeholder="None") }}
+                    </div>
+                    <div class="space-y-2">
+                        {{ form.co_requisites.label(class="text-xs font-black text-gray-400 uppercase tracking-widest ml-1") }}
+                        {{ form.co_requisites(class="w-full bg-gray-50 dark:bg-gray-800/50 border-gray-200 dark:border-gray-700 rounded-2xl px-4 py-3.5 text-sm font-bold focus:ring-primary-500 focus:border-primary-500 transition-all", placeholder="None") }}
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="space-y-2">
+                        {{ form.class_schedule.label(class="text-xs font-black text-gray-400 uppercase tracking-widest ml-1") }}
+                        {{ form.class_schedule(class="w-full bg-gray-50 dark:bg-gray-800/50 border-gray-200 dark:border-gray-700 rounded-2xl px-4 py-3.5 text-sm font-bold focus:ring-primary-500 focus:border-primary-500 transition-all", placeholder="MWF 10:00 - 11:00") }}
+                    </div>
+                    <div class="space-y-2">
+                        {{ form.room_assignment.label(class="text-xs font-black text-gray-400 uppercase tracking-widest ml-1") }}
+                        {{ form.room_assignment(class="w-full bg-gray-50 dark:bg-gray-800/50 border-gray-200 dark:border-gray-700 rounded-2xl px-4 py-3.5 text-sm font-bold focus:ring-primary-500 focus:border-primary-500 transition-all", placeholder="Room 302") }}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="pt-8 border-t border-gray-100 dark:border-gray-800 flex flex-col md:flex-row justify-end gap-4">
+                <a href="{{ url_for('teacher.teacher_my_clps') }}" class="px-8 py-4 bg-gray-50 dark:bg-gray-800 text-gray-500 dark:text-gray-400 text-xs font-black uppercase tracking-[0.2em] rounded-2xl hover:bg-gray-100 dark:hover:bg-gray-700 transition-all text-center">Cancel</a>
+                {{ form.submit(class="px-12 py-4 bg-primary-600 text-white text-xs font-black uppercase tracking-[0.2em] rounded-2xl hover:bg-primary-700 transition-all shadow-xl shadow-primary-200 dark:shadow-none cursor-pointer") }}
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    // Handle form submission loading state
+    const generatorForm = document.querySelector('form');
+    generatorForm.addEventListener('submit', function() {
+        localStorage.setItem('is_generating', 'true');
+        document.getElementById('loading-overlay').classList.remove('hidden');
+        const submitBtn = generatorForm.querySelector('input[type="submit"]');
+        if(submitBtn) {
+            submitBtn.value = "INITIALIZING AI...";
+            submitBtn.disabled = true;
+            submitBtn.classList.add('opacity-50', 'cursor-not-allowed');
+        }
+    });
+
+    // Handle Auto-Draft Button
+    document.getElementById('btn-generate-draft').addEventListener('click', async function() {
+        const btn = this;
+        const deptSelect = document.querySelector('[name="department"]');
+        const subjectInput = document.querySelector('[name="course_title"]');
+        const descInput = document.querySelector('[name="course_description"]');
+        
+        if (!subjectInput.value) {
+            alert("Please enter a Course Title first.");
+            subjectInput.focus();
+            return;
+        }
+
+        const originalContent = btn.innerHTML;
+        btn.innerHTML = `<svg class="animate-spin -ml-1 mr-2 h-3.5 w-3.5 text-current" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg><span class='text-[10px] font-black uppercase tracking-widest'>Generating...</span>`;
+        btn.disabled = true;
+        
+        try {
+            const csrfToken = document.querySelector('input[name="csrf_token"]')?.value || '';
+            const response = await fetch("{{ url_for('teacher.generate_course_description_draft') }}", {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken },
+                body: JSON.stringify({ department: deptSelect.value, subject: subjectInput.value })
+            });
+
+            const data = await response.json();
+            if (response.ok) {
+                descInput.value = data.description;
+                descInput.classList.add('ring-4', 'ring-primary-500/20');
+                setTimeout(() => descInput.classList.remove('ring-4', 'ring-primary-500/20'), 2000);
+            } else {
+                alert("Error: " + (data.error || "Failed to generate draft."));
+            }
+        } catch (err) {
+            alert("Network error occurred. Please try again.");
+        } finally {
+            btn.innerHTML = originalContent;
+            btn.disabled = false;
+        }
+    });
+</script>
+{% endblock %}

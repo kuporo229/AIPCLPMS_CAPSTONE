@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+
+{% block title %}User Provisioning{% endblock %}
+
+{% block content %}
+<div class="space-y-10 max-w-4xl mx-auto">
+    <!-- Header -->
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
+        <div class="space-y-1">
+            <h1 class="text-3xl font-black text-gray-900 dark:text-white tracking-tight leading-tight uppercase">Provision <span class="text-primary-600">Member</span></h1>
+            <p class="text-sm font-medium text-gray-500 dark:text-gray-400 italic">Instant institutional onboarding and clearance assignment.</p>
+        </div>
+        <a href="{{ url_for('admin.admin_dashboard') }}" class="inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-primary-600 hover:text-primary-700 transition-colors">
+            <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M15 19l-7-7 7-7" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Back to Center
+        </a>
+    </div>
+
+    <div class="bg-white dark:bg-[#111827] rounded-[2.5rem] border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden">
+        <div class="p-8 md:p-12 space-y-10">
+            <div class="flex items-center gap-3 px-1">
+                <div class="w-10 h-10 rounded-xl bg-primary-50 dark:bg-primary-900/20 flex items-center justify-center text-primary-600">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </div>
+                <h3 class="text-xl font-black text-gray-900 dark:text-white tracking-tight">Access Protocol</h3>
+            </div>
+
+            <form method="POST" action="{{ url_for('admin.admin_create_user') }}" class="space-y-8">
+                {{ form.hidden_tag() }}
+
+                <!-- Identity Grid -->
+                <div class="space-y-6">
+                    <p class="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] ml-1">Identity Profile</p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="space-y-2">
+                            {{ form.first_name.label(class="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1") }}
+                            {{ form.first_name(class="w-full bg-gray-50 dark:bg-gray-800/50 border-gray-200 dark:border-gray-700 rounded-2xl px-5 py-4 text-sm font-bold focus:ring-primary-500 transition-all", placeholder="Legal first name") }}
+                        </div>
+                        <div class="space-y-2">
+                            {{ form.last_name.label(class="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1") }}
+                            {{ form.last_name(class="w-full bg-gray-50 dark:bg-gray-800/50 border-gray-200 dark:border-gray-700 rounded-2xl px-5 py-4 text-sm font-bold focus:ring-primary-500 transition-all", placeholder="Legal last name") }}
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="space-y-2">
+                            {{ form.username.label(class="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1") }}
+                            <div class="relative">
+                                <div class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-black text-sm">@</div>
+                                {{ form.username(class="w-full bg-gray-50 dark:bg-gray-800/50 border-gray-200 dark:border-gray-700 rounded-2xl pl-10 pr-4 py-4 text-sm font-bold focus:ring-primary-500 transition-all", placeholder="identifier") }}
+                            </div>
+                        </div>
+                        <div class="space-y-2">
+                            {{ form.email.label(class="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1") }}
+                            {{ form.email(class="w-full bg-gray-50 dark:bg-gray-800/50 border-gray-200 dark:border-gray-700 rounded-2xl px-5 py-4 text-sm font-bold focus:ring-primary-500 transition-all", placeholder="academic@unit.edu") }}
+                        </div>
+                    </div>
+
+                    <div class="space-y-2">
+                        {{ form.password.label(class="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1") }}
+                        {{ form.password(class="w-full bg-gray-50 dark:bg-gray-800/50 border-gray-200 dark:border-gray-700 rounded-2xl px-5 py-4 text-sm font-bold focus:ring-primary-500 transition-all", placeholder="Initial access key") }}
+                        <p class="text-[9px] font-bold text-gray-400 uppercase tracking-tighter ml-1">System requires minimum 8-character entropy.</p>
+                    </div>
+                </div>
+
+                <!-- Clearance Strip -->
+                <div class="pt-10 border-t border-gray-100 dark:border-gray-800 space-y-6">
+                    <p class="text-[10px] font-black text-primary-600 uppercase tracking-[0.2em] ml-1">Clearance Configuration</p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="space-y-2">
+                            {{ form.role.label(class="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1") }}
+                            {{ form.role(class="w-full bg-gray-50 dark:bg-gray-800/50 border-gray-200 dark:border-gray-700 rounded-2xl px-5 py-4 text-[10px] font-black uppercase tracking-widest focus:ring-primary-500 transition-all cursor-pointer") }}
+                        </div>
+                        <div class="space-y-2">
+                            {{ form.department.label(class="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1") }}
+                            {{ form.department(class="w-full bg-gray-50 dark:bg-gray-800/50 border-gray-200 dark:border-gray-700 rounded-2xl px-5 py-4 text-[10px] font-black uppercase tracking-widest focus:ring-primary-500 transition-all cursor-pointer") }}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="pt-6">
+                    <button type="submit" class="w-full py-5 bg-primary-600 text-white text-xs font-black uppercase tracking-[0.2em] rounded-2xl hover:bg-primary-700 transition-all shadow-xl shadow-primary-200 dark:shadow-none cursor-pointer">Authorize & Deploy Member</button>
+                    <div class="mt-6 flex items-center justify-center gap-2 opacity-50">
+                        <svg class="w-4 h-4 text-emerald-500" fill="currentColor" viewBox="0 0 20 20"><path d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 4.946-2.56 9.12-6.433 11.49a1 1 0 01-1.134 0C6.56 16.12 4 11.946 4 7c0-.68.056-1.35.166-2.001zM10 13a1 1 0 001-1V8a1 1 0 10-2 0v4a1 1 0 001 1z"/></svg>
+                        <p class="text-[9px] font-black text-emerald-600 dark:text-emerald-400 uppercase tracking-widest">Immediate Global Access Authorization</p>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

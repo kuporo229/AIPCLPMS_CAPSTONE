@@ -1,0 +1,96 @@
+{#
+    Reusable AI loading overlay.
+    Parameters:
+      overlay_id       — HTML id for the overlay container (default: 'loading-overlay')
+      title_prefix     — small label above the stage (default: 'Processing')
+      stage_text       — initial stage heading (default: 'Starting')
+      message_text     — status message (default: generic)
+      hint_text        — bottom hint (default: 'Do not close or navigate away')
+      percent_id       — span ID for the percent number (default: overlay_id + '-percent')
+      stage_id         — h2 ID for the stage text (default: overlay_id + '-stage')
+      elapsed_id       — span ID for the elapsed counter (default: overlay_id + '-elapsed')
+      bar_id           — div ID for the progress bar (default: overlay_id + '-bar')
+      message_id       — p ID for the message (default: overlay_id + '-message')
+      log_id           — div ID for the activity log container (default: overlay_id + '-log')
+      hint_id          — p ID for the hint text (default: overlay_id + '-hint')
+      show_log         — show the activity log section (default: true)
+      show_hint        — show the hint text (default: true)
+      sm_padding       — padding override for mobile (default: 'p-5 sm:p-8')
+      animation_class  — extra CSS classes for entrance animation (default: '')
+#}
+{% macro loading_overlay(
+    overlay_id='loading-overlay',
+    title_prefix='Processing',
+    stage_text='Starting',
+    message_text='The AI is working on your request. Please wait.',
+    hint_text='Do not close or navigate away from this page',
+    percent_id=none,
+    stage_id=none,
+    elapsed_id=none,
+    bar_id=none,
+    message_id=none,
+    log_id=none,
+    hint_id=none,
+    show_log=true,
+    show_hint=true,
+    sm_padding='p-5 sm:p-8'
+) -%}
+{% set pct = percent_id or (overlay_id ~ '-percent') %}
+{% set stg = stage_id or (overlay_id ~ '-stage') %}
+{% set elp = elapsed_id or (overlay_id ~ '-elapsed') %}
+{% set bar = bar_id or (overlay_id ~ '-bar') %}
+{% set msg = message_id or (overlay_id ~ '-message') %}
+{% set log = log_id or (overlay_id ~ '-log') %}
+{% set hnt = hint_id or (overlay_id ~ '-hint') %}
+
+<div id="{{ overlay_id }}"
+     class="fixed inset-0 z-[140] hidden flex items-center justify-center bg-slate-950/80 backdrop-blur-sm px-3 sm:px-6 overflow-y-auto py-6 sm:py-10">
+    <div class="w-full max-w-xl rounded-[1.5rem] sm:rounded-[2rem] border border-primary-400/20 bg-white dark:bg-[#111827] {{ sm_padding }} shadow-2xl mx-auto my-auto">
+        <!-- Header -->
+        <div class="flex items-center gap-2.5 sm:gap-3">
+            <div class="relative flex-shrink-0">
+                <div class="h-9 w-9 sm:h-12 sm:w-12 rounded-full border-[3px] border-primary-200 dark:border-primary-900/40 border-t-primary-600 animate-spin">
+                </div>
+                <div class="absolute inset-0 flex items-center justify-center">
+                    <span id="{{ pct }}" class="text-[8px] sm:text-[9px] font-black text-primary-600">0%</span>
+                </div>
+            </div>
+            <div class="min-w-0 flex-1">
+                <p class="text-[9px] sm:text-[10px] font-black uppercase tracking-[0.2em] sm:tracking-[0.25em] text-primary-600">{{ title_prefix }}</p>
+                <h2 id="{{ stg }}" class="text-sm sm:text-lg font-black tracking-tight text-gray-900 dark:text-white truncate">{{ stage_text }}</h2>
+            </div>
+            <div class="flex-shrink-0 text-right">
+                <span id="{{ elp }}" class="text-[9px] sm:text-[10px] font-black uppercase tracking-widest text-gray-400 tabular-nums">0:00</span>
+            </div>
+        </div>
+
+        <!-- Progress bar -->
+        <div class="mt-3 sm:mt-4">
+            <div class="h-1.5 w-full overflow-hidden rounded-full bg-gray-100 dark:bg-gray-800">
+                <div id="{{ bar }}" class="h-1.5 rounded-full bg-gradient-to-r from-primary-500 to-primary-600 transition-all duration-700 ease-out" style="width: 0%;"></div>
+            </div>
+        </div>
+
+        <!-- Message -->
+        <p id="{{ msg }}" class="mt-3 sm:mt-4 text-xs sm:text-sm leading-relaxed text-gray-500 dark:text-gray-400">{{ message_text }}</p>
+
+        {% if show_log %}
+        <!-- Live activity log -->
+        <div class="mt-3 sm:mt-4 max-h-36 sm:max-h-44 overflow-y-auto rounded-xl bg-gray-50 dark:bg-gray-900/50 border border-gray-100 dark:border-gray-800 p-2.5 sm:p-3">
+            <div id="{{ log }}" class="space-y-1 sm:space-y-1.5 text-left">
+                <div class="flex items-start gap-2 text-[10px] sm:text-[11px] text-gray-400">
+                    <span class="flex-shrink-0 tabular-nums font-mono opacity-60">0:00</span>
+                    <svg class="w-2.5 h-2.5 sm:w-3 sm:h-3 mt-0.5 flex-shrink-0 text-gray-400" fill="currentColor" viewBox="0 0 20 20"><circle cx="10" cy="10" r="3"></circle></svg>
+                    <span>Initializing</span>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        {% if show_hint %}
+        <!-- Hint -->
+        <p id="{{ hnt }}" class="mt-2 sm:mt-3 text-[8px] sm:text-[10px] font-black uppercase tracking-[0.15em] sm:tracking-[0.2em] text-gray-400 text-center">{{ hint_text }}</p>
+        {% endif %}
+    </div>
+</div>
+{%- endmacro %}

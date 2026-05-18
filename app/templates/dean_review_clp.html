@@ -1,0 +1,217 @@
+{% extends "base.html" %}
+
+{% block title %}Endorsement Terminal{% endblock %}
+
+{% block content %}
+<div class="space-y-10 max-w-6xl mx-auto pb-20">
+    <!-- Header -->
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
+        <div class="space-y-1">
+            <div class="flex items-center gap-2 mb-2">
+                <a href="{{ url_for('dean.dean_courses') }}" class="inline-flex items-center text-[10px] font-black uppercase tracking-widest text-primary-600 hover:text-primary-700 transition-colors">
+                    <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M15 19l-7-7 7-7" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    Review Queue
+                </a>
+            </div>
+            <h1 class="text-3xl font-black text-gray-900 dark:text-white tracking-tight leading-tight uppercase">{{ plan.subject }}</h1>
+            <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Institutional Unit: <span class="text-primary-600 font-bold uppercase">{{ plan.department }}</span></p>
+        </div>
+        
+        <div class="flex items-center gap-3">
+            <span class="px-4 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest bg-amber-50 text-amber-600 border border-amber-100 dark:bg-amber-900/20 dark:border-amber-800">
+                {{ plan.status.replace('_', ' ') }}
+            </span>
+        </div>
+    </div>
+
+    <!-- Review Deck -->
+    <div class="bg-white dark:bg-[#111827] rounded-[2.5rem] border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden">
+        <div class="p-8 md:p-12 space-y-12">
+            
+            <!-- Metadata & Trace -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
+                <div class="space-y-6">
+                    <p class="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] ml-1">Documentation Origin</p>
+                    <div class="bg-gray-50 dark:bg-gray-800/30 p-6 rounded-[2rem] border border-gray-100 dark:border-gray-800">
+                        <div class="flex items-center gap-4">
+                            <div class="w-12 h-12 rounded-2xl bg-primary-600 flex items-center justify-center text-white shrink-0 shadow-lg shadow-primary-200 dark:shadow-none uppercase font-black text-lg">
+                                {{ plan.author.username[0] }}
+                            </div>
+                            <div class="min-w-0">
+                                <p class="text-xs font-black text-gray-900 dark:text-white uppercase tracking-tight">By {{ plan.author.first_name }} {{ plan.author.last_name }}</p>
+                                <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Submitted on {{ plan.date_posted.strftime('%d %b %Y') }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {% if plan.upload_type == 'ai_generated' %}
+                <div class="space-y-6">
+                    <p class="text-[10px] font-black text-primary-600 uppercase tracking-[0.2em] ml-1">Quality Gate Intelligence</p>
+                    <div class="bg-primary-50 dark:bg-primary-900/20 p-6 rounded-[2rem] border border-primary-100 dark:border-primary-800">
+                        <div class="space-y-4">
+                            <div>
+                                <p class="text-[9px] font-black text-primary-600 uppercase tracking-widest mb-1">Alignment Rationale (PO-IO)</p>
+                                <p class="text-[11px] font-bold text-primary-700 dark:text-primary-300 italic leading-relaxed">{{ content_data.get('po_io_rationale', 'Standard correlation applied.') }}</p>
+                            </div>
+                            <div>
+                                <p class="text-[9px] font-black text-primary-600 uppercase tracking-widest mb-1">Alignment Rationale (CO-PO)</p>
+                                <p class="text-[11px] font-bold text-primary-700 dark:text-primary-300 italic leading-relaxed">{{ content_data.get('co_po_rationale', 'Direct outcome mapping validated.') }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Editor Access -->
+            {% if plan.upload_type in ['file_upload', 'ai_generated'] %}
+            <div class="flex flex-col md:flex-row gap-6 p-6 bg-gray-50/50 dark:bg-gray-800/20 rounded-[2rem] border border-gray-100 dark:border-gray-800">
+                <div class="flex-1 flex items-center gap-4">
+                    <div class="w-10 h-10 rounded-xl bg-white dark:bg-gray-800 flex items-center justify-center text-primary-600 shadow-sm border border-gray-100 dark:border-gray-700 shrink-0">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    </div>
+                    <div class="min-w-0">
+                        <p class="text-xs font-black text-gray-900 dark:text-white uppercase tracking-tight">Standard Asset Review</p>
+                        <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Live collaborative editing enabled</p>
+                    </div>
+                </div>
+                <div class="flex flex-col sm:flex-row gap-2 shrink-0">
+                    <a href="{{ url_for('teacher.download_clp', plan_id=plan.id) }}" class="flex-1 sm:flex-none px-6 py-3 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 text-[9px] font-black uppercase tracking-widest rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-700 transition-all text-center">Download .docx</a>
+                    <a href="{{ url_for('dean.review_clp_document', plan_id=plan.id) }}" class="flex-1 sm:flex-none px-8 py-3 bg-primary-600 text-white text-[9px] font-black uppercase tracking-widest rounded-xl hover:bg-primary-700 shadow-lg shadow-primary-200 dark:shadow-none transition-all text-center">Endorse Edits</a>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Plan Data Grid -->
+            {% if plan.upload_type == 'ai_generated' %}
+            <div class="space-y-10">
+                <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+                    {% for key, label in [
+                        ('course_number', 'Entry No.'), ('units', 'Unit Count'), ('Contact_hours_per_week', 'Intensity'),
+                        ('type_of_course', 'Modality'), ('course_code', 'Registry Code')
+                    ] %}
+                    <div class="p-4 bg-gray-50 dark:bg-gray-800/30 rounded-2xl border border-gray-100 dark:border-gray-800">
+                        <p class="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1">{{ label }}</p>
+                        <p class="text-xs font-black text-gray-900 dark:text-white uppercase tracking-tight truncate">{{ content_data.get(key, '-') }}</p>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <!-- Matrix Snapshot -->
+                <div class="space-y-6">
+                    <p class="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] ml-1">Alignment Matrix (PO x IO)</p>
+                    <div class="overflow-x-auto custom-scrollbar border border-gray-100 dark:border-gray-800 rounded-[2rem]">
+                        <table class="w-full text-[10px] border-collapse min-w-[600px]">
+                            <thead>
+                                <tr class="bg-gray-50/50 dark:bg-gray-800/50">
+                                    <th class="p-4 text-left font-black uppercase border-b border-gray-100 dark:border-gray-800">Trace</th>
+                                    <th class="p-4 text-left font-black uppercase border-b border-gray-100 dark:border-gray-800 w-1/3">Objective Descriptor</th>
+                                    {% for h in institutional_headers %}<th class="p-4 text-center font-black uppercase border-b border-gray-100 dark:border-gray-800">{{ h }}</th>{% endfor %}
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
+                                {% for po in program_outcomes %}
+                                <tr class="hover:bg-primary-900/5 transition-colors">
+                                    <td class="p-4 font-black text-primary-600 uppercase tracking-tighter">{{ po.code }}</td>
+                                    <td class="p-4 text-gray-500 dark:text-gray-400 font-medium leading-relaxed">{{ po.description }}</td>
+                                    {% for h in institutional_headers %}
+                                    <td class="p-4 text-center font-black text-gray-900 dark:text-white">{{ content_data.get(po.code ~ '_' ~ h, '') }}</td>
+                                    {% endfor %}
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Decision Block -->
+            <div class="pt-12 border-t border-gray-100 dark:border-gray-800 space-y-8">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-900/20 flex items-center justify-center text-emerald-600">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    </div>
+                    <h3 class="text-xl font-black text-gray-900 dark:text-white tracking-tight uppercase">Executive Endorsement</h3>
+                </div>
+
+                {% if plan.dean_comments %}
+                <div class="p-6 bg-red-50 dark:bg-red-900/10 rounded-[2rem] border border-red-100 dark:border-red-900/20">
+                    <p class="text-[10px] font-black text-red-600 uppercase tracking-widest mb-2">Previous Return Logic</p>
+                    <p class="text-xs font-bold text-red-700 dark:text-red-300 italic leading-relaxed">"{{ plan.dean_comments }}"</p>
+                </div>
+                {% endif %}
+
+                <form method="post" action="{{ url_for('dean.dean_review_clp', plan_id=plan.id) }}" class="space-y-8">
+                    {{ form.hidden_tag() }}
+                    
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                        <div class="space-y-4">
+                            {% if rejection_reasons %}
+                            <div class="space-y-2">
+                                <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Endorsement Presets</label>
+                                <select onchange="addQuickReason(this.value)" class="w-full bg-gray-50 dark:bg-gray-800/50 border-gray-200 dark:border-gray-700 rounded-2xl px-4 py-3.5 text-[10px] font-black uppercase tracking-widest focus:ring-primary-500 transition-all cursor-pointer">
+                                    <option value="">-- Manual Logic Selection --</option>
+                                    {% for reason in rejection_reasons %}<option value="{{ reason }}">{{ reason }}</option>{% endfor %}
+                                </select>
+                            </div>
+                            {% endif %}
+                            
+                            <div class="space-y-2">
+                                {{ form.comments.label(class="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1") }}
+                                {{ form.comments(id="review_comments", class="w-full bg-gray-50 dark:bg-gray-800/50 border-gray-200 dark:border-gray-700 rounded-[2rem] p-6 text-sm font-medium focus:ring-primary-500 transition-all leading-relaxed", rows="4", placeholder="Formal endorsement or revision requirements...") }}
+                            </div>
+                        </div>
+
+                        <div class="flex flex-col justify-end gap-4">
+                            <button name="submit_approve" value="1" type="submit" class="w-full py-5 bg-emerald-600 text-white text-xs font-black uppercase tracking-[0.2em] rounded-2xl hover:bg-emerald-700 transition-all shadow-xl shadow-emerald-200 dark:shadow-none">Approve & Finalize</button>
+                            <button name="submit_return" value="1" type="submit" class="w-full py-5 bg-amber-500 text-white text-xs font-black uppercase tracking-[0.2em] rounded-2xl hover:bg-amber-600 transition-all shadow-xl shadow-amber-200 dark:shadow-none">Return for Revision</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Audit Trace -->
+    <section class="space-y-10">
+        <div class="flex items-center gap-3 px-1">
+            <div class="w-10 h-10 rounded-xl bg-gray-50 dark:bg-gray-800 flex items-center justify-center text-gray-400">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+            <h2 class="text-xl font-black text-gray-900 dark:text-white uppercase tracking-tight">Structural Audit Trail</h2>
+        </div>
+        
+        <div class="space-y-8 ml-4 border-l-2 border-gray-100 dark:border-gray-800 pl-8">
+            {% for event in history %}
+            <div class="relative">
+                <div class="absolute -left-[41px] top-0 w-4 h-4 rounded-full border-4 border-white dark:border-[#0b0f19] 
+                    {% if 'Approved' in event.action %} bg-emerald-500
+                    {% elif 'Returned' in event.action %} bg-red-500
+                    {% else %} bg-primary-500 {% endif %}"></div>
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div class="min-w-0">
+                        <p class="text-sm font-black text-gray-900 dark:text-white uppercase tracking-tight">
+                            {{ event.action }} <span class="text-[10px] text-gray-400 font-bold ml-2 uppercase tracking-widest">Actor: {{ event.actor.username }}</span>
+                        </p>
+                        {% if event.comment %}
+                            <p class="mt-2 text-xs font-bold text-gray-500 dark:text-gray-400 italic bg-gray-50 dark:bg-gray-800/50 p-3 rounded-xl border border-gray-100 dark:border-gray-800">"{{ event.comment }}"</p>
+                        {% endif %}
+                    </div>
+                    <time class="text-[10px] font-black text-gray-400 uppercase tracking-widest shrink-0">{{ event.timestamp.strftime('%d %b · %I:%M %p') }}</time>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+</div>
+
+<script>
+    function addQuickReason(reason) {
+        if (!reason) return;
+        const textarea = document.getElementById('review_comments');
+        textarea.value = textarea.value.trim() === "" ? reason : textarea.value + "\n" + reason;
+    }
+</script>
+{% endblock %}

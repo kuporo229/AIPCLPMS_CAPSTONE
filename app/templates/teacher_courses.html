@@ -1,0 +1,895 @@
+{% extends "base.html" %}
+
+{% block title %}Manage Courses{% endblock %}
+
+{% block content %}
+<div class="space-y-6 md:space-y-8 lg:h-[calc(100vh-120px)] flex flex-col">
+    <!-- Header -->
+    <div class="flex flex-col gap-2 shrink-0">
+        <h1 class="text-2xl sm:text-3xl font-black text-gray-900 dark:text-white tracking-tight">My Course Learning Plans</h1>
+        <p class="text-gray-500 dark:text-gray-400 font-medium">Design, manage, and track your academic documentation.
+        </p>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 flex-grow min-h-0">
+        <!-- Sidebar Tools -->
+        <div class="lg:col-span-4 xl:col-span-3 space-y-6 lg:overflow-y-auto custom-scrollbar lg:pr-1">
+            <div
+                class="bg-white dark:bg-[#111827] p-5 sm:p-6 md:p-8 rounded-[1.75rem] md:rounded-[2.5rem] border border-gray-200 dark:border-gray-800 shadow-sm space-y-8">
+                <!-- AI Tools Section -->
+                <div class="space-y-4">
+                    <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">AI-Powered Creation
+                    </p>
+                    <p class="text-[11px] font-bold text-gray-500 dark:text-gray-400 ml-1 leading-relaxed">
+                        Create a template profile first so your CLP fits your department's exact DOCX layout. Then add subjects and generate with AI.
+                    </p>
+                    <div class="relative grid grid-cols-1 gap-3">
+                        <a href="{{ url_for('teacher.upload_template_profile') }}"
+                            class="relative flex items-center gap-4 p-4 bg-violet-50 dark:bg-violet-900/20 rounded-2xl hover:bg-violet-100 dark:hover:bg-violet-900/30 transition-all group">
+                            <span class="absolute top-2 right-3 text-[9px] font-black tracking-widest uppercase px-2 py-0.5 rounded-md bg-violet-600 text-white">Step 1</span>
+                            <div
+                                class="w-10 h-10 bg-violet-600 rounded-xl flex items-center justify-center text-white shrink-0 shadow-lg shadow-violet-200 dark:shadow-none">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"
+                                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+                                </svg>
+                            </div>
+                            <div class="min-w-0">
+                                <p class="text-sm font-black text-violet-700 dark:text-violet-300">Template Profile</p>
+                                <p class="text-[10px] text-violet-600/60 font-bold truncate">Upload & confirm your DOCX layout</p>
+                            </div>
+                        </a>
+                        <div class="flex justify-center -my-1">
+                            <svg class="w-4 h-4 text-gray-300 dark:text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 14l-7 7m0 0l-7-7m7 7V3"/>
+                            </svg>
+                        </div>
+                        <a href="{{ url_for('teacher.manage_subjects') }}"
+                            class="relative flex items-center gap-4 p-4 bg-gray-50 dark:bg-gray-900/20 rounded-2xl hover:bg-gray-100 dark:hover:bg-gray-900/30 transition-all group">
+                            <span class="absolute top-2 right-3 text-[9px] font-black tracking-widest uppercase px-2 py-0.5 rounded-md bg-gray-800 dark:bg-gray-700 text-white">Step 2</span>
+                            <div
+                                class="w-10 h-10 bg-gray-800 dark:bg-gray-700 rounded-xl flex items-center justify-center text-white shrink-0 shadow-lg shadow-gray-200 dark:shadow-none">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path d="M7 8h10M7 12h8m-8 4h10M6 4h12a2 2 0 012 2v12a2 2 0 01-2 2H6a2 2 0 01-2-2V6a2 2 0 012-2z"
+                                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+                                </svg>
+                            </div>
+                            <div class="min-w-0">
+                                <p class="text-sm font-black text-gray-700 dark:text-gray-200">My Subjects</p>
+                                <p class="text-[10px] text-gray-500 font-bold truncate">Add subjects & link template</p>
+                            </div>
+                        </a>
+                        <div class="flex justify-center -my-1">
+                            <svg class="w-4 h-4 text-gray-300 dark:text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 14l-7 7m0 0l-7-7m7 7V3"/>
+                            </svg>
+                        </div>
+                        <a href="/teacher/copilot/create"
+                            class="relative flex items-center gap-4 p-4 bg-primary-50 dark:bg-primary-900/20 rounded-2xl hover:bg-primary-100 dark:hover:bg-primary-900/30 transition-all group">
+                            <span class="absolute top-2 right-3 text-[9px] font-black tracking-widest uppercase px-2 py-0.5 rounded-md bg-primary-600 text-white">Step 3</span>
+                            <div
+                                class="w-10 h-10 bg-primary-600 rounded-xl flex items-center justify-center text-white shrink-0 shadow-lg shadow-primary-200 dark:shadow-none">
+                                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                    <path d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                                </svg>
+                            </div>
+                            <div class="min-w-0">
+                                <p class="text-sm font-black text-primary-700 dark:text-primary-300">AI Copilot</p>
+                                <p class="text-[10px] text-primary-600/60 font-bold truncate">Generate from linked template
+                                </p>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+
+                <div class="h-px bg-gray-100 dark:bg-gray-800"></div>
+
+                <!-- Manual Upload -->
+                <div class="space-y-4">
+                    <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Manual Document
+                        Upload</p>
+                    <form method="POST" enctype="multipart/form-data" action="{{ url_for('teacher.upload_clp') }}"
+                        class="space-y-4">
+                        {{ upload_form.hidden_tag() }}
+                        <div class="space-y-3">
+                            {{ upload_form.department(class="w-full bg-gray-50 dark:bg-gray-800/50 border-gray-200
+                            dark:border-gray-700 rounded-2xl px-4 py-3 text-[11px] font-black uppercase tracking-widest
+                            focus:ring-primary-500 focus:border-primary-500 transition-all") }}
+                            {{ upload_form.subject(class="w-full bg-gray-50 dark:bg-gray-800/50 border-gray-200
+                            dark:border-gray-700 rounded-2xl px-4 py-3 text-sm font-bold focus:ring-primary-500
+                            focus:border-primary-500 transition-all", placeholder="Enter Course Title") }}
+                        </div>
+                        <div class="relative group">
+                            <div
+                                class="flex flex-col items-center justify-center p-6 border-2 border-dashed border-gray-200 dark:border-gray-700 rounded-[2rem] bg-gray-50 dark:bg-gray-800/30 group-hover:border-primary-400 group-hover:bg-primary-50/30 transition-all duration-300">
+                                <svg class="w-10 h-10 text-gray-300 group-hover:text-primary-500 transition-colors mb-2"
+                                    fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path
+                                        d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
+                                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                                </svg>
+                                <p
+                                    class="text-[10px] font-black text-gray-400 uppercase tracking-widest group-hover:text-primary-600 transition-colors">
+                                    Select Word Document</p>
+                            </div>
+                            {{ upload_form.file(class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10") }}
+                        </div>
+                        <div id="file-name-display"
+                            class="text-[10px] text-center text-primary-600 font-black uppercase tracking-widest hidden truncate px-4">
+                        </div>
+                        <button type="submit"
+                            class="w-full py-4 bg-gray-900 dark:bg-primary-600 text-white text-xs font-black uppercase tracking-[0.2em] rounded-2xl hover:bg-black dark:hover:bg-primary-700 transition-all shadow-xl shadow-gray-200 dark:shadow-none">Upload
+                            Plan</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main List Section -->
+        <div class="lg:col-span-8 xl:col-span-9 flex flex-col min-h-0">
+            <div
+                class="bg-white dark:bg-[#111827] rounded-[2.5rem] border border-gray-200 dark:border-gray-800 shadow-sm flex flex-col h-full overflow-hidden">
+                <!-- Filter Bar -->
+                <div
+                    class="p-5 sm:p-6 md:p-8 border-b border-gray-100 dark:border-gray-800 flex flex-col md:flex-row justify-between items-stretch md:items-center gap-4 md:gap-6 bg-gray-50/50 dark:bg-gray-800/20">
+                    <h3 class="text-xl font-black text-gray-900 dark:text-white tracking-tight">Active Repositories</h3>
+
+                    <div class="flex flex-col md:flex-row items-stretch md:items-center gap-3 w-full md:w-auto">
+                        <select id="status-filter"
+                            class="w-full md:w-40 bg-white dark:bg-[#111827] border-gray-200 dark:border-gray-700 rounded-xl text-[10px] font-black uppercase tracking-widest focus:ring-primary-500 transition-all">
+                            <option value="all">All Status</option>
+                            <option value="generating">Processing</option>
+                            <option value="beta_review">AI Review</option>
+                            <option value="beta_ready">AI Ready</option>
+                            <option value="draft">Drafts</option>
+                            <option value="pending">Pending</option>
+                            <option value="approved">Approved</option>
+                            <option value="returned">Returned</option>
+                        </select>
+
+                        <div class="relative w-full md:w-72">
+                            <input type="text" id="clp-search-input" placeholder="Search by course title..."
+                                class="w-full bg-white dark:bg-[#111827] border-gray-200 dark:border-gray-700 rounded-xl pl-10 py-2.5 text-sm font-bold placeholder:text-gray-400 focus:ring-primary-500 transition-all">
+                            <svg class="absolute left-3 top-3 w-4 h-4 text-gray-400" fill="none" stroke="currentColor"
+                                viewBox="0 0 24 24">
+                                <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" stroke-width="2.5"
+                                    stroke-linecap="round" stroke-linejoin="round" />
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Plans Scroll Container -->
+                <div class="flex-1 overflow-y-auto p-4 sm:p-6 md:p-8 custom-scrollbar">
+                    {% if plans %}
+                    <div id="clp-list-container" class="grid grid-cols-1 xl:grid-cols-2 gap-6">
+                        {% for plan in plans %}
+                        <div class="clp-card group bg-white dark:bg-[#111827] border border-gray-200 dark:border-gray-800 rounded-[1.5rem] md:rounded-[2rem] p-4 sm:p-5 md:p-6 hover:shadow-2xl hover:shadow-primary-100/50 dark:hover:shadow-none transition-all duration-300"
+                            data-subject="{{ plan.subject|lower }}" data-status="{{ plan.status }}" data-plan-id="{{ plan.id }}">
+
+                            <div class="flex flex-col h-full space-y-6">
+                                <!-- Card Top -->
+                                <div class="flex flex-col sm:flex-row justify-between items-start gap-4">
+                                    <div class="min-w-0 flex-1">
+                                        <div class="flex flex-wrap items-center gap-2 mb-1">
+                                            {% if plan.course_code %}
+                                            <span
+                                                class="text-[10px] font-black text-primary-600 bg-primary-50 dark:bg-primary-900/30 px-2 py-0.5 rounded uppercase tracking-widest">{{
+                                                plan.course_code }}</span>
+                                            {% endif %}
+                                            <span
+                                                class="text-[10px] font-black text-gray-400 uppercase tracking-widest">{{
+                                                plan.department }}</span>
+                                        </div>
+                                        <h4
+                                            class="text-lg sm:text-xl font-black text-gray-900 dark:text-white tracking-tight group-hover:text-primary-600 transition-colors break-words">
+                                            {{ plan.subject }}</h4>
+                                    </div>
+                                    <div class="shrink-0 sm:ml-4 w-full sm:w-auto">
+                                        {% if plan.status in ['generating', 'generating_doc'] %}
+                                        <div data-role="status-pill"
+                                            class="inline-flex items-center gap-2 px-3 py-1 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 rounded-full animate-pulse">
+                                            <div class="w-1.5 h-1.5 rounded-full bg-blue-600"></div>
+                                            <span class="text-[10px] font-black uppercase tracking-widest" data-role="status-label">{{
+                                                plan.progress.label }}</span>
+                                        </div>
+                                        {% elif plan.status == 'draft_review' %}
+                                        <span
+                                            class="px-3 py-1 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 text-[10px] font-black rounded-full uppercase tracking-widest">Reviewing</span>
+                                        {% elif plan.status == 'beta_review' %}
+                                        <span
+                                            class="px-3 py-1 bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400 text-[10px] font-black rounded-full uppercase tracking-widest">AI Review</span>
+                                        {% elif plan.status == 'beta_ready' %}
+                                        <span
+                                            class="px-3 py-1 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 text-[10px] font-black rounded-full uppercase tracking-widest">Submit Ready</span>
+                                        {% elif plan.status == 'draft' %}
+                                        <span
+                                            class="px-3 py-1 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 text-[10px] font-black rounded-full uppercase tracking-widest">Draft</span>
+                                        {% elif plan.status == 'pending' %}
+                                        <span
+                                            class="px-3 py-1 bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400 text-[10px] font-black rounded-full uppercase tracking-widest">Awaiting</span>
+                                        {% elif plan.status == 'approved' %}
+                                        <span
+                                            class="px-3 py-1 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 text-[10px] font-black rounded-full uppercase tracking-widest">Ready</span>
+                                        {% elif plan.status == 'returned_for_revision' %}
+                                        <span
+                                            class="px-3 py-1 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 text-[10px] font-black rounded-full uppercase tracking-widest">Revision</span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+
+                                <!-- Progress Bar for Generating -->
+                                {% if plan.status in ['generating', 'generating_doc'] %}
+                                <div class="space-y-2" data-role="progress-wrapper">
+                                    <div
+                                        class="flex justify-between items-center text-[10px] font-black text-gray-400 uppercase tracking-widest">
+                                        <span>AI Progress</span>
+                                        <span data-role="progress-percent">{{ plan.progress.percent }}%</span>
+                                    </div>
+                                    <div class="w-full bg-gray-100 dark:bg-gray-800 rounded-full h-1.5">
+                                        <div class="bg-primary-600 h-1.5 rounded-full transition-all duration-1000" data-role="progress-bar"
+                                            data-progress="{{ plan.progress.percent }}"></div>
+                                    </div>
+                                </div>
+                                {% endif %}
+
+                                <!-- Feedback Block -->
+                                {% if plan.status == 'returned_for_revision' and plan.dean_comments %}
+                                <div
+                                    class="p-4 bg-red-50 dark:bg-red-900/10 rounded-2xl border border-red-100 dark:border-red-900/30">
+                                    <p class="text-[10px] font-black text-red-600 uppercase tracking-widest mb-1">
+                                        Feedback from Dean</p>
+                                    <p class="text-xs font-bold text-red-700 dark:text-red-300 italic leading-relaxed">
+                                        "{{ plan.dean_comments|truncate(80) }}"</p>
+                                </div>
+                                {% endif %}
+
+                                <!-- Card Actions -->
+                                <div
+                                    class="mt-auto pt-6 border-t border-gray-100 dark:border-gray-800 flex flex-row items-center justify-between gap-4 flex-wrap">
+                                    <div
+                                        class="flex flex-row flex-wrap items-center gap-2 py-1 -my-1 action-icons-container">
+                                        {% if plan.status in ['draft', 'returned_for_revision'] and plan.filename %}
+                                        <a href="{{ url_for('teacher.edit_clp_document', plan_id=plan.id) }}"
+                                            class="action-btn-reveal data-click-reveal p-2.5 text-gray-400 hover:text-primary-600 hover:bg-primary-50 dark:hover:bg-primary-900/20 rounded-xl transition-all"
+                                            title="Edit Content">
+                                            <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor"
+                                                viewBox="0 0 24 24">
+                                                <path
+                                                    d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                                                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                                            </svg>
+                                            <span class="btn-label">Edit</span>
+                                        </a>
+                                        {% endif %}
+
+                                        {% if plan.upload_type == 'ai_copilot_beta' and plan.filename and plan.filename.endswith('.docx') and plan.status == 'beta_ready' %}
+                                        <a href="{{ url_for('teacher.edit_clp_document', plan_id=plan.id) }}"
+                                            class="action-btn-reveal data-click-reveal p-2.5 text-gray-400 hover:text-violet-600 hover:bg-violet-50 dark:hover:bg-violet-900/20 rounded-xl transition-all"
+                                            title="Edit in OnlyOffice">
+                                            <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor"
+                                                viewBox="0 0 24 24">
+                                                <path
+                                                    d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                                                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                                            </svg>
+                                            <span class="btn-label">OnlyOffice</span>
+                                        </a>
+                                        {% endif %}
+                                        {% if plan.filename and plan.status not in ['generating', 'generating_doc',
+                                        'failed', 'draft_review'] %}
+                                        <a href="{{ url_for('teacher.download_clp', plan_id=plan.id) }}"
+                                            class="action-btn-reveal data-click-reveal p-2.5 text-gray-400 hover:text-primary-600 hover:bg-primary-50 dark:hover:bg-primary-900/20 rounded-xl transition-all"
+                                            title="Download Word">
+                                            <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor"
+                                                viewBox="0 0 24 24">
+                                                <path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+                                                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                                            </svg>
+                                            <span class="btn-label">Download</span>
+                                        </a>
+                                        {% endif %}
+
+                                        {% if plan.status == 'approved' %}
+                                        {% set _clone_msg = (
+                                            'Heads up: this CLP is legacy data from before the AI Copilot migration. '
+                                            ~ 'Only the metadata (course code, title, description, classrooms, schedule, etc.) will be cloned '
+                                            ~ 'into a new AI Copilot draft. You will need to regenerate CLOs and the weekly outline. Continue?'
+                                        ) if plan.is_legacy_clp else 'Clone this plan into a new AI Copilot draft?' %}
+                                        <form id="clone-form-{{ plan.id }}" method="POST"
+                                            action="{{ url_for('teacher.clone_clp', plan_id=plan.id) }}"
+                                            class="contents">
+                                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                            <button type="button"
+                                                onclick="showCustomConfirm({{ _clone_msg|tojson }}, () => document.getElementById('clone-form-{{ plan.id }}').submit(), {{ ('Clone Legacy Plan' if plan.is_legacy_clp else 'Clone Plan')|tojson }})"
+                                                class="action-btn-reveal data-click-reveal p-2.5 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 rounded-xl transition-all"
+                                                title="Clone Plan">
+                                                <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor"
+                                                    viewBox="0 0 24 24">
+                                                    <path
+                                                        d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2"
+                                                        stroke-width="2" stroke-linecap="round"
+                                                        stroke-linejoin="round" />
+                                                </svg>
+                                                <span class="btn-label">Clone{% if plan.is_legacy_clp %} (Legacy){% endif %}</span>
+                                            </button>
+                                        </form>
+                                        {% endif %}
+
+                                        {% if plan.status not in ['generating', 'generating_doc'] %}
+                                        <form id="delete-form-{{ plan.id }}" method="POST"
+                                            action="{{ url_for('teacher.delete_clp', plan_id=plan.id) }}"
+                                            class="contents">
+                                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                            <button type="button"
+                                                onclick="showCustomConfirm('Delete plan for \'{{ plan.subject }}\'?', () => document.getElementById('delete-form-{{ plan.id }}').submit(), 'Delete Document')"
+                                                class="action-btn-reveal data-click-reveal p-2.5 text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl transition-all"
+                                                title="Delete">
+                                                <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor"
+                                                    viewBox="0 0 24 24">
+                                                    <path
+                                                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                                                        stroke-width="2" stroke-linecap="round"
+                                                        stroke-linejoin="round" />
+                                                </svg>
+                                                <span class="btn-label">Delete</span>
+                                            </button>
+                                        </form>
+                                        {% else %}
+                                        {# Cancel Button for Generating state #}
+                                        <form id="cancel-form-{{ plan.id }}" method="POST"
+                                            action="{{ url_for('teacher.delete_clp', plan_id=plan.id) }}"
+                                            class="contents">
+                                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                            <button type="button"
+                                                onclick="showCustomConfirm('Cancel AI generation for \'{{ plan.subject }}\'?', () => { localStorage.removeItem('is_generating'); document.getElementById('cancel-form-{{ plan.id }}').submit(); }, 'Cancel Generation')"
+                                                class="action-btn-reveal data-click-reveal p-2.5 text-red-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl transition-all"
+                                                title="Cancel Generation">
+                                                <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor"
+                                                    viewBox="0 0 24 24">
+                                                    <path d="M6 18L18 6M6 6l12 12" stroke-width="2.5"
+                                                        stroke-linecap="round" stroke-linejoin="round" />
+                                                </svg>
+                                                <span class="btn-label">Cancel</span>
+                                            </button>
+                                        </form>
+                                        {% endif %}
+                                    </div>
+
+                                    <div
+                                        class="w-full sm:w-auto shrink-0 flex justify-end">
+                                        {% if plan.upload_type == 'ai_copilot_beta' %}
+                                        <div class="flex w-full sm:w-auto flex-col sm:flex-row gap-2 justify-end">
+                                            {% if plan.filename and plan.filename.endswith('.docx') and plan.status == 'beta_ready' %}
+                                            <a href="{{ url_for('teacher.edit_clp_document', plan_id=plan.id) }}"
+                                                class="inline-flex w-full sm:w-auto justify-center px-5 py-2.5 bg-violet-600 text-white text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-violet-700 transition-all shadow-lg shadow-violet-200 dark:shadow-none whitespace-nowrap">Edit
+                                                In OnlyOffice</a>
+                                            {% endif %}
+                                            {% if plan.status != 'pending' %}
+                                            <a href="/teacher/copilot/review/{{ plan.id }}"
+                                                class="inline-flex w-full sm:w-auto justify-center px-5 py-2.5 bg-primary-600 text-white text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-primary-700 transition-all shadow-lg shadow-primary-200 dark:shadow-none whitespace-nowrap">Open
+                                                Draft</a>
+                                            {% endif %}
+                                            {% if plan.status in ['beta_ready', 'returned_for_revision'] %}
+                                            <form method="POST"
+                                                action="{{ url_for('teacher.submit_to_dean', plan_id=plan.id) }}"
+                                                class="w-full sm:w-auto">
+                                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                                <button type="submit"
+                                                    class="btn-submit-premium inline-flex w-full sm:w-auto justify-center px-5 py-2.5 bg-emerald-600 text-white text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-200 dark:shadow-none whitespace-nowrap">Submit
+                                                    Now</button>
+                                            </form>
+                                            {% endif %}
+                                        </div>
+                                        {% elif plan.status == 'draft_review' %}
+                                        <a href="{{ url_for('teacher.view_clp', plan_id=plan.id) }}"
+                                            class="inline-flex w-full sm:w-auto justify-center px-5 py-2.5 bg-primary-600 text-white text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-primary-700 transition-all shadow-lg shadow-primary-200 dark:shadow-none">View
+                                            Draft</a>
+                                        {% elif plan.status in ['draft', 'returned_for_revision'] %}
+                                        <form method="POST"
+                                            action="{{ url_for('teacher.submit_to_dean', plan_id=plan.id) }}"
+                                            class="contents w-full">
+                                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                            <button type="submit"
+                                                class="btn-submit-premium inline-flex w-full sm:w-auto justify-center px-5 py-2.5 bg-emerald-600 text-white text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-200 dark:shadow-none">Submit
+                                                Now</button>
+                                        </form>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    <!-- Pagination -->
+                    <div id="clp-pagination" class="flex items-center justify-center gap-3 pt-6 pb-2 hidden">
+                        <button id="clp-prev-page" class="px-4 py-2 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 text-[10px] font-black uppercase tracking-widest hover:bg-gray-200 dark:hover:bg-gray-700 transition-all disabled:opacity-30 disabled:cursor-not-allowed" disabled>&larr; Previous</button>
+                        <span id="clp-page-info" class="text-xs font-bold text-gray-500 dark:text-gray-400 tabular-nums">Page 1 of 1</span>
+                        <button id="clp-next-page" class="px-4 py-2 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 text-[10px] font-black uppercase tracking-widest hover:bg-gray-200 dark:hover:bg-gray-700 transition-all disabled:opacity-30 disabled:cursor-not-allowed" disabled>Next &rarr;</button>
+                    </div>
+
+                    <div id="no-results-message"
+                        class="hidden flex flex-col items-center justify-center py-20 opacity-50">
+                        <svg class="w-12 h-12 text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" stroke-width="2"
+                                stroke-linecap="round" stroke-linejoin="round" />
+                        </svg>
+                        <p class="text-sm font-black text-gray-400 uppercase tracking-widest">No matching plans found
+                        </p>
+                    </div>
+                    {% else %}
+                    <div class="flex flex-col items-center justify-center h-full py-20 opacity-50">
+                        <div
+                            class="w-20 h-20 bg-gray-100 dark:bg-gray-800 rounded-[2rem] flex items-center justify-center mb-6">
+                            <svg class="w-10 h-10 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path
+                                    d="M9 13h6m-3-3v6m-9 1V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z"
+                                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                            </svg>
+                        </div>
+                        <p class="text-sm font-black text-gray-400 uppercase tracking-widest mb-2">Workspace Empty</p>
+                        <p class="text-[10px] font-bold text-gray-400 max-w-xs text-center">Start by generating a new
+                            plan with AI or uploading a document.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+(function() {
+    console.log('[Plans] initPlansPage called');
+    function initPlansPage() {
+        const searchInput = document.getElementById('clp-search-input');
+        const statusFilter = document.getElementById('status-filter');
+        const cards = document.querySelectorAll('.clp-card');
+        const noResults = document.getElementById('no-results-message');
+        console.log('[Plans] searchInput=%o statusFilter=%o cards=%d noResults=%o', searchInput, statusFilter, cards.length, noResults);
+
+        cards.forEach(card => {
+            const bar = card.querySelector('[data-role="progress-bar"]');
+            if (!bar) return;
+            const initialProgress = Number(bar.getAttribute('data-progress'));
+            if (Number.isFinite(initialProgress)) {
+                bar.style.width = `${initialProgress}%`;
+            }
+        });
+
+        const PER_PAGE = 6;
+        let currentPage = 1;
+        let filteredCards = []; // stores cards that pass current filter (not affected by pagination)
+        const paginationEl = document.getElementById('clp-pagination');
+        const prevBtn = document.getElementById('clp-prev-page');
+        const nextBtn = document.getElementById('clp-next-page');
+        const pageInfo = document.getElementById('clp-page-info');
+
+        function applyPagination() {
+            const totalPages = Math.max(1, Math.ceil(filteredCards.length / PER_PAGE));
+            if (currentPage > totalPages) currentPage = totalPages;
+            if (currentPage < 1) currentPage = 1;
+
+            // First show all filtered cards, then hide ones not on current page
+            filteredCards.forEach(function(card, idx) {
+                const pageIdx = Math.floor(idx / PER_PAGE) + 1;
+                card.style.display = (pageIdx === currentPage) ? 'block' : 'none';
+            });
+
+            if (filteredCards.length > PER_PAGE) {
+                paginationEl.classList.remove('hidden');
+            } else {
+                paginationEl.classList.add('hidden');
+            }
+
+            pageInfo.textContent = 'Page ' + currentPage + ' of ' + totalPages;
+            prevBtn.disabled = (currentPage <= 1);
+            nextBtn.disabled = (currentPage >= totalPages);
+        }
+
+        prevBtn.addEventListener('click', function() {
+            if (currentPage > 1) { currentPage--; applyPagination(); }
+        });
+
+        nextBtn.addEventListener('click', function() {
+            const totalPages = Math.max(1, Math.ceil(filteredCards.length / PER_PAGE));
+            if (currentPage < totalPages) { currentPage++; applyPagination(); }
+        });
+
+        function filterCards() {
+            const query = searchInput.value.toLowerCase().trim();
+            const status = statusFilter.value;
+            filteredCards = [];
+
+            cards.forEach(card => {
+                const cardSubject = card.getAttribute('data-subject');
+                const cardStatus = card.getAttribute('data-status');
+
+                const matchesSearch = cardSubject.includes(query);
+                const matchesStatus = (status === 'all') ||
+                    (status === 'returned' && cardStatus === 'returned_for_revision') ||
+                    (cardStatus.includes(status));
+
+                if (matchesSearch && matchesStatus) {
+                    filteredCards.push(card);
+                }
+            });
+            noResults.classList.toggle('hidden', filteredCards.length > 0 || (query === '' && status === 'all'));
+
+            // Reset to page 1 on new filter and paginate
+            currentPage = 1;
+            applyPagination();
+        }
+
+        if (searchInput) searchInput.addEventListener('input', filterCards);
+        if (statusFilter) statusFilter.addEventListener('change', filterCards);
+
+        // Initial filter+pagination on page load
+        filterCards();
+
+        // Auto-detect generating plans
+        const hasGenerating = Array.from(cards).some(card =>
+            ['generating', 'generating_doc'].includes(card.getAttribute('data-status'))
+        );
+        if (hasGenerating) {
+            localStorage.setItem('is_generating', 'true');
+            if (typeof window.startAIPolling === 'function') window.startAIPolling();
+            
+            // Dashboard-specific card polling
+            const dashboardPoll = setInterval(() => {
+                const generatingCards = document.querySelectorAll('.clp-card[data-status="generating"], .clp-card[data-status="generating_doc"]');
+                if (generatingCards.length === 0) {
+                    clearInterval(dashboardPoll);
+                    return;
+                }
+
+                generatingCards.forEach(card => {
+                    const planId = card.getAttribute('data-plan-id');
+                    if (!planId) return;
+
+                    fetch(`/teacher/clp/${planId}/status?t=${new Date().getTime()}`)
+                        .then(r => r.json())
+                        .then(data => {
+                            if (data.status && data.status !== card.getAttribute('data-status')) {
+                                window.location.reload(); // Refresh if status changed
+                                return;
+                            }
+                            
+                            if (data.percent !== undefined) {
+                                const bar = card.querySelector('.bg-primary-600.h-1\.5');
+                                const percentText = card.querySelector('.space-y-2 span:last-child');
+                                const labelText = card.querySelector('.animate-pulse span');
+                                
+                                if (bar) bar.style.width = data.percent + '%';
+                                if (percentText) percentText.innerText = data.percent + '%';
+                                if (labelText && data.label) labelText.innerText = data.label;
+                            }
+                        }).catch(() => {});
+                });
+            }, 3000);
+        }
+
+        const fileInput = document.querySelector('input[type="file"]');
+        const fileNameDisplay = document.getElementById('file-name-display');
+        if (fileInput && fileNameDisplay) {
+            fileInput.addEventListener('change', function () {
+                if (this.files && this.files[0]) {
+                    fileNameDisplay.textContent = this.files[0].name;
+                    fileNameDisplay.classList.remove('hidden');
+                } else {
+                    fileNameDisplay.classList.add('hidden');
+                }
+            });
+        }
+        // Two-step click interaction for action buttons
+        document.addEventListener('click', function (e) {
+            const btn = e.target.closest('.data-click-reveal');
+            if (btn) {
+                if (!btn.classList.contains('is-expanded')) {
+                    // First click: collapse others, expand this one
+                    e.preventDefault();
+                    e.stopPropagation();
+                    document.querySelectorAll('.data-click-reveal.is-expanded').forEach(function (other) {
+                        if (other !== btn) other.classList.remove('is-expanded');
+                    });
+                    btn.classList.add('is-expanded');
+                }
+                // Second click: action proceeds naturally
+            } else {
+                // Click outside: collapse all expanded buttons
+                document.querySelectorAll('.data-click-reveal.is-expanded').forEach(function (el) {
+                    el.classList.remove('is-expanded');
+                });
+            }
+        }, true);
+    }
+
+    // Run now if DOM is ready, or on DOMContentLoaded for initial load
+    if (document.readyState !== 'loading') {
+        initPlansPage();
+    } else {
+        document.addEventListener('DOMContentLoaded', initPlansPage);
+    }
+})();
+</script>
+
+{% block extra_css %}
+<style>
+    /* Sliding Button Label Animation */
+    .action-btn-reveal {
+        display: inline-flex !important;
+        align-items: center;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        overflow: hidden;
+        max-width: 44px;
+        white-space: nowrap;
+        justify-content: center;
+        position: relative;
+        z-index: 1;
+    }
+
+    .action-btn-reveal:hover,
+    .action-btn-reveal.is-expanded {
+        max-width: 160px;
+        justify-content: flex-start;
+        z-index: 10;
+    }
+
+    .btn-label {
+        opacity: 0;
+        max-width: 0;
+        margin-left: 0;
+        transition: opacity 0.3s ease, max-width 0.4s ease, margin 0.3s ease;
+        font-size: 10px;
+        font-weight: 900;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        overflow: hidden;
+    }
+
+    .action-btn-reveal:hover .btn-label,
+    .action-btn-reveal.is-expanded .btn-label {
+        opacity: 1;
+        max-width: 100px;
+        margin-left: 10px;
+        margin-right: 6px;
+    }
+
+    /* Mobile Refinements */
+    @media (max-width: 640px) {
+        .clp-card {
+            box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.05), inset 0 0 20px rgba(0, 0, 0, 0.01) !important;
+            border-color: rgba(229, 231, 235, 0.8) !important;
+        }
+
+        html.dark .clp-card,
+        .dark .clp-card {
+            box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5), inset 0 0 20px rgba(255, 255, 255, 0.02) !important;
+            border-color: rgba(55, 65, 81, 0.8) !important;
+            background-color: #111827 !important;
+        }
+
+        .action-icons-container {
+            mask-image: none;
+            -webkit-mask-image: none;
+            padding-right: 0;
+            justify-content: flex-start;
+            flex-direction: row;
+        }
+
+        .action-btn-reveal {
+            max-width: 44px;
+            min-width: 44px;
+            padding: 0.75rem !important;
+            border-radius: 1rem !important;
+            background: rgba(249, 250, 251, 0.8);
+            border: 1px solid rgba(229, 231, 235, 0.8);
+            margin-bottom: 0;
+            overflow: visible !important;
+            position: relative;
+        }
+
+        /* Dark mode overrides for buttons */
+        .dark .clp-card .action-btn-reveal,
+        html.dark .clp-card .action-btn-reveal {
+            background: rgba(31, 41, 55, 0.9) !important;
+            border-color: rgba(55, 65, 81, 0.9) !important;
+            color: #9ca3af !important;
+        }
+
+        .action-btn-reveal svg {
+            width: 1.25rem !important;
+            height: 1.25rem !important;
+        }
+
+        /* Intuitive Mobile Tooltip Expansion */
+        .action-btn-reveal:hover,
+        .action-btn-reveal.is-expanded {
+            max-width: 44px;
+            /* do not expand horizontally */
+            background: white !important;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            z-index: 20;
+        }
+
+        /* Dark mode expanded */
+        .dark .clp-card .action-btn-reveal:hover,
+        .dark .clp-card .action-btn-reveal.is-expanded,
+        html.dark .clp-card .action-btn-reveal:hover,
+        html.dark .clp-card .action-btn-reveal.is-expanded {
+            background: #374151 !important;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.8) !important;
+            color: #f3f4f6 !important;
+        }
+
+        .btn-label {
+            position: absolute;
+            bottom: calc(100% + 8px);
+            left: 50%;
+            transform: translateX(-50%) translateY(10px);
+            opacity: 0;
+            background: #1f2937;
+            color: white;
+            padding: 6px 10px;
+            border-radius: 8px;
+            font-size: 11px;
+            font-weight: 700;
+            white-space: nowrap;
+            letter-spacing: 0.02em;
+            pointer-events: none;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            max-width: none !important;
+            margin: 0 !important;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Tooltip arrow */
+        .btn-label::after {
+            content: '';
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            border-width: 5px;
+            border-style: solid;
+            border-color: #1f2937 transparent transparent transparent;
+        }
+
+        /* Dark mode label */
+        .dark .btn-label,
+        html.dark .btn-label {
+            background: #f3f4f6;
+            color: #111827;
+        }
+
+        .dark .btn-label::after,
+        html.dark .btn-label::after {
+            border-color: #f3f4f6 transparent transparent transparent;
+        }
+
+        .action-btn-reveal:hover .btn-label,
+        .action-btn-reveal.is-expanded .btn-label {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        /* Premium "Submit Now" Button for Mobile */
+        .btn-submit-premium {
+            padding-top: 1rem !important;
+            padding-bottom: 1rem !important;
+            font-size: 11px !important;
+            width: 100% !important;
+            /* Full width for big touch target */
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
+            box-shadow: 0 8px 16px -4px rgba(16, 185, 129, 0.4) !important;
+            border: none !important;
+            transform: scale(1);
+            position: relative;
+            overflow: hidden;
+            white-space: nowrap;
+        }
+
+
+        .btn-submit-premium::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            transform: rotate(45deg);
+            animation: shine 3s infinite;
+        }
+
+        @keyframes shine {
+            0% {
+                left: -100%;
+            }
+
+            20% {
+                left: 100%;
+            }
+
+            100% {
+                left: 100%;
+            }
+        }
+    }
+
+    /* Utility for hidden scrollbar but scrollable */
+    .no-scrollbar::-webkit-scrollbar {
+        display: none;
+    }
+
+    .no-scrollbar {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+    }
+</style>
+
+<script>
+(function() {
+    function initPolling() {
+        const cards = Array.from(document.querySelectorAll('.clp-card[data-plan-id][data-status]'));
+        const generatingCards = cards.filter(card => ['generating', 'generating_doc'].includes(card.dataset.status));
+        if (!generatingCards.length) {
+            return;
+        }
+
+        let pollInterval = null;
+
+        const updateCard = (card, data) => {
+            const label = card.querySelector('[data-role="status-label"]');
+            const percent = card.querySelector('[data-role="progress-percent"]');
+            const bar = card.querySelector('[data-role="progress-bar"]');
+
+            if (data.label && label) {
+                label.textContent = data.label;
+            }
+
+            if (data.percent !== undefined && percent && bar) {
+                percent.textContent = `${data.percent}%`;
+                bar.style.width = `${data.percent}%`;
+            }
+        };
+
+        const poll = () => {
+            let shouldReload = false;
+
+            const requests = generatingCards.map(card => {
+                const planId = card.dataset.planId;
+                return fetch(`/teacher/clp/${planId}/status?t=${Date.now()}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        updateCard(card, data);
+                        if (data.status && !['generating', 'generating_doc'].includes(data.status)) {
+                            shouldReload = true;
+                        }
+                    })
+                    .catch(() => { });
+            });
+
+            Promise.all(requests).then(() => {
+                if (shouldReload) {
+                    if (pollInterval) {
+                        clearInterval(pollInterval);
+                    }
+                    setTimeout(() => window.location.reload(), 800);
+                }
+            });
+        };
+
+        pollInterval = setInterval(poll, 2500);
+        poll();
+    }
+
+    if (document.readyState !== 'loading') {
+        initPolling();
+    } else {
+        document.addEventListener('DOMContentLoaded', initPolling);
+    }
+})();
+</script>
+{% endblock %}
+{% endblock %}

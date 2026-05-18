@@ -1,0 +1,86 @@
+{% extends "docs_base.html" %}
+
+{% block title %}Admin Docs | AIPCLPMS{% endblock %}
+
+{% block docs_kicker %}Admin Guide{% endblock %}
+{% block docs_title %}System Administration{% endblock %}
+{% block docs_description %}Detailed instructions for all system configurations, user approvals, and audit logging.{% endblock %}
+
+{% block docs_markdown %}
+# Admin Documentation
+
+This guide is for System Administrators of AIPCLPMS. It covers all the core functions of the admin panel, from user security to global system settings.
+
+## 1. Admin Dashboard
+
+The Admin Dashboard is your mission control for the institution. Use it to check:
+- **System Stats**: Active users, total courses, and approvals this month.
+- **Queue status**: If any tasks are currently processing (like heavy AI generation).
+- **Recent Errors**: Quick view of system health or missed tasks.
+
+## 2. User & Access Management
+
+AIPCLPMS relies on secure and approved access:
+### Approving New Users
+When a new teacher or dean registers, they will appear in the **Pending Approvals** list. Review their account details and click **Activate** to grant access.
+
+### Role Assignments
+- **Teacher**: Restricted to their own courses in their respective departments.
+- **Dean**: Can review and approve all courses in their departments.
+- **Admin**: Full system access.
+
+> To change a user's role, go to **Admin → Users**, click **Edit**, and select a new level.
+
+## 3. Departmental Setup
+
+Departments are the building blocks of the institution. Administrators must:
+1. Create each official department (e.g., "Math", "English").
+2. Assign Outcomes and Templates to these departments.
+3. Manage faculty lists for each department.
+
+## 4. Learning Outcomes (IO, PO, CO)
+
+Official outcomes provide the structure for all CLPs.
+- **Institutional Outcomes (IO)**: Top-level university goals.
+- **Program Outcomes (PO)**: Department-specific goals (e.g., "BSIT Objectives").
+- **Course Outcomes (CO)**: These are created by teachers within their CLPs.
+
+Ensure that the IOs and POs are updated at the start of every academic year to maintain accreditation standards.
+
+## 5. Template Management (DOCX)
+
+Automated exports rely on a specific formatting system.
+- **Default Templates**: Administrators can upload a Word document (DOCX) that contains specific placeholders.
+- **Placeholder Engine**: AIPCLPMS uses these templates to fill in the course data into the Word document when a user clicks **Download**.
+
+Use the **Template Editor** to preview how the final output will look.
+
+## 6. Knowledge Base & AI Context
+
+The system's AI is only as smart as the information you provide.
+- Upload institutional manuals, policy documents, and recent curricula to the **Knowledge Base**.
+- Tag these documents so that the AI knows which department they belong to.
+- The AI uses this data to ensure generated CLPs are consistent with your school's specific tone and standards.
+
+## 7. Global system settings
+
+Configure the engine behind AIPCLPMS:
+- **AI Model Selection**: Switch between different specialized AI models or adjust the "creativity" (temperature).
+- **Security Settings**: Define how quickly user sessions should expire.
+- **Branding**: Upload your institution's name and logo so that they appear on the dashboard and in exported documents.
+
+## 8. Audit logs
+
+For security and accountability, every sensitive action is logged:
+- Who logged in and when.
+- When an account was approved or deactivated.
+- When a CLP is deleted or approved.
+
+Review the **Audit Logs** regularly for any suspicious activity or to troubleshoot administrative changes.
+
+## 9. Best practices for Admins
+
+- **Regular Backups**: Use the database diagnostic tools to ensure your curriculum data is safe.
+- **Role Verification**: Review user accounts at the end of every semester to deactivate inactive faculty.
+- **Template Testing**: Always test a template upload by generating a dummy CLP to see if the formatting remains consistent in the Word export.
+{% endblock %}

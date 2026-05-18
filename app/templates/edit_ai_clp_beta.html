@@ -1,0 +1,1883 @@
+{% extends "base.html" %}
+
+{% block title %}AI Copilot Review{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto space-y-6 md:space-y-8 px-1 sm:px-0">
+    <div
+        class="bg-white dark:bg-[#111827] border border-gray-200 dark:border-gray-800 rounded-[1.75rem] md:rounded-[2.5rem] p-5 sm:p-6 md:p-8 shadow-sm">
+        <div class="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6">
+            <div class="space-y-3">
+                <p class="text-[10px] font-black uppercase tracking-[0.25em] text-primary-600">AI Copilot Review</p>
+                <h1
+                    class="text-2xl sm:text-3xl md:text-4xl font-black text-gray-900 dark:text-white tracking-tight break-words">
+                    {{ content_data.metadata.course_title or plan.subject }}</h1>
+                <div class="flex flex-wrap items-center gap-3">
+                    <span
+                        class="max-w-full break-words px-3 py-1 rounded-full bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-300 text-[10px] font-black uppercase tracking-widest">{{
+                        content_data.metadata.course_code or '-' }}</span>
+                    <span
+                        class="max-w-full break-words px-3 py-1 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 text-[10px] font-black uppercase tracking-widest">{{
+                        content_data.metadata.department or plan.department }}</span>
+                    <span
+                        class="max-w-full break-words px-3 py-1 rounded-full bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-300 text-[10px] font-black uppercase tracking-widest">{{
+                        stage_labels.get(content_data.review_stage, content_data.review_stage) }}</span>
+                </div>
+                <p class="text-sm text-gray-500 dark:text-gray-400 max-w-3xl">
+                    The AI Copilot has auto-filled the template structure for you. This page is for review, cleanup, and
+                    optional regeneration.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Generation Mode -->
+    <div
+        class="rounded-[1.5rem] border-2 border-primary-200 dark:border-primary-900/50 bg-gradient-to-r from-primary-50/80 via-white to-primary-50/80 dark:from-primary-900/10 dark:via-[#111827] dark:to-primary-900/10 px-4 sm:px-6 py-4 shadow-sm flex flex-col sm:flex-row sm:items-center gap-3">
+        <div class="flex items-center gap-2.5 shrink-0">
+            <div class="w-8 h-8 rounded-xl bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center">
+                <svg class="w-4 h-4 text-primary-600 dark:text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
+                </svg>
+            </div>
+            <div>
+                <p class="text-[10px] font-black uppercase tracking-[0.2em] text-primary-600 dark:text-primary-400">Generation Mode</p>
+                <p class="text-[11px] font-bold text-gray-500 dark:text-gray-400">Controls AI item count per field</p>
+            </div>
+        </div>
+        <div class="flex gap-2 flex-wrap">
+            <label class="relative flex items-center gap-2 px-4 py-2.5 rounded-xl cursor-pointer transition-all duration-200 font-black text-[10px] uppercase tracking-widest {{ 'bg-primary-600 text-white shadow-lg shadow-primary-200 dark:shadow-primary-900/20' if content_data.get('generation_mode', 'template_matched') == 'template_matched' else 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700' }}">
+                <input type="radio" name="generation_mode" value="template_matched" class="sr-only peer"
+                    {{ 'checked' if content_data.get('generation_mode', 'template_matched') == 'template_matched' else '' }}
+                    onchange="document.getElementById('gm-unconstrained').classList.toggle('bg-primary-600', false); document.getElementById('gm-unconstrained').classList.toggle('text-white', false); document.getElementById('gm-unconstrained').classList.toggle('shadow-lg', false); document.getElementById('gm-unconstrained').classList.toggle('shadow-primary-200', false); document.getElementById('gm-unconstrained').classList.toggle('bg-gray-100', true); document.getElementById('gm-unconstrained').classList.toggle('text-gray-600', true); this.closest('label').classList.toggle('bg-primary-600', true); this.closest('label').classList.toggle('text-white', true); this.closest('label').classList.toggle('shadow-lg', true); this.closest('label').classList.toggle('shadow-primary-200', true); this.closest('label').classList.toggle('bg-gray-100', false); this.closest('label').classList.toggle('text-gray-600', false);">
+                <span>Template-Matched</span>
+                <span class="opacity-70 font-bold normal-case text-[9px] hidden sm:inline">Respects template counts</span>
+            </label>
+            <label id="gm-unconstrained" class="relative flex items-center gap-2 px-4 py-2.5 rounded-xl cursor-pointer transition-all duration-200 font-black text-[10px] uppercase tracking-widest {{ 'bg-primary-600 text-white shadow-lg shadow-primary-200 dark:shadow-primary-900/20' if content_data.get('generation_mode') == 'unconstrained' else 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700' }}">
+                <input type="radio" name="generation_mode" value="unconstrained" class="sr-only peer"
+                    {{ 'checked' if content_data.get('generation_mode') == 'unconstrained' else '' }}
+                    onchange="document.querySelector('[for=\\'gm-template-matched\\']') || document.querySelector('label:has(input[value=\\'template_matched\\'])')?.classList.toggle('bg-primary-600', false); this.closest('label').classList.toggle('bg-primary-600', true); this.closest('label').classList.toggle('text-white', true); this.closest('label').classList.toggle('shadow-lg', true); this.closest('label').classList.toggle('shadow-primary-200', true); this.closest('label').classList.toggle('bg-gray-100', false); this.closest('label').classList.toggle('text-gray-600', false);">
+                <span>Unconstrained</span>
+                <span class="opacity-70 font-bold normal-case text-[9px] hidden sm:inline">No item limits</span>
+            </label>
+        </div>
+    </div>
+
+    {% set final_review_issues = [] if inserted_doc_ready else (content_data.validation.final_review_issues if
+    content_data.validation and content_data.validation.final_review_issues else []) %}
+    {% set visible_errors = final_review_issues if final_review_issues else (content_data.validation.errors if
+    content_data.validation and content_data.validation.errors else []) %}
+    {% set final_review_warnings = content_data.validation.final_review_warnings if content_data.validation and
+    content_data.validation.final_review_warnings else [] %}
+    {% set visible_warnings = content_data.validation.warnings if content_data.validation and
+    content_data.validation.warnings else [] %}
+    {% set current_stage = content_data.review_stage or 'metadata' %}
+    {% set stage_position = {
+    'metadata': 0,
+    'clo_generated': 1,
+    'alignment_generated': 2,
+    'weekly_generated': 3,
+    'beta_ready': 4,
+    'beta_inserted': 5
+    } %}
+    {% set current_stage_index = stage_position.get(current_stage, 0) %}
+    {% set workflow_focus_index = current_stage_index + 1 if current_stage_index < 5 else 5 %} {% set
+        can_regenerate_alignment=current_stage_index>= 1 %}
+        {% set can_regenerate_weekly = current_stage_index >= 2 %}
+        {% set can_finalize = current_stage_index >= 3 %}
+        {% set can_insert = current_stage == 'beta_ready' %}
+        {% set can_regenerate_clo_rows = row_regen_controls_enabled and current_stage_index >= 1 %}
+        {% set can_regenerate_week_rows = row_regen_controls_enabled and current_stage_index >= 3 %}
+        {% set clo_button_label = 'Regenerate CLOs' if current_stage_index >= 1 else 'Generate CLOs' %}
+        {% set alignment_button_label = 'Regenerate Alignment' if current_stage_index >= 2 else 'Generate Alignment' %}
+        {% set weekly_button_label = 'Regenerate Weekly' if current_stage_index >= 3 else 'Generate Weekly' %}
+        {% set insert_button_label = 'Reinsert Final Data Into Template' if inserted_doc_ready else 'Insert Final Data Into Template' %}
+        {% set next_step_title = 'Review course metadata and generate the CLO draft.' %}
+        {% set next_step_action = clo_button_label %}
+        {% if current_stage_index == 1 %}
+        {% set next_step_title = 'Check the CLO statements, then build the alignment matrix.' %}
+        {% set next_step_action = alignment_button_label %}
+        {% elif current_stage_index == 2 %}
+        {% set next_step_title = 'Review the alignment choices, then build the weekly outline.' %}
+        {% set next_step_action = weekly_button_label %}
+        {% elif current_stage_index == 3 %}
+        {% set next_step_title = 'Review the weekly blocks, then validate this draft for template readiness.' %}
+        {% set next_step_action = 'Validate & Mark Ready' %}
+        {% elif current_stage_index == 4 %}
+        {% set next_step_title = 'This draft is finalized. Insert it into a fresh template copy when you are ready.' %}
+        {% set next_step_action = 'Insert Final Data Into Template' %}
+        {% elif current_stage_index >= 5 %}
+        {% set next_step_title = 'The template copy is ready. Open the inserted document in OnlyOffice for final edits.'
+        %}
+        {% set next_step_action = 'Open Inserted Document' %}
+        {% endif %}
+
+        {% if visible_errors %}
+        <div
+            class="bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-800 rounded-[1.5rem] md:rounded-[2rem] p-4 sm:p-5">
+            <p class="text-xs font-black uppercase tracking-[0.2em] text-red-600 mb-3">
+                {{ 'Final Review Issues' if final_review_issues else 'Validation Errors' }}
+            </p>
+            {% if content_data.validation and content_data.validation.final_review_summary %}
+            <p class="mb-3 text-sm text-red-700 dark:text-red-300">{{ content_data.validation.final_review_summary }}
+            </p>
+            {% endif %}
+            <ul class="space-y-1 text-sm text-red-700 dark:text-red-300">
+                {% for item in visible_errors %}
+                <li>{{ item }}</li>
+                {% endfor %}
+            </ul>
+            <div
+                class="mt-4 pt-4 border-t border-red-200/70 dark:border-red-800/70 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
+                <p class="text-sm text-red-700 dark:text-red-300">
+                    When these came from the final review, you can let AI rewrite the draft toward the flagged
+                    corrections and then try finalizing again.
+                </p>
+                <button type="submit" form="beta-review-form"
+                    formaction="{{ url_for('teacher.fix_beta_copilot_final_review', plan_id=plan.id) }}"
+                    data-loading-message="AI is repairing the flagged issues. Please wait while the draft is being updated."
+                    data-async-beta-action="fix_final_review"
+                    class="w-full lg:w-auto px-5 py-3 bg-red-600 hover:bg-red-700 text-white rounded-xl text-[10px] font-black uppercase tracking-widest">
+                    Fix With AI
+                </button>
+            </div>
+        </div>
+        {% endif %}
+
+        {% if beta_document_error %}
+        <div
+            class="bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-800 rounded-[1.5rem] md:rounded-[2rem] p-4 sm:p-5">
+            <p class="text-xs font-black uppercase tracking-[0.2em] text-red-600 mb-3">Document Insert Error</p>
+            <p class="text-sm text-red-700 dark:text-red-300 mb-3">
+                The previous document insertion failed: {{ beta_document_error.message }}
+            </p>
+            <p class="text-sm text-red-600 dark:text-red-200 font-semibold">
+                Click "Insert Final Data Into Template" below to retry.
+            </p>
+        </div>
+        {% endif %}
+
+        {% if visible_warnings or final_review_warnings %}
+        <div
+            class="bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-800 rounded-[1.5rem] md:rounded-[2rem] p-4 sm:p-5">
+            <div class="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-3 mb-3">
+                <div>
+                    <p class="text-xs font-black uppercase tracking-[0.2em] text-amber-600">Warnings</p>
+                    <p class="mt-1 text-sm text-amber-700 dark:text-amber-300">
+                        These are not blocking errors, but Copilot can repair them so they do not keep coming back after
+                        the fix is saved.
+                    </p>
+                </div>
+                <button type="submit" form="beta-review-form"
+                    formaction="{{ url_for('teacher.fix_beta_copilot_final_review', plan_id=plan.id) }}"
+                    data-loading-message="AI is repairing the visible warnings. Please wait while the draft is being updated."
+                    data-async-beta-action="fix_final_review"
+                    class="w-full lg:w-auto px-5 py-3 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest">
+                    Fix Warnings With AI
+                </button>
+            </div>
+            <ul class="space-y-1 text-sm text-amber-700 dark:text-amber-300">
+                {% for item in visible_warnings %}
+                <li>{{ item }}</li>
+                {% endfor %}
+                {% for item in final_review_warnings if item not in visible_warnings %}
+                <li>{{ item }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+
+        <section id="beta-workflow-shell"
+            class="bg-white dark:bg-[#111827] border border-gray-200 dark:border-gray-800 rounded-[1.75rem] md:rounded-[2.5rem] p-5 sm:p-6 md:p-8 shadow-sm space-y-6">
+            <div class="flex flex-col xl:flex-row xl:items-start xl:justify-between gap-5">
+                <div>
+                    <p class="text-[10px] font-black uppercase tracking-[0.24em] text-primary-600">Teacher Workflow</p>
+                    <h2 class="mt-2 text-2xl font-black tracking-tight text-gray-900 dark:text-white">One page, but now
+                        in clear stages.</h2>
+                    <p class="mt-2 max-w-3xl text-sm text-gray-500 dark:text-gray-400">
+                        Work from left to right: review the course inputs, confirm the CLOs, confirm alignment, review
+                        the weekly blocks, validate the draft, then insert it into the template copy.
+                    </p>
+                </div>
+                <div
+                    class="xl:max-w-sm rounded-[1.5rem] border border-primary-100 dark:border-primary-900/40 bg-primary-50/70 dark:bg-primary-900/10 p-4 sm:p-5">
+                    <p class="text-[10px] font-black uppercase tracking-[0.24em] text-primary-600">Recommended Next Step
+                    </p>
+                    <p class="mt-3 text-lg font-black tracking-tight text-gray-900 dark:text-white">{{ next_step_action
+                        }}</p>
+                    <p class="mt-2 text-sm leading-6 text-gray-600 dark:text-gray-300">{{ next_step_title }}</p>
+                </div>
+            </div>
+
+            {% set workflow_steps = [
+            ('metadata', '1', 'Course Info'),
+            ('clo_generated', '2', 'CLO Draft'),
+            ('alignment_generated', '3', 'Alignment'),
+            ('weekly_generated', '4', 'Weekly Plan'),
+            ('beta_ready', '5', 'Validate'),
+            ('beta_inserted', '6', 'Insert')
+            ] %}
+            <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-6 gap-3">
+                {% for step_key, step_number, step_label in workflow_steps %}
+                {% set step_index = stage_position.get(step_key, loop.index0) %}
+                {% set is_done = workflow_focus_index > step_index %}
+                {% set is_current = workflow_focus_index == step_index %}
+                <div
+                    class="rounded-[1.35rem] border px-4 py-4 {{ 'border-emerald-200 bg-emerald-50/80 dark:border-emerald-900/40 dark:bg-emerald-900/10' if is_done else ('border-primary-200 bg-primary-50/80 dark:border-primary-900/40 dark:bg-primary-900/10' if is_current else 'border-gray-200 bg-gray-50 dark:border-gray-800 dark:bg-gray-900/40') }}">
+                    <div class="flex items-center gap-3">
+                        <span
+                            class="flex h-9 w-9 items-center justify-center rounded-full text-[11px] font-black uppercase tracking-widest {{ 'bg-emerald-600 text-white' if is_done else ('bg-primary-600 text-white' if is_current else 'bg-white dark:bg-gray-950 text-gray-500 dark:text-gray-300 border border-gray-200 dark:border-gray-700') }}">
+                            {{ '✓' if is_done else step_number }}
+                        </span>
+                        <div>
+                            <p
+                                class="text-[10px] font-black uppercase tracking-[0.22em] {{ 'text-emerald-600 dark:text-emerald-300' if is_done else ('text-primary-600 dark:text-primary-300' if is_current else 'text-gray-400') }}">
+                                Step {{ step_number }}</p>
+                            <p class="mt-1 text-sm font-black tracking-tight text-gray-900 dark:text-white">{{
+                                step_label }}</p>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </section>
+
+        <form id="beta-review-form" method="POST" action="{{ url_for('teacher.review_clp_ai_beta', plan_id=plan.id) }}"
+            class="space-y-8">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <input type="hidden" name="review_stage" value="{{ content_data.review_stage }}">
+
+            <div id="beta-toolbar"
+                class="hidden xl:block relative xl:sticky xl:top-4 z-40 bg-white/95 dark:bg-[#111827]/95 xl:bg-white/90 xl:dark:bg-[#111827]/90 backdrop-blur-xl border border-gray-200 dark:border-gray-800 rounded-[1.5rem] md:rounded-[2rem] p-3 sm:p-4 shadow-sm">
+                <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-6 gap-3">
+                    <button type="submit"
+                        class="w-full px-4 sm:px-5 py-3 bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 rounded-xl text-[10px] font-black uppercase tracking-widest">Save
+                        Draft</button>
+                    <button type="submit"
+                        formaction="{{ url_for('teacher.generate_beta_copilot_clos', plan_id=plan.id) }}"
+                        data-loading-message="AI is generating all CLO rows. Please wait while the draft is refreshed."
+                        data-async-beta-action="generate_clos" data-focus-target="clo-section"
+                        class="w-full px-4 sm:px-5 py-3 bg-primary-600 hover:bg-primary-700 text-white rounded-xl text-[10px] font-black uppercase tracking-widest">{{
+                        clo_button_label }}</button>
+                    <button type="submit"
+                        formaction="{{ url_for('teacher.generate_beta_copilot_alignment', plan_id=plan.id) }}"
+                        data-loading-message="AI is generating the CLO alignment matrix. Please wait while the academic mappings are updated."
+                        data-async-beta-action="generate_alignment" data-focus-target="clo-section" {% if not
+                        can_regenerate_alignment %}disabled{% endif %}
+                        class="w-full px-4 sm:px-5 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest {{ 'bg-indigo-600 hover:bg-indigo-700 text-white' if can_regenerate_alignment else 'bg-gray-100 dark:bg-gray-800 text-gray-400 cursor-not-allowed' }}">{{
+                        alignment_button_label }}</button>
+                    <button type="submit"
+                        formaction="{{ url_for('teacher.generate_beta_copilot_weekly', plan_id=plan.id) }}"
+                        data-loading-message="AI is generating the weekly course outline. Please wait while the weekly blocks are rebuilt."
+                        data-async-beta-action="generate_weekly" data-focus-target="weekly-section" {% if not
+                        can_regenerate_weekly %}disabled{% endif %}
+                        class="w-full px-4 sm:px-5 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest {{ 'bg-emerald-600 hover:bg-emerald-700 text-white' if can_regenerate_weekly else 'bg-gray-100 dark:bg-gray-800 text-gray-400 cursor-not-allowed' }}">{{
+                        weekly_button_label }}</button>
+                    <button type="submit" formaction="{{ url_for('teacher.finalize_beta_copilot', plan_id=plan.id) }}"
+                        data-loading-message="Checking this CLP for template readiness. Please wait while the draft is validated and marked ready if it passes."
+                        data-async-beta-action="finalize_clp" data-focus-target="beta-workflow-shell" {% if not
+                        can_finalize %}disabled{% endif %}
+                        class="w-full px-4 sm:px-5 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest {{ 'bg-amber-500 hover:bg-amber-600 text-white' if can_finalize else 'bg-gray-100 dark:bg-gray-800 text-gray-400 cursor-not-allowed' }}">Validate
+                        & Mark Ready</button>
+                    <div class="flex flex-col sm:flex-row gap-3">
+                        <button type="submit"
+                            formaction="{{ url_for('teacher.finalize_beta_copilot_document', plan_id=plan.id) }}"
+                            data-loading-message="Copying the template source, inserting the finalized data into the new DOCX, and preparing it for OnlyOffice. Please wait."
+                            data-async-beta-action="finalize_document" data-focus-target="beta-workflow-shell" {% if not
+                            can_insert %}disabled{% endif %}
+                            class="w-full px-4 sm:px-5 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg {{ 'bg-violet-600 hover:bg-violet-700 text-white shadow-violet-900/20' if can_insert else 'bg-gray-100 dark:bg-gray-800 text-gray-400 cursor-not-allowed shadow-none' }}">
+                            {{ insert_button_label }}
+                        </button>
+                        <button type="submit" formaction="{{ url_for('teacher.discard_beta_copilot', plan_id=plan.id) }}"
+                            formnovalidate onclick="return confirm('Discard this AI draft?');"
+                            class="w-full px-4 sm:px-5 py-3 bg-red-600 hover:bg-red-700 text-white rounded-xl text-[10px] font-black uppercase tracking-widest">Discard</button>
+                    </div>
+                </div>
+                <div
+                    class="mt-4 pt-4 border-t border-gray-200/80 dark:border-gray-800 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+                    {% if confirmed_profiles is defined and confirmed_profiles %}
+                    <div
+                        class="mb-4 p-4 rounded-2xl bg-violet-50 dark:bg-violet-900/10 border border-violet-100 dark:border-violet-900/20">
+                        <form method="POST" action="{{ url_for('teacher.set_plan_template_profile', plan_id=plan.id) }}"
+                            class="flex flex-col sm:flex-row items-start sm:items-end gap-3">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <div class="flex-1 w-full">
+                                <label
+                                    class="text-[10px] font-black uppercase tracking-widest text-violet-600 dark:text-violet-400 mb-1 block">Template
+                                    Profile</label>
+                                <select name="template_profile_id"
+                                    class="w-full bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700 rounded-xl px-3 py-2.5 text-xs font-bold">
+                                    <option value="" {{ '' if current_profile_id else 'selected' }}>Default placeholder
+                                        template</option>
+                                    {% for tp in confirmed_profiles %}
+                                    <option value="{{ tp.id }}" {{ 'selected' if current_profile_id==tp.id else '' }}>{{
+                                        tp.name }} ({{ tp.department or 'General' }})</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <button type="submit"
+                                class="px-4 py-2.5 rounded-xl bg-violet-600 hover:bg-violet-700 text-white text-[10px] font-black uppercase tracking-widest whitespace-nowrap">Update
+                                Profile</button>
+                        </form>
+                        {% if current_profile_id %}
+                        <p class="mt-2 text-[10px] font-bold text-violet-600 dark:text-violet-400">A custom template
+                            profile is selected. The finalized document will use your department's exact template
+                            layout.</p>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                    <div>
+                        <p class="text-[10px] font-black uppercase tracking-[0.2em] text-violet-500">Insert Into
+                            Template</p>
+                        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400 max-w-2xl">
+                            This button takes the finalized CLP, runs one last AI audit, copies the selected template
+                            source, and generates a brand-new populated <code>.docx</code> file with all mapped
+                            metadata, CLOs, alignments, and weekly rows inserted. The source template itself is never
+                            edited.
+                        </p>
+                        {% if not can_insert and not inserted_doc_ready %}
+                        <p class="mt-2 text-sm font-semibold text-amber-600 dark:text-amber-300">
+                            Validate and mark this draft ready first. Template insertion opens after the weekly plan has
+                            been reviewed and the CLP passes validation.
+                        </p>
+                        {% endif %}
+                        {% if inserted_doc_ready %}
+                        <p class="mt-2 text-sm font-semibold text-emerald-600 dark:text-emerald-300">
+                            The latest document has already been inserted into the template and is ready to open in
+                            OnlyOffice.
+                        </p>
+                        {% endif %}
+                        {% if content_data.get('beta_template_source_type') == 'template_profile' and inserted_doc_ready
+                        %}
+                        <div
+                            class="mt-3 p-3 rounded-xl bg-violet-50 dark:bg-violet-900/10 border border-violet-100 dark:border-violet-900/20">
+                            <div class="flex items-center gap-2 mb-1">
+                                <span class="w-2 h-2 rounded-full bg-violet-500"></span>
+                                <span
+                                    class="text-[10px] font-black uppercase tracking-widest text-violet-600 dark:text-violet-400">Custom
+                                    Template Profile Used</span>
+                            </div>
+                            <p class="text-xs text-gray-600 dark:text-gray-400">
+                                Source: <strong>{{ content_data.get('beta_template_source_label', 'Custom Profile')
+                                    }}</strong>
+                                {% if content_data.get('beta_profile_render_ok') is defined %}
+                                &mdash; {{ content_data.get('beta_profile_render_ok', 0) }} section{{ 's' if
+                                content_data.get('beta_profile_render_ok', 0) != 1 else '' }} rendered
+                                {% endif %}
+                                {% if content_data.get('beta_profile_render_fail', 0) > 0 %}
+                                <span class="text-amber-600">&mdash; {{ content_data.get('beta_profile_render_fail', 0)
+                                    }} section{{ 's' if content_data.get('beta_profile_render_fail', 0) != 1 else '' }}
+                                    skipped</span>
+                                {% endif %}
+                            </p>
+                        {% if content_data.get('beta_profile_coverage_gaps', 0) > 0 %}
+                        <p class="mt-1 text-[10px] text-amber-600 dark:text-amber-400 font-bold">{{
+                            content_data.get('beta_profile_coverage_gaps') }} coverage gap{{ 's' if
+                                content_data.get('beta_profile_coverage_gaps', 0) != 1 else '' }} detected. Check
+                                warnings for details.</p>
+                            {% endif %}
+                        </div>
+                        {% endif %}
+                        {% if inserted_doc_ready %}
+                        <div class="mt-4 flex flex-col sm:flex-row sm:items-center gap-3">
+                            <a href="{{ url_for('teacher.edit_clp_document', plan_id=plan.id) }}"
+                                data-loading-message="Opening the inserted DOCX in OnlyOffice. Please wait while the editor loads."
+                                data-beta-open-document="true"
+                                class="inline-flex w-full sm:w-auto items-center justify-center rounded-xl bg-emerald-600 px-5 py-3 text-[10px] font-black uppercase tracking-widest text-white shadow-lg shadow-emerald-900/20 hover:bg-emerald-700">
+                                Open Inserted Document
+                            </a>
+                            <p class="text-xs font-semibold text-gray-500 dark:text-gray-400">
+                                Opens the latest populated DOCX copy in OnlyOffice.
+                            </p>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <div
+                class="xl:hidden rounded-[1.5rem] border border-gray-200 dark:border-gray-800 bg-white dark:bg-[#111827] p-4 shadow-sm">
+                <div class="space-y-3">
+                    <p class="text-[10px] font-black uppercase tracking-[0.24em] text-violet-500">Mobile Controls</p>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">
+                        Use the floating bubble at the bottom right to save, regenerate, finalize, or open the inserted
+                        document without blocking the page while you review the draft.
+                    </p>
+                    {% if inserted_doc_ready %}
+                    <p class="text-sm font-semibold text-emerald-600 dark:text-emerald-300">
+                        The latest document is already inserted and ready in OnlyOffice.
+                    </p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <section x-data="{ open: false }"
+                class="bg-white dark:bg-[#111827] border border-gray-200 dark:border-gray-800 rounded-[1.75rem] md:rounded-[2.5rem] shadow-sm">
+                <button @click="open = !open" type="button"
+                    class="w-full flex items-center justify-between p-4 sm:p-6 md:p-8 text-left hover:bg-gray-50 dark:hover:bg-gray-900/20 transition-colors rounded-[1.75rem] md:rounded-[2.5rem]">
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 rounded-xl bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center shrink-0">
+                            <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                        </div>
+                        <div>
+                            <h2 class="text-lg font-black text-gray-900 dark:text-white">Course Metadata</h2>
+                            <p class="text-xs text-gray-500" x-show="!open">{{ content_data.metadata.course_code }} — {{ content_data.metadata.course_title }}</p>
+                        </div>
+                    </div>
+                    <svg class="w-5 h-5 text-gray-400 transition-transform duration-200" :class="open ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                </button>
+                <div x-show="open" x-collapse class="px-4 sm:px-6 md:px-8 pb-6 space-y-6">
+                    <div class="flex items-center justify-between">
+                        <span class="text-[10px] font-black uppercase tracking-widest text-gray-400">Template-facing fields</span>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="space-y-2">
+                        <label class="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-1">Semester
+                            Label</label>
+                        <input type="text" name="semester_label" value="{{ content_data.metadata.semester_label }}"
+                            class="w-full bg-gray-50 dark:bg-gray-900 rounded-2xl px-4 py-3.5 text-sm font-bold border-gray-200 dark:border-gray-700">
+                    </div>
+                    <div class="space-y-2">
+                        <label class="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-1">Academic
+                            Year</label>
+                        <input type="text" name="academic_year" value="{{ content_data.metadata.academic_year }}"
+                            class="w-full bg-gray-50 dark:bg-gray-900 rounded-2xl px-4 py-3.5 text-sm font-bold border-gray-200 dark:border-gray-700">
+                    </div>
+                    <div class="space-y-2">
+                        <label class="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-1">Type of
+                            Course</label>
+                        <input type="text" name="type_of_course" value="{{ content_data.metadata.type_of_course }}"
+                            class="w-full bg-gray-50 dark:bg-gray-900 rounded-2xl px-4 py-3.5 text-sm font-bold border-gray-200 dark:border-gray-700">
+                    </div>
+                    <div class="space-y-2">
+                        <label class="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-1">Course
+                            Code</label>
+                        <input type="text" name="course_code" value="{{ content_data.metadata.course_code }}"
+                            class="w-full bg-gray-50 dark:bg-gray-900 rounded-2xl px-4 py-3.5 text-sm font-bold border-gray-200 dark:border-gray-700">
+                    </div>
+                    <div class="space-y-2 md:col-span-2">
+                        <label class="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-1">Course
+                            Title</label>
+                        <input type="text" name="course_title" value="{{ content_data.metadata.course_title }}"
+                            class="w-full bg-gray-50 dark:bg-gray-900 rounded-2xl px-4 py-3.5 text-sm font-bold border-gray-200 dark:border-gray-700">
+                    </div>
+                    <div class="space-y-2 md:col-span-3">
+                        <label class="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-1">Course
+                            Description</label>
+                        <textarea name="course_description" rows="5"
+                            class="w-full bg-gray-50 dark:bg-gray-900 rounded-[1.5rem] p-5 text-sm font-medium border-gray-200 dark:border-gray-700">{{ content_data.metadata.course_description }}</textarea>
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="space-y-2">
+                        <label class="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-1">Units
+                            Display</label>
+                        <input type="text" name="units_display" value="{{ content_data.metadata.units_display }}"
+                            class="w-full bg-gray-50 dark:bg-gray-900 rounded-2xl px-4 py-3.5 text-sm font-bold border-gray-200 dark:border-gray-700">
+                    </div>
+                    <div class="space-y-2">
+                        <label class="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-1">Credit
+                            Display</label>
+                        <input type="text" name="credit_display" value="{{ content_data.metadata.credit_display }}"
+                            class="w-full bg-gray-50 dark:bg-gray-900 rounded-2xl px-4 py-3.5 text-sm font-bold border-gray-200 dark:border-gray-700">
+                    </div>
+                    <div class="space-y-2">
+                        <label class="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-1">Contact Hours
+                            Display</label>
+                        <input type="text" name="contact_hours_display"
+                            value="{{ content_data.metadata.contact_hours_display }}"
+                            class="w-full bg-gray-50 dark:bg-gray-900 rounded-2xl px-4 py-3.5 text-sm font-bold border-gray-200 dark:border-gray-700">
+                    </div>
+                    <div class="space-y-2">
+                        <label class="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-1">Contact Hours
+                            Per Week</label>
+                        <input type="text" name="contact_hours_per_week"
+                            value="{{ content_data.metadata.contact_hours_per_week }}"
+                            class="w-full bg-gray-50 dark:bg-gray-900 rounded-2xl px-4 py-3.5 text-sm font-bold border-gray-200 dark:border-gray-700">
+                    </div>
+                    <div class="space-y-2">
+                        <label
+                            class="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-1">Pre-requisite</label>
+                        <input type="text" name="pre_requisite" value="{{ content_data.metadata.pre_requisite }}"
+                            class="w-full bg-gray-50 dark:bg-gray-900 rounded-2xl px-4 py-3.5 text-sm font-bold border-gray-200 dark:border-gray-700">
+                    </div>
+                    <div class="space-y-2">
+                        <label
+                            class="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-1">Co-requisite</label>
+                        <input type="text" name="co_requisite" value="{{ content_data.metadata.co_requisite }}"
+                            class="w-full bg-gray-50 dark:bg-gray-900 rounded-2xl px-4 py-3.5 text-sm font-bold border-gray-200 dark:border-gray-700">
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="space-y-2">
+                        <label class="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-1">Class
+                            Schedule</label>
+                        <textarea name="class_schedule" rows="3"
+                            class="w-full bg-gray-50 dark:bg-gray-900 rounded-[1.5rem] p-5 text-sm font-medium border-gray-200 dark:border-gray-700">{{ content_data.metadata.class_schedule }}</textarea>
+                    </div>
+                    <div class="space-y-2">
+                        <label class="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-1">Room
+                            Assignment</label>
+                        <input type="text" name="room_assignment" value="{{ content_data.metadata.room_assignment }}"
+                            class="w-full bg-gray-50 dark:bg-gray-900 rounded-2xl px-4 py-3.5 text-sm font-bold border-gray-200 dark:border-gray-700">
+                        <label
+                            class="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-1 mt-4 block">Target
+                            SDGs Suggested By AI</label>
+                        <input type="text" name="target_sdgs_display"
+                            value="{{ content_data.metadata.target_sdgs_display }}"
+                            class="w-full bg-gray-50 dark:bg-gray-900 rounded-2xl px-4 py-3.5 text-sm font-bold border-gray-200 dark:border-gray-700">
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="space-y-2">
+                        <label class="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-1">Service
+                            Learning Component</label>
+                        <textarea name="service_learning_component" rows="4"
+                            class="w-full bg-gray-50 dark:bg-gray-900 rounded-[1.5rem] p-5 text-sm font-medium border-gray-200 dark:border-gray-700">{{ content_data.metadata.service_learning_component }}</textarea>
+                    </div>
+                    <div class="space-y-2">
+                        <label class="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-1">Optional
+                            Source Context</label>
+                        <textarea name="source_context" rows="4"
+                            class="w-full bg-gray-50 dark:bg-gray-900 rounded-[1.5rem] p-5 text-sm font-medium border-gray-200 dark:border-gray-700">{{ content_data.metadata.source_context }}</textarea>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+            {% if context_source_log %}
+            <details
+                class="bg-white dark:bg-[#111827] border border-gray-200 dark:border-gray-800 rounded-[1.75rem] md:rounded-[2.5rem] p-4 sm:p-6 md:p-8 shadow-sm">
+                <summary
+                    class="cursor-pointer text-[10px] font-black uppercase tracking-widest text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 select-none">
+                    Context Sources — Where AI Got Its Framework Data
+                </summary>
+                <div class="mt-4 grid grid-cols-2 md:grid-cols-3 gap-2">
+                    {% for key, source in context_source_log.items() %}
+                    <div class="flex items-center gap-2 rounded-xl bg-gray-50 dark:bg-gray-900 px-3 py-2">
+                        <span class="w-2 h-2 rounded-full {{ 'bg-emerald-500' if source == 'template' else 'bg-amber-400' }}"></span>
+                        <span class="text-[11px] font-bold text-gray-600 dark:text-gray-300">{{ key }}</span>
+                        <span class="ml-auto text-[9px] font-black uppercase tracking-widest {{ 'text-emerald-600' if source == 'template' else 'text-amber-600' }}">{{ source }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+                <p class="mt-3 text-[10px] text-gray-400 leading-relaxed">
+                    <span class="text-emerald-600 font-bold">template</span> = extracted from your DOCX profile.
+                    <span class="text-amber-600 font-bold">admin</span> = from system defaults (template had no data for this category).
+                </p>
+            </details>
+            {% endif %}
+
+            <section id="clo-section" x-data="{ open: false }"
+                class="bg-white dark:bg-[#111827] border border-gray-200 dark:border-gray-800 rounded-[1.75rem] md:rounded-[2.5rem] shadow-sm">
+                <button @click="open = !open" type="button"
+                    class="w-full flex items-center justify-between p-4 sm:p-6 md:p-8 text-left hover:bg-gray-50 dark:hover:bg-gray-900/20 transition-colors rounded-[1.75rem] md:rounded-[2.5rem]">
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 rounded-xl bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center shrink-0">
+                            <svg class="w-4 h-4 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>
+                        </div>
+                        <div>
+                            <h2 class="text-lg font-black text-gray-900 dark:text-white">CLO Alignment Matrix</h2>
+                            <p class="text-xs text-gray-500" x-show="!open">{{ content_data.clo_alignment_table|length }} CLOs defined</p>
+                        </div>
+                    </div>
+                    <svg class="w-5 h-5 text-gray-400 transition-transform duration-200" :class="open ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                </button>
+                <div x-show="open" x-collapse class="px-4 sm:px-6 md:px-8 pb-6 space-y-6">
+                    {% if content_data.get('template_profile_warnings', []) %}
+                        <div
+                            class="mt-3 rounded-xl border border-amber-200 dark:border-amber-900/40 bg-amber-50 dark:bg-amber-900/10 p-3">
+                            <p
+                                class="text-[10px] font-black uppercase tracking-widest text-amber-700 dark:text-amber-300">
+                                Template Profile Warnings</p>
+                            <ul class="mt-1 text-xs font-semibold text-amber-700 dark:text-amber-200 space-y-1">
+                                {% for warning in content_data.get('template_profile_warnings', [])[:4] %}
+                                <li>{{ warning }}</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    {% endif %}
+                    <div
+                        class="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_auto] gap-3 rounded-2xl border border-gray-100 dark:border-gray-800 bg-gray-50/70 dark:bg-gray-900/40 p-4">
+                        <div>
+                            <p class="text-[10px] font-black uppercase tracking-widest text-gray-400">Allowed SGA</p>
+                            <p class="mt-1 text-[11px] font-black uppercase tracking-wide leading-5 text-gray-600 dark:text-gray-300 break-words">
+                                {{ alignment_context.sga_options|join(', ') }}
+                            </p>
+                        </div>
+                        <div class="lg:max-w-sm">
+                            <p class="text-[10px] font-black uppercase tracking-widest text-gray-400">Allowed SDGs</p>
+                            <p class="mt-1 text-[11px] font-black uppercase tracking-wide leading-5 text-gray-600 dark:text-gray-300 break-words">
+                                {{ alignment_context.sdg_options|join(', ') }}
+                            </p>
+                        </div>
+                    </div>
+                {% if display.clo_groups|length > 1 %}
+                <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
+                    {% for group in display.clo_groups %}
+                    <div
+                        class="rounded-2xl border border-violet-100 dark:border-violet-900/30 bg-violet-50/60 dark:bg-violet-900/10 p-4">
+                        <p
+                            class="text-[10px] font-black uppercase tracking-widest text-violet-600 dark:text-violet-300">
+                            Detected Alignment Group</p>
+                        <p class="mt-1 text-sm font-black text-gray-800 dark:text-gray-100">{{ group.label }}</p>
+                        <p class="mt-1 text-[11px] font-bold text-gray-500 dark:text-gray-400">{{ group.rows|length }}
+                            CLO row{{ 's' if group.rows|length != 1 else '' }}</p>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+                {% if not can_regenerate_alignment %}
+                <div
+                    class="rounded-[1.35rem] border border-amber-200 dark:border-amber-900/40 bg-amber-50 dark:bg-amber-900/10 p-4">
+                    <p class="text-sm font-semibold text-amber-700 dark:text-amber-300">
+                        Generate or confirm the CLO draft first. Once the CLO statements are in place, the alignment
+                        controls on this section become the recommended next step.
+                    </p>
+                </div>
+                {% endif %}
+                <div class="space-y-8">
+                    {% for row in display.clo_rows %}
+                    {% set clo_index = loop.index %}
+                    <div id="clo-row-{{ loop.index }}" data-focus-target="clo-row-{{ loop.index }}"
+                        class="border border-gray-100 dark:border-gray-800 rounded-[1.5rem] md:rounded-[2rem] p-4 sm:p-5 md:p-6 bg-gray-50/60 dark:bg-gray-900/40 scroll-mt-28 transition-all duration-500">
+                        <div
+                            class="flex flex-col sm:flex-row sm:flex-wrap sm:items-center sm:justify-between gap-3 mb-5">
+                            <div class="flex flex-wrap items-center gap-3">
+                                <span
+                                    class="px-3 py-1 rounded-full bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-300 text-[10px] font-black uppercase tracking-widest max-w-[10rem] truncate inline-block">{{
+                                    row.clo_code }}</span>
+                                <span
+                                    class="px-3 py-1 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-300 text-[10px] font-black uppercase tracking-widest max-w-[8rem] truncate inline-block">{{
+                                    row.domain }}</span>
+                            </div>
+                            {% if row_regen_controls_enabled %}
+                            <button type="submit"
+                                formaction="{{ url_for('teacher.regenerate_beta_copilot_clo_row', plan_id=plan.id, clo_index=loop.index) }}"
+                                data-loading-message="AI is regenerating {{ row.clo_code }} and its alignment details. Please wait."
+                                data-async-beta-action="regenerate_clo_row" data-clo-index="{{ loop.index }}"
+                                data-focus-target="clo-row-{{ loop.index }}" {% if not can_regenerate_clo_rows
+                                %}disabled{% endif %}
+                                class="w-full sm:w-auto px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest {{ 'bg-primary-600 hover:bg-primary-700 text-white' if can_regenerate_clo_rows else 'bg-gray-100 dark:bg-gray-800 text-gray-400 cursor-not-allowed' }}">
+                                Regenerate This CLO
+                            </button>
+                            {% endif %}
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                            <div class="space-y-2 md:col-span-2">
+                                <label class="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-1">CLO
+                                    Statement</label>
+                                <textarea name="clo_{{ loop.index }}_statement" rows="3"
+                                    class="w-full bg-white dark:bg-gray-950 rounded-[1.5rem] p-4 text-sm font-medium border-gray-200 dark:border-gray-700">{{ row.clo_statement }}</textarea>
+                            </div>
+                            {% if display.alignment_style == 'checkmark' %}
+                            {# ── Checkmark alignment matrix ── #}
+                            <div class="space-y-3 md:col-span-2">
+                                <label
+                                    class="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-1">Program
+                                    Outcome Alignment</label>
+                                <input type="hidden" name="{{ row.checkmark_present_field }}" value="1">
+                                <div class="overflow-x-auto">
+                                    <div
+                                        class="inline-flex flex-wrap gap-2 p-3 bg-white dark:bg-gray-950 rounded-[1.5rem] border border-gray-200 dark:border-gray-700">
+                                        {% for check in row.checkmark_inputs %}
+                                        {% set is_checked = check.checked %}
+                                        <label
+                                            class="relative flex flex-col items-center gap-1.5 px-3 py-2 rounded-xl cursor-pointer transition-all duration-200 hover:bg-primary-50/80 dark:hover:bg-primary-900/20 {{ 'bg-primary-50 dark:bg-primary-900/30 ring-2 ring-primary-400 dark:ring-primary-500' if is_checked else 'bg-gray-50 dark:bg-gray-800/60' }}">
+                                            <input type="checkbox" name="{{ check.field }}" value="1" {{ 'checked' if
+                                                is_checked else '' }} class="sr-only peer"
+                                                onchange="this.closest('label').classList.toggle('bg-primary-50', this.checked); this.closest('label').classList.toggle('ring-2', this.checked); this.closest('label').classList.toggle('ring-primary-400', this.checked); this.closest('label').classList.toggle('bg-gray-50', !this.checked);">
+                                            <span
+                                                class="w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all duration-200 {{ 'border-primary-500 bg-primary-500 text-white' if is_checked else 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900' }}">
+                                                {% if is_checked %}
+                                                <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                                                    <path fill-rule="evenodd"
+                                                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                                        clip-rule="evenodd" />
+                                                </svg>
+                                                {% endif %}
+                                            </span>
+                                            <span
+                                                class="text-[9px] font-black uppercase tracking-wider text-gray-600 dark:text-gray-300 whitespace-nowrap">{{
+                                                check.code }}</span>
+                                        </label>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            </div>
+                            {% else %}
+                            {# ── CLO-based text alignment fields ── #}
+                            <div class="space-y-2">
+                                <label
+                                    class="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-1">Aligned
+                                    PLOs</label>
+                                <textarea name="clo_{{ loop.index }}_aligned_plos" rows="4"
+                                    class="w-full bg-white dark:bg-gray-950 rounded-[1.5rem] p-4 text-sm font-bold border-gray-200 dark:border-gray-700">{{ row.aligned_plos_text }}</textarea>
+                            </div>
+                            <div class="space-y-2">
+                                <label
+                                    class="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-1">Graduate
+                                    Attributes</label>
+                                <textarea name="clo_{{ loop.index }}_graduate_attributes" rows="4"
+                                    class="w-full bg-white dark:bg-gray-950 rounded-[1.5rem] p-4 text-sm font-bold border-gray-200 dark:border-gray-700">{{ row.graduate_attributes_text }}</textarea>
+                            </div>
+                            <div class="space-y-2">
+                                <label class="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-1">Core
+                                    Values</label>
+                                <textarea name="clo_{{ loop.index }}_core_values" rows="4"
+                                    class="w-full bg-white dark:bg-gray-950 rounded-[1.5rem] p-4 text-sm font-bold border-gray-200 dark:border-gray-700">{{ row.core_values_text }}</textarea>
+                            </div>
+                            <div class="space-y-2">
+                                <label
+                                    class="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-1">Relevant
+                                    SDGs</label>
+                                <textarea name="clo_{{ loop.index }}_relevant_sdgs" rows="4"
+                                    class="w-full bg-white dark:bg-gray-950 rounded-[1.5rem] p-4 text-sm font-bold border-gray-200 dark:border-gray-700">{{ row.relevant_sdgs_text }}</textarea>
+                            </div>
+                            <div class="space-y-2">
+                                <label class="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-1">PQF
+                                    Alignment</label>
+                                <textarea name="clo_{{ loop.index }}_pqf_alignment" rows="4"
+                                    class="w-full bg-white dark:bg-gray-950 rounded-[1.5rem] p-4 text-sm font-bold border-gray-200 dark:border-gray-700">{{ row.pqf_alignment_text }}</textarea>
+                            </div>
+                            <div class="space-y-2">
+                                <label class="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-1">AQRF
+                                    Alignment</label>
+                                <textarea name="clo_{{ loop.index }}_aqrf_alignment" rows="4"
+                                    class="w-full bg-white dark:bg-gray-950 rounded-[1.5rem] p-4 text-sm font-bold border-gray-200 dark:border-gray-700">{{ row.aqrf_alignment_text }}</textarea>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </section>
+
+            {% if display.program_institutional_alignments %}
+            <section id="program-institutional-section" x-data="{ open: false }"
+                class="bg-white dark:bg-[#111827] border border-gray-200 dark:border-gray-800 rounded-[1.75rem] md:rounded-[2.5rem] shadow-sm">
+                <button @click="open = !open" type="button"
+                    class="w-full flex items-center justify-between p-4 sm:p-6 md:p-8 text-left hover:bg-gray-50 dark:hover:bg-gray-900/20 transition-colors rounded-[1.75rem] md:rounded-[2.5rem]">
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 rounded-xl bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center shrink-0">
+                            <svg class="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M3 14h18m-9-4v8m-7 0h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                        </div>
+                        <div>
+                            <h2 class="text-lg font-black text-gray-900 dark:text-white">Program to Institutional Alignment</h2>
+                            <p class="text-xs text-gray-500" x-show="!open">{{ display.program_institutional_alignments|length if display.program_institutional_alignments else 0 }} alignment tables</p>
+                        </div>
+                    </div>
+                    <svg class="w-5 h-5 text-gray-400 transition-transform duration-200" :class="open ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                </button>
+                <div x-show="open" x-collapse class="px-4 sm:px-6 md:px-8 pb-6 space-y-6">
+                    {% for alignment in display.program_institutional_alignments %}
+                    <div class="rounded-2xl border border-gray-100 dark:border-gray-800 p-4 space-y-4">
+                        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                            <div>
+                                <p class="text-xs font-black text-gray-700 dark:text-gray-200">{{ alignment.label }}</p>
+                                <p class="text-[11px] font-bold text-gray-500 dark:text-gray-400">{{ alignment.row_count
+                                    }} row{{ 's' if alignment.row_count != 1 else '' }} · {{ alignment.column_count }}
+                                    column{{ 's' if alignment.column_count != 1 else '' }}</p>
+                            </div>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full text-xs border-separate border-spacing-0">
+                                <thead>
+                                    <tr>
+                                        <th
+                                            class="text-left text-[10px] font-black uppercase tracking-widest text-gray-400 px-2 py-2">
+                                            Program Outcome</th>
+                                        {% for col in alignment.columns %}
+                                        <th
+                                            class="text-center text-[10px] font-black uppercase tracking-widest text-gray-400 px-2 py-2">
+                                            {{ col.label }}</th>
+                                        {% endfor %}
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for row in alignment.rows %}
+                                    <tr class="border-t border-gray-100 dark:border-gray-800">
+                                        <td
+                                            class="px-2 py-2 text-[11px] font-bold text-gray-600 dark:text-gray-300 whitespace-nowrap">
+                                            <input type="hidden" name="{{ row.present_field }}" value="1">
+                                            {{ row.label }}
+                                        </td>
+                                        {% for cell in row.cells %}
+                                        <td class="px-2 py-2 text-center">
+                                            <label
+                                                class="inline-flex items-center justify-center w-8 h-8 rounded-xl cursor-pointer transition-all duration-200 {{ 'bg-primary-50 dark:bg-primary-900/30 ring-2 ring-primary-400 dark:ring-primary-500' if cell.checked else 'bg-gray-50 dark:bg-gray-800/60' }}">
+                                                <input type="checkbox" name="{{ cell.field }}" value="1" {{ 'checked' if
+                                                    cell.checked else '' }} class="sr-only"
+                                                    onchange="this.closest('label').classList.toggle('bg-primary-50', this.checked); this.closest('label').classList.toggle('ring-2', this.checked); this.closest('label').classList.toggle('ring-primary-400', this.checked); this.closest('label').classList.toggle('bg-gray-50', !this.checked);">
+                                                <span
+                                                    class="w-4 h-4 rounded-md border-2 flex items-center justify-center transition-all duration-200 {{ 'border-primary-500 bg-primary-500 text-white' if cell.checked else 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900' }}">
+                                                    {% if cell.checked %}
+                                                    <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                                                        <path fill-rule="evenodd"
+                                                            d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                                            clip-rule="evenodd" />
+                                                    </svg>
+                                                    {% endif %}
+                                                </span>
+                                            </label>
+                                        </td>
+                                        {% endfor %}
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+        </section>
+            {% endif %}
+
+            <section id="weekly-section" x-data="{ open: false }"
+                class="bg-white dark:bg-[#111827] border border-gray-200 dark:border-gray-800 rounded-[1.75rem] md:rounded-[2.5rem] shadow-sm">
+                <button @click="open = !open" type="button"
+                    class="w-full flex items-center justify-between p-4 sm:p-6 md:p-8 text-left hover:bg-gray-50 dark:hover:bg-gray-900/20 transition-colors rounded-[1.75rem] md:rounded-[2.5rem]">
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 rounded-xl bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center shrink-0">
+                            <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                        </div>
+                        <div>
+                            <h2 class="text-lg font-black text-gray-900 dark:text-white">Weekly Course Outline</h2>
+                            <p class="text-xs text-gray-500" x-show="!open">{{ display.weekly_rows|length }} weeks generated</p>
+                        </div>
+                    </div>
+                    <svg class="w-5 h-5 text-gray-400 transition-transform duration-200" :class="open ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                </button>
+                <div x-show="open" x-collapse class="px-4 sm:px-6 md:px-8 pb-6 space-y-6">
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                    <div>
+                        <h2 class="text-2xl font-black text-gray-900 dark:text-white tracking-tight">Weekly Course
+                            Outline</h2>
+                        <p class="text-sm text-gray-500 dark:text-gray-400 mt-2">Use one line per bullet item. The
+                            renderer will preserve these lists for the template.</p>
+                    </div>
+                    <span class="text-[10px] font-black uppercase tracking-widest text-gray-400">{{
+                        display.weekly_rows|length }} teaching rows</span>
+                </div>
+                {% if not can_regenerate_weekly %}
+                <div
+                    class="rounded-[1.35rem] border border-amber-200 dark:border-amber-900/40 bg-amber-50 dark:bg-amber-900/10 p-4">
+                    <p class="text-sm font-semibold text-amber-700 dark:text-amber-300">
+                        Build the alignment matrix first. The weekly plan stage opens after the CLO mappings are
+                        reviewed.
+                    </p>
+                </div>
+                {% endif %}
+                <div class="space-y-8">
+                    {% for row in display.weekly_rows %}
+                    <div id="week-row-{{ loop.index }}" data-focus-target="week-row-{{ loop.index }}"
+                        class="border border-gray-100 dark:border-gray-800 rounded-[1.5rem] md:rounded-[2rem] p-4 sm:p-5 md:p-6 bg-gray-50/60 dark:bg-gray-900/40 scroll-mt-28 transition-all duration-500">
+                        <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3 mb-5">
+                            <div class="flex flex-col md:flex-row md:items-center gap-3 w-full">
+                                <h3
+                                    class="text-xl font-black text-emerald-600 dark:text-emerald-300 tracking-tight shrink-0">
+                                    {{ row.time_frame_label }}</h3>
+                                <input type="text" name="{{ row.field_key }}_mapped_clos"
+                                    value="{{ row.mapped_clos_text }}"
+                                    placeholder="Mapped CLOs, one per line or comma-separated"
+                                    class="w-full lg:max-w-md bg-white dark:bg-gray-950 rounded-2xl px-4 py-3 text-sm font-bold border-gray-200 dark:border-gray-700">
+                            </div>
+                            {% if row_regen_controls_enabled %}
+                            <button type="submit"
+                                formaction="{{ url_for('teacher.regenerate_beta_copilot_week_row', plan_id=plan.id, week_index=loop.index) }}"
+                                data-loading-message="AI is regenerating {{ row.time_frame_label }}. Please wait while this weekly block is refreshed."
+                                data-async-beta-action="regenerate_week_row" data-week-index="{{ loop.index }}"
+                                data-focus-target="week-row-{{ loop.index }}" {% if not can_regenerate_week_rows
+                                %}disabled{% endif %}
+                                class="w-full lg:w-auto shrink-0 px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest {{ 'bg-emerald-600 hover:bg-emerald-700 text-white' if can_regenerate_week_rows else 'bg-gray-100 dark:bg-gray-800 text-gray-400 cursor-not-allowed' }}">
+                                Regenerate This Week
+                            </button>
+                            {% endif %}
+                        </div>
+                        <div class="grid grid-cols-1 xl:grid-cols-2 gap-5">
+                            {% for field in row._display_fields %}
+                                {% if field.sub_fields %}
+                                    {% for sub in field.sub_fields %}
+                                        <div class="space-y-2 {% if loop.last and loop.length == 3 %}xl:col-span-2{% endif %}">
+                                            <label class="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-1">{{ field.label }} — {{ sub.label }}</label>
+                                            <textarea name="{{ row.field_key }}_{{ field.field }}_{{ sub.key }}" rows="4"
+                                                class="w-full bg-white dark:bg-gray-950 rounded-[1.5rem] p-4 text-sm font-medium border-gray-200 dark:border-gray-700">{{ sub.value }}</textarea>
+                                        </div>
+                                    {% endfor %}
+                                {% elif field.field == 'topics' or field.field == 'assessment' %}
+                                    <div class="space-y-2">
+                                        <label class="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-1">{{ field.label }}</label>
+                                        <textarea name="{{ row.field_key }}_{{ field.field }}" rows="5"
+                                            class="w-full bg-white dark:bg-gray-950 rounded-[1.5rem] p-4 text-sm font-medium border-gray-200 dark:border-gray-700">{{ field.value }}</textarea>
+                                    </div>
+                                {% else %}
+                                    <div class="space-y-2 xl:col-span-2">
+                                        <label class="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-1">{{ field.label }}</label>
+                                        <textarea name="{{ row.field_key }}_{{ field.field }}" rows="5"
+                                            class="w-full bg-white dark:bg-gray-950 rounded-[1.5rem] p-4 text-sm font-medium border-gray-200 dark:border-gray-700">{{ field.value }}</textarea>
+                                    </div>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </section>
+        </form>
+</div>
+
+<style>
+    .beta-mobile-fab-item {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 0.625rem;
+        min-height: 3.5rem;
+        width: max-content;
+        max-width: min(78vw, 15rem);
+    }
+
+    .beta-mobile-fab-action {
+        width: 3.5rem;
+        height: 3.5rem;
+        border-radius: 9999px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex: 0 0 auto;
+        padding: 0;
+        text-align: center;
+        line-height: 1.05;
+    }
+
+    .beta-mobile-fab-label {
+        display: inline-flex;
+        width: max-content;
+        max-width: min(58vw, 15.5rem);
+        min-height: 2.5rem;
+        align-items: center;
+        justify-content: center;
+        padding: 0.5rem 0.875rem;
+        border-radius: 9999px;
+        border: 1px solid rgba(148, 163, 184, 0.22);
+        background: rgba(15, 23, 42, 0.92);
+        color: #f8fafc;
+        font-size: 0.625rem;
+        font-weight: 900;
+        letter-spacing: 0.18em;
+        line-height: 1;
+        text-transform: uppercase;
+        white-space: nowrap;
+        text-align: center;
+        box-shadow: 0 18px 40px rgba(15, 23, 42, 0.18);
+        backdrop-filter: blur(14px);
+        -webkit-backdrop-filter: blur(14px);
+    }
+
+    .dark .beta-mobile-fab-label {
+        border-color: rgba(148, 163, 184, 0.16);
+        background: rgba(15, 23, 42, 0.88);
+    }
+
+    .beta-focus-highlight {
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.18);
+        border-color: rgba(59, 130, 246, 0.45);
+        background: rgba(239, 246, 255, 0.9);
+    }
+
+    .dark .beta-focus-highlight {
+        border-color: rgba(96, 165, 250, 0.55);
+        background: rgba(30, 41, 59, 0.95);
+    }
+</style>
+<div class="xl:hidden fixed bottom-5 right-4 z-[120]">
+    <div id="beta-mobile-fab-menu" class="relative flex flex-col items-end gap-3 pb-20">
+        <div id="beta-mobile-fab-actions"
+            class="pointer-events-none absolute bottom-36 right-0 flex flex-col items-end gap-3 opacity-0 translate-y-4 scale-95 transition-all duration-300 ease-out">
+            <div class="beta-mobile-fab-item" style="transition-delay: 0ms;">
+                <span class="beta-mobile-fab-label">Save Draft</span>
+                <button type="submit" form="beta-review-form" aria-label="Save Draft"
+                    class="beta-mobile-fab-action border border-gray-200/70 dark:border-gray-700 bg-white/95 dark:bg-[#111827]/95 text-[11px] font-black uppercase tracking-[0.12em] text-gray-900 dark:text-white shadow-xl shadow-slate-950/10 backdrop-blur">
+                    SD
+                </button>
+            </div>
+            <div class="beta-mobile-fab-item" style="transition-delay: 35ms;">
+                <span class="beta-mobile-fab-label">{{ clo_button_label }}</span>
+                <button type="submit" form="beta-review-form"
+                    formaction="{{ url_for('teacher.generate_beta_copilot_clos', plan_id=plan.id) }}"
+                    data-loading-message="AI is generating all CLO rows. Please wait while the draft is refreshed."
+                    data-async-beta-action="generate_clos" data-focus-target="clo-section"
+                    aria-label="{{ clo_button_label }}"
+                    class="beta-mobile-fab-action bg-primary-600 text-[11px] font-black uppercase tracking-[0.12em] text-white shadow-xl shadow-primary-900/20">
+                    CL
+                </button>
+            </div>
+            <div class="beta-mobile-fab-item" style="transition-delay: 70ms;">
+                <span class="beta-mobile-fab-label">{{ alignment_button_label }}</span>
+                <button type="submit" form="beta-review-form"
+                    formaction="{{ url_for('teacher.generate_beta_copilot_alignment', plan_id=plan.id) }}"
+                    data-loading-message="AI is generating the CLO alignment matrix. Please wait while the academic mappings are updated."
+                    data-async-beta-action="generate_alignment" data-focus-target="clo-section"
+                    aria-label="{{ alignment_button_label }}" {% if not can_regenerate_alignment %}disabled{% endif %}
+                    class="beta-mobile-fab-action text-[11px] font-black uppercase tracking-[0.12em] shadow-xl {{ 'bg-indigo-600 text-white shadow-indigo-900/20' if can_regenerate_alignment else 'bg-gray-300 dark:bg-gray-700 text-gray-500 shadow-none cursor-not-allowed' }}">
+                    AL
+                </button>
+            </div>
+            <div class="beta-mobile-fab-item" style="transition-delay: 105ms;">
+                <span class="beta-mobile-fab-label">{{ weekly_button_label }}</span>
+                <button type="submit" form="beta-review-form"
+                    formaction="{{ url_for('teacher.generate_beta_copilot_weekly', plan_id=plan.id) }}"
+                    data-loading-message="AI is generating the weekly course outline. Please wait while the weekly blocks are rebuilt."
+                    data-async-beta-action="generate_weekly" data-focus-target="weekly-section"
+                    aria-label="{{ weekly_button_label }}" {% if not can_regenerate_weekly %}disabled{% endif %}
+                    class="beta-mobile-fab-action text-[11px] font-black uppercase tracking-[0.12em] shadow-xl {{ 'bg-emerald-600 text-white shadow-emerald-900/20' if can_regenerate_weekly else 'bg-gray-300 dark:bg-gray-700 text-gray-500 shadow-none cursor-not-allowed' }}">
+                    WK
+                </button>
+            </div>
+            <div class="beta-mobile-fab-item" style="transition-delay: 140ms;">
+                <span class="beta-mobile-fab-label">Validate & Mark Ready</span>
+                <button type="submit" form="beta-review-form"
+                    formaction="{{ url_for('teacher.finalize_beta_copilot', plan_id=plan.id) }}"
+                    data-loading-message="Checking this CLP for template readiness. Please wait while the draft is validated and marked ready if it passes."
+                    data-async-beta-action="finalize_clp" data-focus-target="beta-workflow-shell"
+                    aria-label="Validate and mark ready" {% if not can_finalize %}disabled{% endif %}
+                    class="beta-mobile-fab-action text-[11px] font-black uppercase tracking-[0.12em] shadow-xl {{ 'bg-amber-500 text-white shadow-amber-900/20' if can_finalize else 'bg-gray-300 dark:bg-gray-700 text-gray-500 shadow-none cursor-not-allowed' }}">
+                    FN
+                </button>
+            </div>
+            <div class="beta-mobile-fab-item" style="transition-delay: 175ms;">
+                <span class="beta-mobile-fab-label">{{ insert_button_label }}</span>
+                <button type="submit" form="beta-review-form"
+                    formaction="{{ url_for('teacher.finalize_beta_copilot_document', plan_id=plan.id) }}"
+                    data-loading-message="Copying the template source, inserting the finalized data into the new DOCX, and preparing it for OnlyOffice. Please wait."
+                    data-async-beta-action="finalize_document" data-focus-target="beta-workflow-shell"
+                    aria-label="Insert Into Template" {% if not can_insert and not inserted_doc_ready %}disabled{% endif
+                    %}
+                    class="beta-mobile-fab-action text-[11px] font-black uppercase tracking-[0.12em] shadow-xl {{ 'bg-violet-600 text-white shadow-violet-900/20' if can_insert else 'bg-gray-300 dark:bg-gray-700 text-gray-500 shadow-none cursor-not-allowed' }}">
+                    IN
+                </button>
+            </div>
+            {% if inserted_doc_ready %}
+            <div class="beta-mobile-fab-item" style="transition-delay: 210ms;">
+                <span class="beta-mobile-fab-label">Open Inserted Document</span>
+                <a href="{{ url_for('teacher.edit_clp_document', plan_id=plan.id) }}"
+                    data-loading-message="Opening the inserted DOCX in OnlyOffice. Please wait while the editor loads."
+                    data-beta-open-document="true" aria-label="Open Inserted Document"
+                    class="beta-mobile-fab-action block bg-fuchsia-600 text-[11px] font-black uppercase tracking-[0.12em] text-white shadow-xl shadow-fuchsia-900/20">
+                    OP
+                </a>
+            </div>
+            {% endif %}
+            <div class="beta-mobile-fab-item" style="transition-delay: 245ms;">
+                <span class="beta-mobile-fab-label">Discard Draft</span>
+                <button type="submit" form="beta-review-form"
+                    formaction="{{ url_for('teacher.discard_beta_copilot', plan_id=plan.id) }}" formnovalidate
+                    onclick="return confirm('Discard this AI draft?');" aria-label="Discard"
+                    class="beta-mobile-fab-action bg-red-600 text-[16px] font-black uppercase tracking-[0.02em] text-white shadow-xl shadow-red-900/20">
+                    ×
+                </button>
+            </div>
+        </div>
+
+        <button id="beta-mobile-fab-toggle" type="button" aria-expanded="false" aria-controls="beta-mobile-fab-actions"
+            class="relative flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-violet-500 via-primary-600 to-fuchsia-600 text-white shadow-2xl shadow-violet-950/30 ring-1 ring-white/15 transition-transform duration-300 ease-out">
+            <span class="absolute inset-0 rounded-full bg-white/10 animate-pulse"></span>
+            <svg id="beta-mobile-fab-plus" class="relative h-7 w-7 transition-transform duration-300 ease-out"
+                fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 5v14m-7-7h14" />
+            </svg>
+        </button>
+    </div>
+</div>
+
+<div id="beta-loading-overlay"
+    class="fixed inset-0 z-[140] hidden items-center justify-center bg-slate-950/80 backdrop-blur-sm px-4 sm:px-6">
+    <div
+        class="w-full max-w-xl rounded-[1.5rem] sm:rounded-[2rem] border border-primary-400/20 bg-white dark:bg-[#111827] p-5 sm:p-8 shadow-2xl">
+        <!-- Header -->
+        <div class="flex items-center gap-3">
+            <div class="relative flex-shrink-0">
+                <div
+                    class="h-10 w-10 sm:h-12 sm:w-12 rounded-full border-[3px] border-primary-200 dark:border-primary-900/40 border-t-primary-600 animate-spin">
+                </div>
+                <div class="absolute inset-0 flex items-center justify-center">
+                    <span id="beta-loading-percent" class="text-[9px] font-black text-primary-600">0%</span>
+                </div>
+            </div>
+            <div class="min-w-0 flex-1">
+                <p class="text-[10px] font-black uppercase tracking-[0.25em] text-primary-600">Processing</p>
+                <h2 id="beta-loading-stage"
+                    class="text-base sm:text-lg font-black tracking-tight text-gray-900 dark:text-white truncate">
+                    Starting</h2>
+            </div>
+            <div class="flex-shrink-0 text-right">
+                <span id="beta-loading-elapsed"
+                    class="text-[10px] font-black uppercase tracking-widest text-gray-400 tabular-nums">0:00</span>
+            </div>
+        </div>
+
+        <!-- Progress bar -->
+        <div class="mt-4">
+            <div class="h-1.5 w-full overflow-hidden rounded-full bg-gray-100 dark:bg-gray-800">
+                <div id="beta-loading-bar"
+                    class="h-1.5 rounded-full bg-gradient-to-r from-primary-500 to-primary-600 transition-all duration-700 ease-out"
+                    style="width: 0%"></div>
+            </div>
+        </div>
+
+        <!-- Message -->
+        <p id="beta-loading-message" class="mt-4 text-sm leading-relaxed text-gray-500 dark:text-gray-400">
+            The AI Copilot is working on your request. Editing is temporarily locked until the action completes.
+        </p>
+
+        <div id="beta-ai-live-detail"
+            class="mt-4 rounded-2xl border border-primary-500/20 bg-primary-50/70 dark:bg-primary-950/20 p-4 text-left">
+            <div class="flex items-start gap-3">
+                <div
+                    class="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-primary-600 text-white shadow-lg shadow-primary-900/20">
+                    <svg class="h-4 w-4 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M13 10V3L4 14h7v7l9-11h-7z" />
+                    </svg>
+                </div>
+                <div class="min-w-0 flex-1">
+                    <p id="beta-ai-live-title"
+                        class="text-[10px] font-black uppercase tracking-[0.22em] text-primary-600 dark:text-primary-300">
+                        Preparing AI workspace</p>
+                    <p id="beta-ai-live-copy"
+                        class="mt-1 text-sm font-semibold leading-6 text-gray-700 dark:text-gray-200">
+                        Collecting course metadata, template profile hints, and current draft content.
+                    </p>
+                    <div id="beta-ai-live-pills" class="mt-3 flex flex-wrap gap-2"></div>
+                </div>
+            </div>
+        </div>
+
+        <div id="beta-ai-draft-preview"
+            class="mt-4 rounded-2xl border border-gray-200 dark:border-gray-800 bg-white/80 dark:bg-gray-950/70 p-4 text-left">
+            <div class="flex items-center justify-between gap-3">
+                <p id="beta-ai-draft-title"
+                    class="text-[10px] font-black uppercase tracking-[0.22em] text-gray-400">
+                    Live AI Response</p>
+                <span class="text-[9px] font-black uppercase tracking-widest text-primary-500 beta-dots">Streaming</span>
+            </div>
+            <pre id="beta-ai-draft-text"
+                class="mt-3 min-h-24 max-h-36 overflow-y-auto whitespace-pre-wrap break-words font-mono text-[11px] leading-6 text-gray-700 dark:text-gray-200">Waiting for the model to return its first tokens...</pre>
+        </div>
+
+        <!-- Live activity log -->
+        <div
+            class="mt-4 max-h-44 overflow-y-auto rounded-xl bg-gray-50 dark:bg-gray-900/50 border border-gray-100 dark:border-gray-800 p-3">
+            <div id="beta-loading-log" class="space-y-1.5 text-left">
+                <div class="flex items-start gap-2 text-[11px] text-gray-400">
+                    <span class="flex-shrink-0 tabular-nums font-mono opacity-60">0:00</span>
+                    <span>Initializing</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Hint -->
+        <p id="beta-loading-hint"
+            class="mt-3 text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 text-center">
+            <span class="beta-dots">Do not close or navigate away from this page</span>
+        </p>
+    </div>
+</div>
+
+<div id="beta-success-modal"
+    class="fixed inset-0 z-[150] hidden items-center justify-center bg-slate-950/70 backdrop-blur-sm px-4 sm:px-6"
+    role="dialog" aria-modal="true" aria-labelledby="beta-success-title">
+    <div
+        class="w-full max-w-xl rounded-[1.5rem] sm:rounded-[2rem] border border-emerald-400/20 bg-white dark:bg-[#111827] p-5 sm:p-8 shadow-2xl">
+        <div
+            class="mx-auto flex h-14 w-14 sm:h-16 sm:w-16 items-center justify-center rounded-full bg-emerald-100 text-emerald-600 dark:bg-emerald-500/15 dark:text-emerald-300">
+            <svg class="h-7 w-7 sm:h-8 sm:w-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
+            </svg>
+        </div>
+        <p class="mt-6 text-center text-[10px] font-black uppercase tracking-[0.25em] text-emerald-600">Update Complete
+        </p>
+        <h2 id="beta-success-title"
+            class="mt-3 text-center text-2xl sm:text-3xl font-black tracking-tight text-gray-900 dark:text-white">
+            Regeneration complete.</h2>
+        <p id="beta-success-message" class="mt-4 text-center text-sm leading-7 text-gray-500 dark:text-gray-400">
+            Your draft has been updated and the latest regenerated content is now ready for review.
+        </p>
+        <div class="mt-6 flex flex-col sm:flex-row gap-3">
+            <button id="beta-success-close" type="button"
+                class="flex-1 rounded-2xl bg-emerald-600 px-5 py-3 text-[10px] font-black uppercase tracking-widest text-white transition hover:bg-emerald-700">
+                Continue Reviewing
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+    (function () {
+        const form = document.getElementById('beta-review-form');
+        const overlay = document.getElementById('beta-loading-overlay');
+        const successModal = document.getElementById('beta-success-modal');
+        const successTitle = document.getElementById('beta-success-title');
+        const successMessage = document.getElementById('beta-success-message');
+        const successCloseButton = document.getElementById('beta-success-close');
+        const message = document.getElementById('beta-loading-message');
+        const percentText = document.getElementById('beta-loading-percent');
+        const progressBar = document.getElementById('beta-loading-bar');
+        const stageText = document.getElementById('beta-loading-stage');
+        const hintText = document.getElementById('beta-loading-hint');
+        const elapsedText = document.getElementById('beta-loading-elapsed');
+        const activityLog = document.getElementById('beta-loading-log');
+        const liveTitle = document.getElementById('beta-ai-live-title');
+        const liveCopy = document.getElementById('beta-ai-live-copy');
+        const livePills = document.getElementById('beta-ai-live-pills');
+        const draftTitle = document.getElementById('beta-ai-draft-title');
+        const draftText = document.getElementById('beta-ai-draft-text');
+        if (!form || !overlay || !successModal || !successTitle || !successMessage || !successCloseButton || !message || !percentText || !progressBar || !stageText || !hintText) return;
+
+        let loadingActive = false;
+        let pollTimer = null;
+        let elapsedTimer = null;
+        let loadingStartTime = null;
+        let lastLogLabel = '';
+        let lastAsyncButton = null;
+        let activeGenerationProfile = null;
+        let liveThinkingTimer = null;
+        let liveThinkingIndex = 0;
+        let latestProgressPercent = 0;
+        let latestServerLabel = '';
+        let latestLivePreview = '';
+        const successStateKey = 'betaReviewSuccessPopup';
+        const focusStateKey = 'betaReviewFocusState';
+        const betaGenerationFacts = {
+            cloCount: {{ (content_data.clo_alignment_table|length)|tojson }},
+            weekCount: {{ (content_data.weekly_course_outline|length)|tojson }},
+            groupCount: {{ (display.clo_groups|length)|tojson }},
+            hasTemplateProfile: {{ (plan.get('template_profile_id') is not none)|tojson }}
+        };
+        const asyncBetaControlsEnabled = {{ async_beta_controls_enabled| tojson | safe
+    }};
+    const startTaskUrl = asyncBetaControlsEnabled ? "{{ url_for('teacher.start_beta_background_task', plan_id=plan.id) if async_beta_controls_enabled else '' }}" : null;
+    const taskStatusUrlBase = asyncBetaControlsEnabled ? "/teacher/copilot/task-status/" : null;
+    const mobileFabToggle = document.getElementById('beta-mobile-fab-toggle');
+    const mobileFabActions = document.getElementById('beta-mobile-fab-actions');
+    const mobileFabPlus = document.getElementById('beta-mobile-fab-plus');
+    let mobileFabOpen = false;
+
+    function setMobileFabState(open) {
+        if (!mobileFabToggle || !mobileFabActions) return;
+        mobileFabOpen = !!open;
+        mobileFabToggle.setAttribute('aria-expanded', mobileFabOpen ? 'true' : 'false');
+        mobileFabActions.classList.toggle('pointer-events-none', !mobileFabOpen);
+        mobileFabActions.classList.toggle('opacity-0', !mobileFabOpen);
+        mobileFabActions.classList.toggle('translate-y-4', !mobileFabOpen);
+        mobileFabActions.classList.toggle('scale-95', !mobileFabOpen);
+        mobileFabActions.classList.toggle('opacity-100', mobileFabOpen);
+        mobileFabActions.classList.toggle('translate-y-0', mobileFabOpen);
+        mobileFabActions.classList.toggle('scale-100', mobileFabOpen);
+        if (mobileFabPlus) {
+            mobileFabPlus.classList.toggle('rotate-45', mobileFabOpen);
+        }
+        mobileFabToggle.classList.toggle('scale-95', mobileFabOpen);
+    }
+
+    function formatElapsed(ms) {
+        const totalSec = Math.floor((ms || 0) / 1000);
+        const min = Math.floor(totalSec / 60);
+        const sec = totalSec % 60;
+        return `${min}:${sec.toString().padStart(2, '0')}`;
+    }
+
+    function renderProgress(percent) {
+        const safePercent = Math.max(0, Math.min(100, Math.round(percent || 0)));
+        percentText.textContent = `${safePercent}%`;
+        progressBar.style.width = `${safePercent}%`;
+    }
+
+    function pill(label) {
+        return `<span class="rounded-full border border-primary-500/20 bg-white/70 dark:bg-gray-950/50 px-3 py-1 text-[10px] font-black uppercase tracking-widest text-primary-700 dark:text-primary-200">${label}</span>`;
+    }
+
+    function buildGenerationProfile(button) {
+        const action = button && button.dataset ? button.dataset.asyncBetaAction : '';
+        const cloCount = betaGenerationFacts.cloCount || 0;
+        const weekCount = betaGenerationFacts.weekCount || 0;
+        const groupCount = betaGenerationFacts.groupCount || 0;
+        const profileMode = betaGenerationFacts.hasTemplateProfile ? 'Template profile active' : 'Default template rules';
+        const countLabel = (count, singular, plural) => count ? `${count} ${count === 1 ? singular : plural}` : `Detected ${plural}`;
+        const profiles = {
+            generate_clos: {
+                title: 'Drafting CLO statements',
+                copy: `AI is building ${countLabel(cloCount, 'CLO row', 'CLO rows')} from course metadata, Bloom domains, and source-template hints.`,
+                aiCopy: `The model is writing faculty-ready CLO statements and preserving the detected row count of ${cloCount || 'the template'}.`,
+                liveSteps: [
+                    'Reading the course title, description, and service-learning context.',
+                    'Matching each CLO row to its detected Bloom domain.',
+                    'Choosing measurable verbs that fit the template row plan.',
+                    'Checking that no CLO duplicates another outcome.',
+                    'Preparing the generated CLO rows for validation.'
+                ],
+                pills: [countLabel(cloCount, 'CLO row', 'CLO rows'), profileMode, 'Bloom domains locked']
+            },
+            generate_alignment: {
+                title: 'Mapping CLO alignment',
+                copy: `AI is reading the CLO statements and preparing ${countLabel(groupCount || 1, 'alignment group', 'alignment groups')}.`,
+                aiCopy: `The model is choosing only the allowed PO columns for each alignment group, avoiding all-columns-checked output.`,
+                liveSteps: [
+                    'Reading each CLO statement for its real competency signal.',
+                    'Comparing CLO intent against the allowed PO columns in this template.',
+                    'Keeping Physical Education and English Education columns separated.',
+                    'Rejecting weak or all-columns-checked mappings.',
+                    'Preparing selective CO-PO-IO mappings for validation.'
+                ],
+                pills: [countLabel(groupCount || 1, 'alignment group', 'alignment groups'), profileMode, 'PO columns locked']
+            },
+            generate_weekly: {
+                title: 'Building weekly course outline',
+                copy: `AI is preparing ${countLabel(weekCount, 'weekly row', 'weekly rows')} with ILOs, topics, TLAs, assessments, and references.`,
+                aiCopy: `The model is drafting each weekly block in the template's detected format and keeping the week labels in order.`,
+                liveSteps: [
+                    'Reading the exact week labels from the template profile.',
+                    'Distributing CLO coverage across the weekly sequence.',
+                    'Drafting intended learning outcomes, topics, and class activities.',
+                    'Pairing assessments with the weekly learning targets.',
+                    'Selecting concrete learning resources and references for each block.'
+                ],
+                pills: [countLabel(weekCount, 'weekly row', 'weekly rows'), profileMode, 'References included']
+            },
+            regenerate_clo_row: {
+                title: 'Refreshing one CLO',
+                copy: 'AI is regenerating the selected CLO statement and its alignment data while preserving the surrounding template shape.',
+                aiCopy: 'The model is improving this row only, then the server will validate the updated alignment.',
+                liveSteps: [
+                    'Reading the selected CLO row in context.',
+                    'Improving the statement without changing the row identity.',
+                    'Refreshing related alignment details for this row.'
+                ],
+                pills: ['Single-row update', profileMode, 'Local validation']
+            },
+            regenerate_week_row: {
+                title: 'Refreshing one weekly block',
+                copy: 'AI is regenerating the selected week with updated ILOs, topics, activities, assessments, and resources.',
+                aiCopy: 'The model is focusing on this week only and keeping the saved week label unchanged.',
+                liveSteps: [
+                    'Reading the selected week label and mapped CLOs.',
+                    'Rebuilding the weekly topics and learning activities.',
+                    'Refreshing assessments and resource lines for this week.'
+                ],
+                pills: ['Single-week update', profileMode, 'Week label locked']
+            },
+            fix_final_review: {
+                title: 'Repairing review issues',
+                copy: 'AI is applying targeted fixes to the issues found during final review, then the draft will be checked again.',
+                aiCopy: 'The model is rewriting only the flagged content and keeping the accepted draft structure intact.',
+                liveSteps: [
+                    'Reading final-review findings.',
+                    'Applying targeted corrections to flagged content.',
+                    'Preparing the repaired draft for another review pass.'
+                ],
+                pills: ['Targeted repair', 'Final review', 'Validation pass']
+            },
+            finalize_clp: {
+                title: 'Checking template readiness',
+                copy: 'The system is validating CLOs, alignments, weekly rows, references, and signatory-ready content.',
+                aiCopy: 'Validation is checking whether the draft can safely move to template insertion.',
+                pills: ['Readiness check', 'No content rewrite', 'Template gate']
+            },
+            finalize_document: {
+                title: 'Preparing DOCX insertion',
+                copy: 'The system is copying the template, inserting the final data, and preparing the document for OnlyOffice.',
+                aiCopy: 'The final review and template writer are assembling a fresh DOCX copy for review.',
+                pills: ['DOCX writer', profileMode, 'OnlyOffice ready']
+            }
+        };
+        return profiles[action] || {
+            title: 'Preparing AI workspace',
+            copy: 'Collecting course metadata, template profile hints, and current draft content.',
+            aiCopy: 'The server is working through the requested Copilot action.',
+            liveSteps: [
+                'Reading the current draft state.',
+                'Preparing the background task.',
+                'Waiting for the next server milestone.'
+            ],
+            pills: [profileMode, 'Background task', 'Live progress']
+        };
+    }
+
+    function stopLiveThinking() {
+        if (liveThinkingTimer) {
+            window.clearInterval(liveThinkingTimer);
+            liveThinkingTimer = null;
+        }
+    }
+
+    function renderThinkingStep() {
+        if (!activeGenerationProfile || !activeGenerationProfile.liveSteps || !activeGenerationProfile.liveSteps.length) return;
+        const step = activeGenerationProfile.liveSteps[liveThinkingIndex % activeGenerationProfile.liveSteps.length];
+        liveThinkingIndex += 1;
+        renderLiveDetail(`AI thinking: ${step}`, latestProgressPercent, step);
+        addLogEntry(step);
+    }
+
+    function startLiveThinking() {
+        if (liveThinkingTimer || !activeGenerationProfile) return;
+        renderThinkingStep();
+        liveThinkingTimer = window.setInterval(renderThinkingStep, 3500);
+    }
+
+    function renderLiveDetail(label, percent, liveOverride) {
+        if (!liveTitle || !liveCopy || !livePills || !activeGenerationProfile) return;
+        const normalized = String(label || '').toLowerCase();
+        let copy = liveOverride || activeGenerationProfile.copy;
+        if (!liveOverride && normalized.includes('sending to ai')) {
+            copy = activeGenerationProfile.aiCopy || copy;
+        } else if (!liveOverride && normalized.includes('ai returned')) {
+            copy = 'AI has returned content. The server is parsing, cleaning, and checking the structure before saving it.';
+        } else if (!liveOverride && normalized.includes('validating')) {
+            copy = 'The generated content is being checked for missing rows, wrong columns, blank fields, and template compatibility.';
+        } else if (!liveOverride && normalized.includes('saving')) {
+            copy = 'The validated result is being saved back to your CLP draft.';
+        } else if (!liveOverride && normalized.includes('complete')) {
+            copy = 'The action is complete. Opening the refreshed draft now.';
+        } else if (!liveOverride && (normalized.includes('queued') || normalized.includes('worker'))) {
+            copy = 'Your request is in the background queue. The worker will start generation as soon as it picks up the task.';
+        }
+        liveTitle.textContent = activeGenerationProfile.title;
+        liveCopy.textContent = copy;
+        const percentPill = `${Math.max(0, Math.min(100, Math.round(percent || 0)))}% complete`;
+        livePills.innerHTML = [...activeGenerationProfile.pills, percentPill].map(pill).join('');
+    }
+
+    function resetLivePreview(button) {
+        if (!draftText) return;
+        const action = button && button.dataset ? button.dataset.asyncBetaAction : '';
+        if (draftTitle) {
+            draftTitle.textContent = action === 'generate_alignment'
+                ? 'Live Alignment Response'
+                : action === 'generate_weekly'
+                    ? 'Live Weekly Response'
+                    : action === 'generate_clos'
+                        ? 'Live CLO Response'
+                        : 'Live AI Response';
+        }
+        latestLivePreview = '';
+        draftText.textContent = 'Waiting for the model to return its first tokens...';
+    }
+
+    function renderActualAiPreview(text, taskKey) {
+        if (!draftText || !text || text === latestLivePreview) return;
+        latestLivePreview = text;
+        if (draftTitle) {
+            const taskLabel = String(taskKey || '').replace(/^copilot_beta_/, '').replace(/_/g, ' ').trim();
+            draftTitle.textContent = taskLabel ? `Live ${taskLabel} response` : 'Live AI Response';
+        }
+        draftText.textContent = text;
+        draftText.scrollTop = draftText.scrollHeight;
+    }
+
+    function addLogEntry(label) {
+        if (!activityLog || !label || label === lastLogLabel) return;
+        lastLogLabel = label;
+        const elapsed = loadingStartTime ? formatElapsed(Date.now() - loadingStartTime) : '0:00';
+        const isAI = label.toLowerCase().includes('sending to ai') || label.toLowerCase().includes('ai returned') || label.toLowerCase().includes('final review');
+        const isDone = label.toLowerCase().includes('complete') || label.toLowerCase().includes('saving') || label.toLowerCase().includes('upload complete');
+        const entry = document.createElement('div');
+        entry.className = 'flex items-start gap-2 text-[11px] animate-fade-in';
+        const color = isDone ? 'text-emerald-500' : (isAI ? 'text-primary-500' : 'text-gray-500 dark:text-gray-400');
+        const icon = isDone ? '<svg class="w-3 h-3 mt-0.5 flex-shrink-0 text-emerald-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>'
+            : (isAI ? '<svg class="w-3 h-3 mt-0.5 flex-shrink-0 text-primary-500 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>'
+                : '<svg class="w-3 h-3 mt-0.5 flex-shrink-0 text-gray-400" fill="currentColor" viewBox="0 0 20 20"><circle cx="10" cy="10" r="3"/></svg>');
+        entry.innerHTML = `<span class="log-elapsed flex-shrink-0 tabular-nums font-mono opacity-60 text-gray-400">${elapsed}</span>${icon}<span class="${color}">${label}</span>`;
+        activityLog.appendChild(entry);
+        const logContainer = activityLog.parentElement;
+        if (logContainer) logContainer.scrollTop = logContainer.scrollHeight;
+    }
+
+    function buildSuccessPayload(button, statusLabel) {
+        const action = button && button.dataset ? button.dataset.asyncBetaAction : '';
+        const actionLabel = statusLabel || (button ? button.textContent.trim() : 'Beta update');
+        const payload = {
+            title: `${actionLabel} complete.`,
+            message: 'Your beta draft has been updated and the latest regenerated content is now ready for review.'
+        };
+
+        if (action === 'generate_alignment') {
+            payload.message = 'The CLO alignment matrix has been regenerated and saved. Review the updated academic mappings below.';
+        } else if (action === 'generate_clos') {
+            payload.message = 'The CLO rows have been regenerated and saved. Review the refreshed outcomes and alignment details below.';
+        } else if (action === 'generate_weekly') {
+            payload.message = 'The weekly course outline has been regenerated and saved. Review the rebuilt week-by-week blocks below.';
+        } else if (action === 'regenerate_clo_row') {
+            payload.message = 'This CLO row has been regenerated and saved. Review the updated statement and alignment details below.';
+        } else if (action === 'fix_final_review') {
+            payload.title = 'Beta repair complete.';
+            payload.message = 'The flagged beta issues were reworked by AI and the draft is ready for another review pass.';
+        } else if (action === 'finalize_clp') {
+            payload.title = 'Beta CLP ready.';
+            payload.message = 'The draft passed validation and is now marked ready for template insertion.';
+        }
+
+        return payload;
+    }
+
+    function showSuccessModal(payload) {
+        successTitle.textContent = (payload && payload.title) || 'Regeneration complete.';
+        successMessage.textContent = (payload && payload.message) || 'Your beta draft has been updated and the latest regenerated content is now ready for review.';
+        successModal.classList.remove('hidden');
+        successModal.classList.add('flex');
+    }
+
+    function hideSuccessModal() {
+        successModal.classList.add('hidden');
+        successModal.classList.remove('flex');
+    }
+
+    function persistSuccessState(payload, redirectUrl) {
+        if (!payload || !redirectUrl) return;
+        try {
+            const targetUrl = new URL(redirectUrl, window.location.origin);
+            if (!targetUrl.pathname.includes('/teacher/copilot/review/')) return;
+            window.sessionStorage.setItem(successStateKey, JSON.stringify({
+                path: targetUrl.pathname,
+                title: payload.title,
+                message: payload.message
+            }));
+        } catch (error) {
+            console.warn('Could not persist beta success popup state.', error);
+        }
+    }
+
+    function restoreSuccessState() {
+        try {
+            const rawState = window.sessionStorage.getItem(successStateKey);
+            if (!rawState) return;
+            window.sessionStorage.removeItem(successStateKey);
+            const state = JSON.parse(rawState);
+            if (!state || state.path !== window.location.pathname) return;
+            showSuccessModal(state);
+        } catch (error) {
+            window.sessionStorage.removeItem(successStateKey);
+        }
+    }
+
+    function persistFocusState(button, redirectUrl) {
+        if (!button || !redirectUrl) return;
+        const focusTarget = button.dataset ? button.dataset.focusTarget : '';
+        if (!focusTarget) return;
+        try {
+            const targetUrl = new URL(redirectUrl, window.location.origin);
+            if (!targetUrl.pathname.includes('/teacher/copilot/review/')) return;
+            window.sessionStorage.setItem(focusStateKey, JSON.stringify({
+                path: targetUrl.pathname,
+                target: focusTarget
+            }));
+        } catch (error) {
+            console.warn('Could not persist beta focus state.', error);
+        }
+    }
+
+    function restoreFocusState() {
+        try {
+            const rawState = window.sessionStorage.getItem(focusStateKey);
+            if (!rawState) return;
+            window.sessionStorage.removeItem(focusStateKey);
+            const state = JSON.parse(rawState);
+            if (!state || state.path !== window.location.pathname || !state.target) return;
+            const target = document.querySelector(`[data-focus-target="${state.target}"]`) || document.getElementById(state.target);
+            if (!target) return;
+            window.setTimeout(() => {
+                target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                target.classList.add('beta-focus-highlight');
+                window.setTimeout(() => target.classList.remove('beta-focus-highlight'), 2600);
+            }, 180);
+        } catch (error) {
+            window.sessionStorage.removeItem(focusStateKey);
+        }
+    }
+
+    function showLoading(customMessage, button) {
+        if (loadingActive) return;
+        loadingActive = true;
+        loadingStartTime = Date.now();
+        lastLogLabel = '';
+        activeGenerationProfile = buildGenerationProfile(button);
+        liveThinkingIndex = 0;
+        latestProgressPercent = 0;
+        latestServerLabel = 'Starting';
+        stopLiveThinking();
+        message.textContent = customMessage || 'The AI Copilot is working on your request. Editing is temporarily locked until the action completes.';
+        stageText.textContent = 'Starting';
+        hintText.textContent = 'Do not close or navigate away from this page';
+        renderProgress(0);
+        renderLiveDetail('Starting', 0);
+        resetLivePreview(button);
+        if (activityLog) activityLog.innerHTML = '';
+        addLogEntry('Initializing');
+        overlay.classList.remove('hidden');
+        overlay.classList.add('flex');
+        setMobileFabState(false);
+
+        if (elapsedTimer) window.clearInterval(elapsedTimer);
+        elapsedTimer = window.setInterval(function () {
+            if (elapsedText && loadingStartTime) {
+                elapsedText.textContent = formatElapsed(Date.now() - loadingStartTime);
+            }
+            // Update the last log entry's elapsed time live
+            if (activityLog && activityLog.lastElementChild && loadingStartTime) {
+                const timeSpan = activityLog.lastElementChild.querySelector('.log-elapsed');
+                if (timeSpan) {
+                    timeSpan.textContent = formatElapsed(Date.now() - loadingStartTime);
+                }
+            }
+        }, 1000);
+
+        const controls = form.querySelectorAll('button, input, textarea, select');
+        controls.forEach((control) => {
+            if (control.closest('#beta-loading-overlay')) return;
+            control.dataset.wasDisabled = control.disabled ? '1' : '0';
+            control.disabled = true;
+        });
+    }
+
+    function failLoading(errorMessage) {
+        loadingActive = false;
+        if (pollTimer) { window.clearInterval(pollTimer); pollTimer = null; }
+        if (elapsedTimer) { window.clearInterval(elapsedTimer); elapsedTimer = null; }
+        stopLiveThinking();
+        overlay.classList.add('hidden');
+        overlay.classList.remove('flex');
+        window.alert(errorMessage || 'The beta task could not be completed right now.');
+        window.location.reload();
+    }
+
+    async function parseJsonResponse(response) {
+        const rawText = await response.text();
+        try {
+            return { data: JSON.parse(rawText), rawText };
+        } catch (error) {
+            const contentType = response.headers.get('content-type') || '';
+            if (contentType.includes('text/html')) {
+                return {
+                    data: null,
+                    rawText,
+                    parseError: 'The server returned an HTML page instead of task JSON. This usually means the request hit a login page, a CSRF rejection, or a server error.'
+                };
+            }
+            return {
+                data: null,
+                rawText,
+                parseError: 'The server returned an invalid response instead of task JSON.'
+            };
+        }
+    }
+
+    function getHintForLabel(label) {
+        if (!label) return 'The server is actively working on your request.';
+        const l = label.toLowerCase();
+        if (l.includes('sending to ai')) return 'The AI is generating content now. This may take 30-90 seconds for complex outlines — your result is on the way.';
+        if (l.includes('ai returned')) return 'AI response received. Processing and validating the output.';
+        if (l.includes('validating')) return 'Running structural and content validation checks.';
+        if (l.includes('saving')) return 'Persisting changes to the database.';
+        if (l.includes('building populated docx') || l.includes('docx rendered')) return 'Assembling the final DOCX document from validated content.';
+        if (l.includes('uploading')) return 'Transferring the generated document to storage.';
+        if (l.includes('final review')) return 'AI is reviewing the full draft for quality and compliance.';
+        if (l.includes('repair')) return 'AI is attempting to fix flagged issues automatically.';
+        if (l.includes('template profile')) return 'Loading custom template structure for this department.';
+        if (l.includes('loading') || l.includes('reading')) return 'Loading plan data and course metadata.';
+        return 'The server is actively working on your request.';
+    }
+
+    async function pollTask(taskId) {
+        const response = await fetch(`${taskStatusUrlBase}${taskId}`, {
+            credentials: 'same-origin',
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        });
+        const parsed = await parseJsonResponse(response);
+        const data = parsed.data;
+        if (!data) {
+            failLoading(parsed.parseError || 'Could not read beta task progress.');
+            return;
+        }
+        if (!response.ok || !data.ok) {
+            failLoading(data.error || 'Could not read beta task progress.');
+            return;
+        }
+
+        renderProgress(data.percent || 0);
+        const label = data.label || 'Processing';
+        latestProgressPercent = data.percent || 0;
+        latestServerLabel = label;
+        stageText.textContent = label;
+        addLogEntry(label);
+        hintText.textContent = getHintForLabel(label);
+        renderLiveDetail(label, data.percent || 0);
+        renderActualAiPreview(data.ai_live_preview, data.ai_live_task);
+        if (String(label).toLowerCase().includes('sending to ai')) {
+            startLiveThinking();
+        } else if (
+            String(label).toLowerCase().includes('ai returned') ||
+            String(label).toLowerCase().includes('validating') ||
+            String(label).toLowerCase().includes('saving') ||
+            String(label).toLowerCase().includes('complete')
+        ) {
+            stopLiveThinking();
+        }
+
+        if (data.status === 'completed') {
+            stopLiveThinking();
+            renderProgress(100);
+            addLogEntry(label);
+            if (elapsedTimer) { window.clearInterval(elapsedTimer); elapsedTimer = null; }
+            persistSuccessState(buildSuccessPayload(lastAsyncButton, label), data.redirect_url || window.location.href);
+            persistFocusState(lastAsyncButton, data.redirect_url || window.location.href);
+            window.location.href = data.redirect_url || window.location.href;
+            return;
+        }
+
+        if (data.status === 'failed') {
+            stopLiveThinking();
+            addLogEntry('Task failed');
+            failLoading(data.error || 'The beta task failed.');
+        }
+    }
+
+    async function startAsyncTask(button) {
+        showLoading(button.dataset.loadingMessage, button);
+        stageText.textContent = 'Queueing';
+        latestServerLabel = 'Queueing';
+        hintText.textContent = 'Sending your beta request to the background worker.';
+        renderLiveDetail('Queueing', 0);
+
+        const formData = new FormData(form);
+        formData.set('beta_async_action', button.dataset.asyncBetaAction);
+        if (button.dataset.cloIndex) formData.set('clo_index', button.dataset.cloIndex);
+        if (button.dataset.weekIndex) formData.set('week_index', button.dataset.weekIndex);
+
+        const csrfToken = form.querySelector('input[name="csrf_token"]')?.value || '';
+        const headers = { 'X-Requested-With': 'XMLHttpRequest' };
+        if (csrfToken) {
+            headers['X-CSRFToken'] = csrfToken;
+        }
+
+        const response = await fetch(startTaskUrl, {
+            method: 'POST',
+            body: formData,
+            credentials: 'same-origin',
+            headers: headers
+        });
+        const parsed = await parseJsonResponse(response);
+        const data = parsed.data;
+        if (!data) {
+            failLoading(parsed.parseError || 'Could not start the beta task.');
+            return;
+        }
+        if (!response.ok || !data.ok || !data.task_id) {
+            if (data.duplicate && data.task_id) {
+                addLogEntry('Existing task found, resuming progress tracking');
+                renderProgress(data.progress_percent || 10);
+                latestProgressPercent = data.progress_percent || 10;
+                stageText.textContent = data.status === 'queued' ? 'Queued' : 'Processing';
+                latestServerLabel = stageText.textContent;
+                renderLiveDetail(stageText.textContent, data.progress_percent || 10);
+                renderActualAiPreview(data.ai_live_preview, data.ai_live_task);
+                addLogEntry('Waiting for existing task');
+                pollTimer = window.setInterval(() => pollTask(data.task_id), 4000);
+                pollTask(data.task_id);
+                return;
+            }
+            failLoading(data.error || 'Could not start the beta task.');
+            return;
+        }
+
+        addLogEntry('Task queued');
+        renderProgress(3);
+        latestProgressPercent = 3;
+        stageText.textContent = 'Queued';
+        latestServerLabel = 'Queued';
+        renderLiveDetail('Queued', 3);
+        await new Promise(r => setTimeout(r, 300));
+        addLogEntry('Waiting for worker');
+        await new Promise(r => setTimeout(r, 300));
+        pollTimer = window.setInterval(() => pollTask(data.task_id), 4000);
+        pollTask(data.task_id);
+    }
+
+    if (mobileFabToggle && mobileFabActions) {
+        setMobileFabState(false);
+        mobileFabToggle.addEventListener('click', function () {
+            if (loadingActive) return;
+            setMobileFabState(!mobileFabOpen);
+        });
+
+        document.addEventListener('click', function (event) {
+            const fabRoot = document.getElementById('beta-mobile-fab-menu');
+            if (!fabRoot || !mobileFabOpen) return;
+            if (fabRoot.contains(event.target)) return;
+            setMobileFabState(false);
+        });
+
+        mobileFabActions.querySelectorAll('button, a').forEach((action) => {
+            action.addEventListener('click', function () {
+                setMobileFabState(false);
+            });
+        });
+    }
+
+    const openDocumentLinks = document.querySelectorAll('[data-beta-open-document="true"]');
+    openDocumentLinks.forEach((link) => {
+        link.addEventListener('click', function () {
+            if (loadingActive) return;
+            showLoading(link.dataset.loadingMessage || 'Opening the inserted DOCX in OnlyOffice. Please wait while the editor loads.');
+            stageText.textContent = 'Opening';
+            hintText.textContent = 'Preparing the inserted document and connecting to OnlyOffice.';
+            renderProgress(96);
+        });
+    });
+
+    const asyncButtons = document.querySelectorAll('button[type="submit"][data-async-beta-action]');
+    asyncButtons.forEach((button) => {
+        button.addEventListener('click', function (event) {
+            if (!asyncBetaControlsEnabled) {
+                showLoading(button.dataset.loadingMessage, button);
+                return;
+            }
+            event.preventDefault();
+            if (loadingActive) return;
+            lastAsyncButton = button;
+            startAsyncTask(button).catch((error) => {
+                failLoading(error && error.message ? error.message : 'The beta task could not be started.');
+            });
+        });
+    });
+
+    successCloseButton.addEventListener('click', hideSuccessModal);
+    successModal.addEventListener('click', function (event) {
+        if (event.target === successModal) hideSuccessModal();
+    });
+
+    restoreSuccessState();
+    restoreFocusState();
+
+    form.addEventListener('submit', function (event) {
+        if (loadingActive) return;
+        const submitter = event.submitter;
+        if (!submitter || !submitter.dataset || !submitter.dataset.loadingMessage) return;
+        showLoading(submitter.dataset.loadingMessage, submitter);
+    });
+    }) ();
+</script>
+<style>
+.beta-dots::after {
+    content: '';
+    animation: beta-dot-pulse 2s steps(4) infinite;
+}
+@keyframes beta-dot-pulse {
+    0% { content: ''; }
+    25% { content: '.'; }
+    50% { content: '..'; }
+    75% { content: '...'; }
+    100% { content: ''; }
+}
+</style>
+{% endblock %}

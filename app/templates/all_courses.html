@@ -1,0 +1,143 @@
+{% extends "base.html" %}
+
+{% block title %}Department Course Learning Plans{% endblock %}
+
+{% block navbar_links %}
+<a href="{{ url_for('auth.logout') }}" class="ml-4 px-3 py-2 rounded-md text-sm font-medium text-gray-700 dark:text-gray-200 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-gray-100 dark:hover:bg-gray-700">Logout</a>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <header class="mb-8">
+        <h1 class="text-3xl font-bold leading-tight text-gray-900 dark:text-white">
+            Department Course Plans
+        </h1>
+        <p class="mt-1 text-lg text-gray-600 dark:text-gray-400">
+            {% if department_name %}
+            Browse approved Course Learning Plans created within {{ department_name }}.
+            {% else %}
+            Browse approved Course Learning Plans created within your assigned department.
+            {% endif %}
+        </p>
+    </header>
+
+    <!-- Search and Filters -->
+    <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md mb-8 border border-gray-100 dark:border-gray-700">
+        <div class="flex flex-col md:flex-row gap-4">
+            <div class="flex-1 relative">
+                <input type="text" id="global-search" placeholder="Search by subject or teacher..." 
+                       class="block w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-indigo-500 focus:border-indigo-500">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <svg class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                </div>
+            </div>
+            <div class="w-full md:w-80">
+                <div class="flex items-center h-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700/70 text-sm font-semibold text-gray-600 dark:text-gray-300">
+                    <span class="text-xs uppercase tracking-widest font-black text-gray-400 dark:text-gray-500 mr-3">Department</span>
+                    <span>{{ department_name or 'Unassigned' }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md transition-colors duration-200">
+        {% if plans %}
+            <div class="space-y-4" id="global-clp-list">
+                {% for plan in plans %}
+                <div class="clp-registry-card border border-gray-200 dark:border-gray-700 p-4 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors" 
+                     data-subject="{{ plan.subject|lower }}" 
+                     data-author="{{ plan.author.username|lower }}"
+                     data-dept="{{ plan.department }}">
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                        <div class="flex-1 min-w-0">
+                            <p class="font-semibold text-gray-800 dark:text-gray-200 truncate">{{ plan.subject }}</p>
+                            <p class="text-sm text-gray-600 dark:text-gray-400">{{ plan.department }}</p>
+                            <p class="text-xs text-gray-500 dark:text-gray-500 mt-1">Status: <span class="text-green-600 font-bold uppercase text-xs">Approved</span></p>
+                        </div>
+                        <div class="flex flex-col items-start sm:items-end flex-shrink-0">
+                             <p class="text-xs text-gray-500 dark:text-gray-500">Author: {{ plan.author.username }}</p>
+                             <p class="text-xs text-gray-500 dark:text-gray-400">{{ plan.date_posted.strftime('%Y-%m-%d') }}</p>
+                             <div class="mt-3 flex flex-wrap items-center gap-3">
+                                {% if plan.filename and plan.filename.endswith('.docx') %}
+                                    <a href="{{ url_for('teacher.view_approved_clp_document', plan_id=plan.id) }}" class="text-purple-600 dark:text-purple-400 hover:text-purple-900 dark:hover:text-purple-300 text-sm font-medium">View Document</a>
+                                {% else %}
+                                    <a href="{{ url_for('teacher.view_clp', plan_id=plan.id) }}" class="text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300 text-sm font-medium">View Details</a>
+                                {% endif %}
+                                
+                                {% if session.get('role') == 'teacher' %}
+                                {% set _clone_msg = (
+                                    'Heads up: this CLP is legacy data from before the AI Copilot migration. '
+                                    ~ 'Only the metadata (course code, title, description, classrooms, schedule, etc.) will be cloned '
+                                    ~ 'into a new AI Copilot draft. You will need to regenerate CLOs and the weekly outline. Continue?'
+                                ) if plan.is_legacy_clp else 'Clone this plan into a new AI Copilot draft?' %}
+                                <form method="POST" action="{{ url_for('teacher.clone_clp', plan_id=plan.id) }}" onsubmit="return confirm({{ _clone_msg|tojson }});">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                    <button type="submit" class="text-emerald-600 dark:text-emerald-400 hover:text-emerald-900 dark:hover:text-emerald-300 text-sm font-medium flex items-center">
+                                        <svg class="w-4 h-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2" /></svg>
+                                        Clone{% if plan.is_legacy_clp %} <span class="ml-1 text-[10px] font-black uppercase tracking-widest text-amber-600 dark:text-amber-400">(Legacy)</span>{% endif %}
+                                    </button>
+                                </form>
+                                {% endif %}
+                             </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+                
+                <div id="no-registry-results" class="hidden text-center py-16">
+                    <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                    <h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-white">No matches found</h3>
+                    <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Try adjusting your search or filters.</p>
+                </div>
+            </div>
+        {% else %}
+            <p class="text-center text-gray-500 dark:text-gray-400 py-8">
+                {% if department_name %}
+                No approved learning plans found for {{ department_name }} yet.
+                {% else %}
+                No department plans are available because your account has no assigned department.
+                {% endif %}
+            </p>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const searchInput = document.getElementById('global-search');
+        const cards = document.querySelectorAll('.clp-registry-card');
+        const noResults = document.getElementById('no-registry-results');
+
+        function filterRegistry() {
+            const query = searchInput.value.toLowerCase().trim();
+            let visibleCount = 0;
+
+            cards.forEach(card => {
+                const subject = card.getAttribute('data-subject');
+                const author = card.getAttribute('data-author');
+
+                const matchesSearch = subject.includes(query) || author.includes(query);
+
+                if (matchesSearch) {
+                    card.style.display = 'block';
+                    visibleCount++;
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+
+            if (visibleCount === 0 && query !== '') {
+                noResults.classList.remove('hidden');
+            } else {
+                noResults.classList.add('hidden');
+            }
+        }
+
+        if (searchInput) searchInput.addEventListener('input', filterRegistry);
+    });
+</script>
+{% endblock %}

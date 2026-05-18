@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+
+{% block title %}CLP Editor{% endblock %}
+
+{% block content %}
+<div id="clp-editor-root" data-document-id="{{ document.id }}" class="space-y-4">
+    <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+        <input
+            id="document-title"
+            type="text"
+            value="{{ document.title }}"
+            class="w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-4 py-3 text-lg font-black text-gray-900 dark:text-white"
+            placeholder="CLP title"
+        >
+
+        <div class="flex flex-wrap gap-2">
+            <button id="save-document" type="button" class="px-5 py-3 rounded-xl bg-primary-600 text-white text-xs font-black uppercase tracking-widest hover:bg-primary-700">Save</button>
+            <button id="save-version" type="button" class="px-4 py-3 rounded-xl bg-gray-900 text-white text-xs font-black uppercase tracking-widest">Version</button>
+            <button id="show-versions" type="button" class="px-4 py-3 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 text-xs font-black uppercase tracking-widest">Versions</button>
+            <button id="import-docx-button" type="button" class="px-4 py-3 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 text-xs font-black uppercase tracking-widest">Import DOCX</button>
+            <button id="export-docx" type="button" class="px-4 py-3 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 text-xs font-black uppercase tracking-widest">DOCX</button>
+            <button id="export-pdf" type="button" class="px-4 py-3 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 text-xs font-black uppercase tracking-widest">PDF</button>
+        </div>
+    </div>
+
+    <div id="save-status" class="text-xs font-bold text-gray-500 dark:text-gray-400"></div>
+    <input id="import-docx-file" type="file" accept=".docx" class="hidden">
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-3">
+        <button id="generate-weekly-outline" type="button" class="px-4 py-3 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 text-xs font-black uppercase tracking-widest">AI Generate Weekly Outline</button>
+        <button id="generate-custom-section" type="button" class="px-4 py-3 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 text-xs font-black uppercase tracking-widest">AI Generate Section</button>
+        <button id="align-table" type="button" class="px-4 py-3 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 text-xs font-black uppercase tracking-widest">AI Align CLO-PLO</button>
+    </div>
+
+    <pre id="debug-output" class="hidden whitespace-pre-wrap rounded-xl bg-gray-950 text-gray-100 p-4 text-xs overflow-auto max-h-72"></pre>
+
+    <div class="relative">
+        <button
+            id="rewrite-selection"
+            type="button"
+            class="hidden fixed z-[500] px-4 py-2 rounded-xl bg-gray-900 text-white text-xs font-black shadow-xl"
+        >
+            Rewrite
+        </button>
+
+        <div
+            id="editor"
+            class="min-h-[70vh] rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-6 text-gray-900 dark:text-gray-100 max-w-none"
+        ></div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script type="module" src="{{ url_for('static', filename='js/clp_editor.js') }}"></script>
+{% endblock %}

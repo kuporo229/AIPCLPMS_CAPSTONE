@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Reviewing Asset: {{ doc_title }}</title>
+  
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="{{ onlyoffice_api_js_url }}"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+        darkMode: 'class',
+        theme: {
+            extend: {
+                fontFamily: { sans: ['Plus Jakarta Sans', 'sans-serif'] },
+                colors: { primary: {"50":"#eff6ff","100":"#dbeafe","200":"#bfdbfe","300":"#93c5fd","400":"#60a5fa","500":"#3b82f6","600":"#2563eb","700":"#1d4ed8","800":"#1e40af","900":"#1e3a8a","950":"#172554"} }
+            }
+        }
+    }
+  </script>
+
+  <style>
+    html, body { height: 100vh; width: 100vw; margin: 0; padding: 0; overflow: hidden; }
+    #editor { height: 100vh; width: 100vw; }
+    [x-cloak] { display: none !important; }
+  </style>
+</head>
+<body class="bg-gray-50 dark:bg-[#0b0f19] flex flex-col antialiased">
+
+  <!-- Header Section -->
+  <header class="bg-white/80 dark:bg-[#111827]/80 backdrop-blur-xl border-b border-gray-200 dark:border-gray-800 h-16 shrink-0 z-50">
+      <div class="px-6 h-full flex items-center justify-between">
+          <div class="flex items-center gap-4 min-w-0">
+              <div class="w-10 h-10 rounded-xl bg-primary-50 dark:bg-primary-900/20 flex items-center justify-center text-primary-600 shadow-sm shrink-0">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </div>
+              <div class="min-w-0">
+                  <p class="text-[9px] font-black text-primary-600 uppercase tracking-[0.2em] mb-0.5">Live Endorsement Terminal</p>
+                  <h1 class="text-sm font-black text-gray-900 dark:text-white truncate uppercase tracking-tighter leading-none">{{ doc_title }}</h1>
+              </div>
+          </div>
+
+          <div class="flex items-center gap-3">
+              <span class="hidden md:inline-flex px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest bg-emerald-50 text-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-800">Review Mode Active</span>
+              <a href="{{ url_for('dean.dean_review_clp', plan_id=plan_id) }}" class="inline-flex items-center gap-2 px-5 py-2 bg-gray-900 dark:bg-primary-600 text-white text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-black dark:hover:bg-primary-700 transition-all shadow-xl shadow-gray-200 dark:shadow-none">
+                  <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M15 19l-7-7 7-7" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                  Exit
+              </a>
+          </div>
+      </div>
+  </header>
+
+  <!-- Editor Canvas -->
+  <main id="editor" class="flex-grow bg-white dark:bg-[#111827]"></main>
+
+  <!-- Status Notification -->
+  <div id="status" class="fixed bottom-8 right-8 px-6 py-4 rounded-2xl shadow-2xl text-[10px] font-black uppercase tracking-[0.2em] z-[100] hidden animate-fade-in-up"></div>
+
+  <script>
+    function showStatus(msg, isError=false) {
+        const el = document.getElementById('status');
+        el.textContent = msg;
+        el.className = `fixed bottom-8 right-8 px-6 py-4 rounded-2xl shadow-2xl text-[10px] font-black uppercase tracking-[0.2em] z-[100] text-white ${isError ? 'bg-red-600' : 'bg-emerald-600 shadow-emerald-200 dark:shadow-none'}`;
+        el.classList.remove('hidden');
+        setTimeout(() => el.classList.add('hidden'), 5000);
+    }
+
+    const config = {{ config|tojson|safe }};
+    if (!config.token) {
+        config.token = "{{ token }}";
+    }
+
+    window.addEventListener('load', function() {
+        if (typeof DocsAPI !== 'undefined') {
+            try {
+                new DocsAPI.DocEditor("editor", config);
+            } catch (e) {
+                showStatus("CRITICAL: Editor Failure - " + e.message, true);
+            }
+        } else {
+            document.getElementById('editor').innerHTML = `
+                <div class="h-full flex flex-col items-center justify-center opacity-50 p-8 text-center">
+                    <svg class="w-16 h-16 text-red-500 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    <p class="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">Connection Failed: ONLYOFFICE API Endpoint Unreachable</p>
+                </div>`;
+        }
+    });
+  </script>
+</body>
+</html>

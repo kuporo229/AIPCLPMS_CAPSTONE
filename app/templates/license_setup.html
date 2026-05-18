@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>System License Activation</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="{{ url_for('static', filename='css/transitions.css') }}" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-900 min-h-screen flex items-center justify-center p-4">
+
+    <div class="max-w-md w-full bg-white rounded-[2.5rem] shadow-xl border border-gray-100 p-8 sm:p-10">
+        <div class="text-center mb-8 space-y-4">
+            <div class="w-16 h-16 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+            </div>
+            <h1 class="text-2xl font-black tracking-tight text-gray-900">System Locked</h1>
+            <p class="text-sm font-medium text-gray-500 leading-relaxed">
+                A valid license key is required to access this application. Please enter your activation key below.
+            </p>
+        </div>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="mb-6 p-4 rounded-2xl text-sm font-bold {% if category == 'success' %}bg-green-50 text-green-700 border border-green-200{% else %}bg-red-50 text-red-700 border border-red-200{% endif %}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <form method="POST" action="{{ url_for('main.license_setup') }}" class="space-y-6">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <div class="space-y-2">
+                <label for="license_key" class="block text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">License Key</label>
+                <input type="text" id="license_key" name="license_key" required class="w-full bg-gray-50 border-gray-200 rounded-2xl px-5 py-4 text-sm font-bold focus:ring-blue-500 focus:border-blue-500 transition-all font-mono placeholder:text-gray-300" placeholder="XXXX-XXXX-XXXX-XXXX">
+            </div>
+            <button type="submit" class="w-full py-4 bg-blue-600 text-white text-xs font-black uppercase tracking-[0.2em] rounded-2xl hover:bg-blue-700 transition-all shadow-lg shadow-blue-200 cursor-pointer">
+                Activate License
+            </button>
+        </form>
+        
+        <div class="mt-8 pt-6 border-t border-gray-100 text-center">
+            <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+                Protected by Ludom Licensing
+            </p>
+        </div>
+    </div>
+
+</body>
+</html>

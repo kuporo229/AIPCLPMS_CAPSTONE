@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+
+{% block title %}Department Subjects{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto space-y-6">
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+            <p class="text-[10px] uppercase tracking-widest font-black text-gray-400">Admin Catalog</p>
+            <h1 class="text-2xl sm:text-3xl font-black text-gray-900 dark:text-white">Department Subjects</h1>
+            <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">{{ active_semester }} • {{ active_academic_year }}</p>
+        </div>
+        <a href="{{ url_for('admin.add_subject') }}" class="px-5 py-2.5 rounded-2xl bg-primary-600 hover:bg-primary-700 text-white text-xs font-black uppercase tracking-widest">Add Department Subject</a>
+    </div>
+
+    {% if subjects %}
+    <div class="overflow-x-auto bg-white dark:bg-[#111827] border border-gray-200 dark:border-gray-800 rounded-3xl">
+        <table class="min-w-full text-sm">
+            <thead class="bg-gray-50 dark:bg-gray-900/50 text-xs uppercase tracking-widest text-gray-500">
+                <tr>
+                    <th class="text-left px-4 py-3">Department</th>
+                    <th class="text-left px-4 py-3">Course</th>
+                    <th class="text-left px-4 py-3">Type</th>
+                    <th class="text-left px-4 py-3">Units</th>
+                    <th class="text-left px-4 py-3">Contact</th>
+                    <th class="text-right px-4 py-3">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for subject in subjects %}
+                <tr class="border-t border-gray-100 dark:border-gray-800">
+                    <td class="px-4 py-3">{{ subject.department }}</td>
+                    <td class="px-4 py-3">
+                        <p class="font-black text-gray-900 dark:text-white">{{ subject.course_code }}</p>
+                        <p class="text-gray-600 dark:text-gray-300">{{ subject.course_title }}</p>
+                    </td>
+                    <td class="px-4 py-3">{{ subject.type_of_course }}</td>
+                    <td class="px-4 py-3">{{ subject.units }}</td>
+                    <td class="px-4 py-3">{{ subject.contact_hours }}</td>
+                    <td class="px-4 py-3 text-right">
+                        <div class="inline-flex gap-2">
+                            <a href="{{ url_for('admin.edit_subject', subject_id=subject.id) }}" class="px-3 py-1.5 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 text-[10px] font-black uppercase tracking-widest">Edit</a>
+                            <form method="POST" action="{{ url_for('admin.delete_subject', subject_id=subject.id) }}" onsubmit="return confirm('Delete this subject?');" class="inline">
+                                {{ delete_form.hidden_tag() }}
+                                <button type="submit" class="px-3 py-1.5 rounded-lg bg-red-600 hover:bg-red-700 text-white text-[10px] font-black uppercase tracking-widest">Delete</button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="bg-white dark:bg-[#111827] border border-gray-200 dark:border-gray-800 rounded-3xl p-8 text-center">
+        <p class="text-sm text-gray-500 dark:text-gray-400">No department subjects found for this active term.</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

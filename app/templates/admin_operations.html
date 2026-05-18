@@ -1,0 +1,217 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Operations{% endblock %}
+
+{% block content %}
+<div class="space-y-10">
+    <div class="flex flex-col lg:flex-row lg:items-end justify-between gap-6">
+        <div class="space-y-1">
+            <h1 class="text-3xl font-black text-gray-900 dark:text-white tracking-tight leading-tight">Admin <span class="text-red-500">Operations</span></h1>
+            <p class="text-sm font-medium text-gray-500 dark:text-gray-400">A focused incident console for failed jobs, degraded services, and recent operational warnings.</p>
+        </div>
+        <div class="flex flex-col sm:flex-row gap-3">
+            <div class="px-5 py-3 bg-white dark:bg-[#111827] border border-gray-200 dark:border-gray-800 rounded-2xl text-sm font-semibold text-gray-600 dark:text-gray-300 shadow-sm">
+                Snapshot:
+                <span class="font-black text-gray-900 dark:text-white">{{ generated_at.strftime('%b %d, %Y %I:%M %p') }}</span>
+            </div>
+            <a href="{{ url_for('admin.admin_dashboard') }}" class="inline-flex items-center gap-2 px-6 py-3 bg-white dark:bg-[#111827] border border-gray-200 dark:border-gray-800 rounded-2xl text-sm font-black text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all shadow-sm">
+                Back to Dashboard
+            </a>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {% for service_name, state in health.items() %}
+        <div class="bg-white dark:bg-[#111827] p-6 rounded-[2rem] border border-gray-200 dark:border-gray-800 shadow-sm">
+            <div class="flex items-center justify-between gap-3">
+                <p class="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">{{ service_name }}</p>
+                <span class="px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest border
+                    {% if state.status == 'healthy' %}bg-emerald-50 text-emerald-700 border-emerald-100 dark:bg-emerald-900/20 dark:text-emerald-400 dark:border-emerald-800
+                    {% elif state.status == 'degraded' %}bg-red-50 text-red-700 border-red-100 dark:bg-red-900/20 dark:text-red-400 dark:border-red-800
+                    {% else %}bg-slate-100 text-slate-700 border-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700{% endif %}">
+                    {{ state.status }}
+                </span>
+            </div>
+            <p class="mt-4 text-sm font-semibold text-gray-600 dark:text-gray-300 leading-relaxed">{{ state.detail }}</p>
+        </div>
+        {% endfor %}
+    </div>
+
+{% if health_log %}
+    <div class="bg-white dark:bg-[#111827] rounded-[2.5rem] border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden mb-8">
+        <div class="px-8 py-6 border-b border-gray-100 dark:border-gray-800">
+            <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded-xl bg-emerald-100 dark:bg-emerald-900/20 flex items-center justify-center">
+                    <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+                </div>
+                <h2 class="text-xl font-black text-gray-900 dark:text-white tracking-tight">AI Agent Health Log</h2>
+            </div>
+            <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">ZeroClaw autonomous monitor — OOM detection, error tracking, memory, and disk. Updated every 15 minutes.</p>
+        </div>
+        <div class="px-8 py-5">
+            <pre class="text-xs font-mono text-gray-700 dark:text-gray-300 whitespace-pre-wrap leading-relaxed max-h-96 overflow-y-auto">{{ health_log }}</pre>
+        </div>
+    </div>
+{% endif %}
+
+{% if copilot_ai_summary %}
+    <section class="bg-white dark:bg-[#111827] rounded-[2.5rem] border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden">
+        <div class="px-8 py-6 border-b border-gray-100 dark:border-gray-800">
+            <h2 class="text-xl font-black text-gray-900 dark:text-white tracking-tight">Copilot AI Timings</h2>
+            <p class="text-sm text-gray-500 dark:text-gray-400">Recent beta Copilot generation durations from the last 24 hours.</p>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="min-w-full text-sm">
+                <thead class="bg-gray-50 dark:bg-gray-900/50 text-[10px] font-black uppercase tracking-widest text-gray-400">
+                    <tr>
+                        <th class="px-8 py-4 text-left">Task</th>
+                        <th class="px-4 py-4 text-right">Runs</th>
+                        <th class="px-4 py-4 text-right">P50</th>
+                        <th class="px-4 py-4 text-right">P90</th>
+                        <th class="px-4 py-4 text-right">Max</th>
+                        <th class="px-4 py-4 text-right">Errors</th>
+                        <th class="px-8 py-4 text-left">Last Plan</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
+                    {% for row in copilot_ai_summary %}
+                    <tr>
+                        <td class="px-8 py-4 font-black text-gray-900 dark:text-white">{{ row.task_type }}</td>
+                        <td class="px-4 py-4 text-right font-semibold text-gray-600 dark:text-gray-300">{{ row.count }}</td>
+                        <td class="px-4 py-4 text-right font-semibold text-gray-600 dark:text-gray-300">{{ '%.1f'|format(row.p50_ms / 1000) }}s</td>
+                        <td class="px-4 py-4 text-right font-semibold {% if row.p90_ms > 30000 %}text-amber-600 dark:text-amber-400{% else %}text-gray-600 dark:text-gray-300{% endif %}">{{ '%.1f'|format(row.p90_ms / 1000) }}s</td>
+                        <td class="px-4 py-4 text-right font-semibold {% if row.max_ms > 30000 %}text-red-600 dark:text-red-400{% else %}text-gray-600 dark:text-gray-300{% endif %}">{{ '%.1f'|format(row.max_ms / 1000) }}s</td>
+                        <td class="px-4 py-4 text-right font-semibold text-gray-600 dark:text-gray-300">{{ row.errors }}</td>
+                        <td class="px-8 py-4 text-xs font-black text-gray-400 uppercase tracking-widest">
+                            {% if row.last_plan_id %}
+                            <a href="{{ url_for('admin.admin_edit_clp_document', plan_id=row.last_plan_id) }}" class="text-primary-600 hover:underline">CLP {{ row.last_plan_id }}</a>
+                            {% else %}
+                            None
+                            {% endif %}
+                            {% if row.last_model %}<span class="block mt-1">{{ row.last_model }}</span>{% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+{% endif %}
+
+    <div class="grid grid-cols-1 xl:grid-cols-2 gap-8">
+        <section class="bg-white dark:bg-[#111827] rounded-[2.5rem] border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden">
+            <div class="px-8 py-6 border-b border-gray-100 dark:border-gray-800">
+                <h2 class="text-xl font-black text-gray-900 dark:text-white tracking-tight">Failed Background Tasks</h2>
+                <p class="text-sm text-gray-500 dark:text-gray-400">These runs ended in failure and usually need admin follow-up or developer review.</p>
+            </div>
+            <div class="divide-y divide-gray-100 dark:divide-gray-800">
+                {% for task in failed_tasks %}
+                <div class="px-8 py-5 space-y-2">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                        <p class="text-sm font-black text-gray-900 dark:text-white uppercase tracking-tight">{{ task.task_name }}</p>
+                        <div class="flex items-center gap-2">
+                            {% if task.plan_id %}
+                            <a href="{{ url_for('admin.admin_edit_clp_document', plan_id=task.plan_id) }}" class="text-[10px] font-black uppercase tracking-widest text-primary-600 hover:underline">Open CLP {{ task.plan_id }}</a>
+                            {% endif %}
+                            <span class="px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest bg-red-50 text-red-700 border border-red-100 dark:bg-red-900/20 dark:text-red-400 dark:border-red-800">{{ task.status }}</span>
+                        </div>
+                    </div>
+                    <p class="text-xs font-semibold text-gray-600 dark:text-gray-300 break-words">{{ task.error_message or 'No error message recorded.' }}</p>
+                    <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Task #{{ task.id }}{% if task.user_id %} / User {{ task.user_id }}{% endif %}</p>
+                </div>
+                {% else %}
+                <div class="px-8 py-16 text-center text-[10px] font-black text-gray-400 uppercase tracking-widest">No failed background tasks in the current snapshot.</div>
+                {% endfor %}
+            </div>
+        </section>
+
+        <section class="bg-white dark:bg-[#111827] rounded-[2.5rem] border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden">
+            <div class="px-8 py-6 border-b border-gray-100 dark:border-gray-800">
+                <h2 class="text-xl font-black text-gray-900 dark:text-white tracking-tight">Stuck or Long-Running Tasks</h2>
+                <p class="text-sm text-gray-500 dark:text-gray-400">Anything older than fifteen minutes and not completed is flagged here.</p>
+            </div>
+            <div class="divide-y divide-gray-100 dark:divide-gray-800">
+                {% for task in stuck_tasks %}
+                <div class="px-8 py-5 space-y-2">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                        <p class="text-sm font-black text-gray-900 dark:text-white uppercase tracking-tight">{{ task.task_name }}</p>
+                        <span class="px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest bg-amber-50 text-amber-700 border border-amber-100 dark:bg-amber-900/20 dark:text-amber-400 dark:border-amber-800">{{ task.status }}</span>
+                    </div>
+                    <p class="text-xs font-semibold text-gray-600 dark:text-gray-300">Progress: {{ task.progress_percent or 0 }}%{% if task.progress_label %} / {{ task.progress_label }}{% endif %}</p>
+                    <div class="flex items-center gap-3 text-[10px] font-black text-gray-400 uppercase tracking-widest">
+                        <span>Task #{{ task.id }}</span>
+                        {% if task.plan_id %}
+                        <a href="{{ url_for('admin.admin_edit_clp_document', plan_id=task.plan_id) }}" class="text-primary-600 hover:underline">Open CLP {{ task.plan_id }}</a>
+                        {% endif %}
+                    </div>
+                </div>
+                {% else %}
+                <div class="px-8 py-16 text-center text-[10px] font-black text-gray-400 uppercase tracking-widest">No stuck tasks in the current snapshot.</div>
+                {% endfor %}
+            </div>
+        </section>
+    </div>
+
+    <div class="grid grid-cols-1 xl:grid-cols-2 gap-8">
+        <section class="bg-white dark:bg-[#111827] rounded-[2.5rem] border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden">
+            <div class="px-8 py-6 border-b border-gray-100 dark:border-gray-800">
+                <h2 class="text-xl font-black text-gray-900 dark:text-white tracking-tight">Recent System Events</h2>
+                <p class="text-sm text-gray-500 dark:text-gray-400">Warnings and errors captured from storage, OnlyOffice, and admin flows.</p>
+            </div>
+            <div class="divide-y divide-gray-100 dark:divide-gray-800">
+                {% for event in recent_events %}
+                <div class="px-8 py-5 space-y-2">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                        <p class="text-sm font-black text-gray-900 dark:text-white">{{ event.message }}</p>
+                        <span class="px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest border
+                            {% if event.level == 'error' %}bg-red-50 text-red-700 border-red-100 dark:bg-red-900/20 dark:text-red-400 dark:border-red-800
+                            {% elif event.level == 'warning' %}bg-amber-50 text-amber-700 border-amber-100 dark:bg-amber-900/20 dark:text-amber-400 dark:border-amber-800
+                            {% else %}bg-blue-50 text-blue-700 border-blue-100 dark:bg-blue-900/20 dark:text-blue-400 dark:border-blue-800{% endif %}">
+                            {{ event.level }}
+                        </span>
+                    </div>
+                    <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest">{{ event.category }} / {{ event.created_at.strftime('%b %d, %Y %I:%M %p') if event.created_at else 'Unknown time' }}</p>
+                    {% if event.plan_id %}
+                    <a href="{{ url_for('admin.admin_edit_clp_document', plan_id=event.plan_id) }}" class="text-[10px] font-black uppercase tracking-widest text-primary-600 hover:underline">Open CLP {{ event.plan_id }}</a>
+                    {% endif %}
+                    {% if event.details %}
+                    <pre class="text-xs font-semibold text-gray-600 dark:text-gray-300 whitespace-pre-wrap break-words bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-700 rounded-2xl p-4">{{ event.details | tojson(indent=2) }}</pre>
+                    {% endif %}
+                </div>
+                {% else %}
+                <div class="px-8 py-16 text-center text-[10px] font-black text-gray-400 uppercase tracking-widest">No system events recorded yet.</div>
+                {% endfor %}
+            </div>
+        </section>
+
+        <section class="bg-white dark:bg-[#111827] rounded-[2.5rem] border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden">
+            <div class="px-8 py-6 border-b border-gray-100 dark:border-gray-800">
+                <h2 class="text-xl font-black text-gray-900 dark:text-white tracking-tight">Recent Failed Audit Entries</h2>
+                <p class="text-sm text-gray-500 dark:text-gray-400">Request-level failures and degraded outcomes from the audit trail.</p>
+            </div>
+            <div class="divide-y divide-gray-100 dark:divide-gray-800">
+                {% for row in recent_failures %}
+                <div class="px-8 py-5 space-y-2">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                        <p class="text-sm font-black text-gray-900 dark:text-white">{{ row.action }}</p>
+                        <span class="px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest border {% if (row.status_code or 0) >= 500 %}bg-red-50 text-red-700 border-red-100 dark:bg-red-900/20 dark:text-red-400 dark:border-red-800{% else %}bg-amber-50 text-amber-700 border-amber-100 dark:bg-amber-900/20 dark:text-amber-400 dark:border-amber-800{% endif %}">
+                            {{ row.result or 'failure' }}
+                        </span>
+                    </div>
+                    <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest">
+                        {% if row.actor %}@{{ row.actor.username }}{% else %}system{% endif %}
+                        {% if row.timestamp %} / {{ row.timestamp.strftime('%b %d, %Y %I:%M %p') }}{% endif %}
+                        {% if row.status_code %} / {{ row.status_code }}{% endif %}
+                    </p>
+                    {% if row.details %}
+                    <pre class="text-xs font-semibold text-gray-600 dark:text-gray-300 whitespace-pre-wrap break-words bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-700 rounded-2xl p-4">{{ row.details | tojson(indent=2) }}</pre>
+                    {% endif %}
+                </div>
+                {% else %}
+                <div class="px-8 py-16 text-center text-[10px] font-black text-gray-400 uppercase tracking-widest">No recent failed audit entries.</div>
+                {% endfor %}
+            </div>
+        </section>
+    </div>
+</div>
+{% endblock %}

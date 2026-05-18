@@ -1,0 +1,22 @@
+/* ═══════════════════════════════════════════
+   Page Transitions — Barba.js + Anime.js
+   ═══════════════════════════════════════════ */
+
+/* ── Prevent flash & flex collapse during Barba transitions ── */
+html.is-animating,
+html.is-animating body {
+  overflow: hidden;
+  pointer-events: none;
+}
+
+html.is-animating [data-barba="container"] {
+  width: 100%;
+  min-width: 100%;
+}
+
+/* ── Reduced motion ── */
+@media (prefers-reduced-motion: reduce) {
+  html.is-animating [data-barba="container"] {
+    animation-duration: 0.01ms !important;
+  }
+}

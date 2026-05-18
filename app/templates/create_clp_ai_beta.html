@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+{% set alpha_mode = alpha_mode|default(False) %}
+{% set form_action = form_action|default('') %}
+
+{% block title %}{{ 'OnlyOffice AI Alpha' if alpha_mode else 'AI Copilot' }}{% endblock %}
+{% from "_loading_overlay.html" import loading_overlay with context %}
+
+{% block content %}
+{{ loading_overlay(
+    overlay_id='loading-overlay',
+    title_prefix='AI Generating',
+    stage_text='Drafting your learning plan',
+    message_text='The AI Copilot is drafting the CLOs, alignment matrix, and weekly outline from your course inputs. This may take a moment.',
+    hint_text='Do not close or navigate away from this page',
+    show_log=false
+) }}
+
+<div class="max-w-5xl mx-auto space-y-6 md:space-y-8 px-1 sm:px-0">
+    <div
+        class="bg-primary-50 dark:bg-primary-900/10 border border-primary-200 dark:border-primary-800 rounded-[1.5rem] md:rounded-[2rem] p-5 sm:p-6">
+        <p class="text-[10px] font-black uppercase tracking-[0.25em] text-primary-600 mb-2">{{ 'OnlyOffice-First Pilot'
+            if alpha_mode else 'AI-Powered Creation' }}</p>
+        <h1 class="text-2xl sm:text-3xl md:text-4xl font-black text-gray-900 dark:text-white tracking-tight">{{
+            'OnlyOffice AI Alpha' if alpha_mode else 'AI Copilot' }}</h1>
+        <p class="text-sm text-gray-600 dark:text-gray-300 mt-3 max-w-3xl">
+            {% if alpha_mode %}
+            Pick a subject from your active-term catalog, create a real DOCX draft, then open it in OnlyOffice and test
+            the guided alpha actions for CLO rows, alignment blocks, and weekly rows.
+            {% else %}
+            Pick a subject from your active-term catalog, then the AI fills in the CLOs, alignment matrix, and weekly
+            outline.
+            {% endif %}
+        </p>
+    </div>
+
+    <form method="POST" {% if form_action %}action="{{ form_action }}" {% endif %}
+        class="bg-white dark:bg-[#111827] border border-gray-200 dark:border-gray-800 rounded-[1.75rem] md:rounded-[2.5rem] p-5 sm:p-7 md:p-10 space-y-8 shadow-sm">
+        {{ form.hidden_tag() }}
+
+        {% if form.errors %}
+        <div class="bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-800 rounded-[1.5rem] p-4 sm:p-5">
+            <p class="text-[10px] font-black uppercase tracking-[0.2em] text-red-600 mb-3">Metadata Needs Attention</p>
+            <ul class="space-y-1 text-sm text-red-700 dark:text-red-300">
+                {% for field_errors in form.errors.values() %}
+                {% for error in field_errors %}
+                <li>{{ error }}</li>
+                {% endfor %}
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+
+        <section class="space-y-5">
+            <p class="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400">Course Metadata</p>
+            <div
+                class="bg-gray-50 dark:bg-gray-900/40 border border-gray-200 dark:border-gray-800 rounded-2xl p-4 sm:p-5">
+                <p class="text-[10px] uppercase tracking-widest font-black text-gray-500">Active Term</p>
+                <p class="text-sm font-bold text-gray-800 dark:text-gray-100 mt-1">{{ active_semester }} • {{
+                    active_academic_year }}</p>
+            </div>
+            <div class="space-y-2">
+                {{ form.subject_id.label(class="text-xs font-black text-gray-400 uppercase tracking-widest ml-1") }}
+                {{ form.subject_id(class="w-full bg-gray-50 dark:bg-gray-900 border-gray-200 dark:border-gray-700
+                rounded-2xl px-4 py-3.5 text-sm font-bold", id="subject_id") }}
+                {% for error in form.subject_id.errors %}
+                <p class="text-xs font-semibold text-red-600">{{ error }}</p>
+                {% endfor %}
+            </div>
+        </section>
+
+        <section class="space-y-5">
+            <p class="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400">{{ 'Context For The Editor AI
+                Actions (optional)' if alpha_mode else 'Context For The AI Draft (optional)' }}</p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="space-y-2">
+                    {{ form.service_learning_component.label(class="text-xs font-black text-gray-400 uppercase
+                    tracking-widest ml-1") }}
+                    {{ form.service_learning_component(class="w-full bg-gray-50 dark:bg-gray-900 border-gray-200
+                    dark:border-gray-700 rounded-[1.5rem] p-5 text-sm font-medium") }}
+                    {% for error in form.service_learning_component.errors %}
+                    <p class="text-xs font-semibold text-red-600">{{ error }}</p>
+                    {% endfor %}
+                </div>
+                <div class="space-y-2">
+                    {{ form.source_context.label(class="text-xs font-black text-gray-400 uppercase tracking-widest
+                    ml-1") }}
+                    {{ form.source_context(class="w-full bg-gray-50 dark:bg-gray-900 border-gray-200
+                    dark:border-gray-700 rounded-[1.5rem] p-5 text-sm font-medium") }}
+                    {% for error in form.source_context.errors %}
+                    <p class="text-xs font-semibold text-red-600">{{ error }}</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </section>
+
+        <div
+            class="pt-6 border-t border-gray-100 dark:border-gray-800 flex flex-col-reverse sm:flex-row justify-end gap-3 sm:gap-4">
+            <a href="{{ url_for('teacher.teacher_my_clps') }}"
+                class="w-full sm:w-auto text-center px-6 sm:px-8 py-3 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 rounded-2xl text-xs font-black uppercase tracking-[0.2em]">Cancel</a>
+            {{ form.submit(value=('Create Alpha Draft' if alpha_mode else 'Generate Draft'), id="submit-btn",
+            class="w-full sm:w-auto px-6 sm:px-8 py-3 bg-primary-600 hover:bg-primary-700 text-white rounded-2xl text-xs
+            font-black uppercase tracking-[0.2em] shadow-lg shadow-primary-200 dark:shadow-none cursor-pointer") }}
+        </div>
+    </form>
+</div>
+
+{% if consultation_needed %}
+<div id="consultation-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+    <div class="bg-white dark:bg-[#1e293b] rounded-2xl shadow-2xl max-w-md w-full mx-4 p-6 space-y-4">
+        <div class="w-12 h-12 rounded-xl bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center text-amber-600 mx-auto">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+        </div>
+        <h2 class="text-lg font-bold text-center text-gray-900 dark:text-white">Consultation Hours Required</h2>
+        <p class="text-sm text-center text-gray-600 dark:text-gray-400">Please set at least one consultation day with a time and room in your profile before generating a CLP.</p>
+        <div class="flex gap-3 pt-2">
+            <a href="{{ url_for('main.dashboard') }}" class="flex-1 px-4 py-2.5 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 text-sm font-semibold text-center hover:bg-gray-200 dark:hover:bg-gray-700 transition-all">
+                Go Back
+            </a>
+            <a href="{{ url_for('teacher.teacher_profile') }}?next={{ url_for('teacher.create_clp_ai_beta') }}"
+               class="flex-1 px-4 py-2.5 rounded-xl bg-primary-600 text-white text-sm font-semibold text-center hover:bg-primary-700 transition-all shadow">
+                Set Consultation Hours
+            </a>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% endblock %}

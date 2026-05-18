@@ -1,0 +1,211 @@
+{% extends "base.html" %}
+
+{% block title %}Teacher Dashboard{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Announcement Banner -->
+    {% if announcement %}
+    <div class="bg-primary-600 rounded-[1.5rem] p-1 shadow-2xl shadow-primary-200 dark:shadow-none overflow-hidden group">
+        <div class="bg-primary-600 dark:bg-primary-700 rounded-[1.3rem] px-5 py-4 relative">
+            <div class="absolute top-0 right-0 -mt-6 -mr-6 w-32 h-32 bg-white/10 rounded-full blur-3xl"></div>
+            <div class="relative flex items-center gap-4">
+                <div class="w-10 h-10 bg-white/20 backdrop-blur-xl rounded-xl flex items-center justify-center text-white shrink-0 border border-white/20">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </div>
+                <div>
+                    <h4 class="text-white font-bold text-sm uppercase tracking-tight">Announcement</h4>
+                    <p class="text-primary-100 text-sm">{{ announcement }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Welcome Header -->
+    <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+        <div>
+            <h1 class="text-2xl sm:text-3xl font-black text-gray-900 dark:text-white tracking-tighter">Teacher <span class="text-primary-600">Dashboard</span></h1>
+            <p class="text-sm text-gray-500 dark:text-gray-400 mt-0.5">Welcome back, <span class="font-semibold text-gray-900 dark:text-gray-200">{{ session.get('username') }}</span>.</p>
+        </div>
+        <a href="{{ url_for('teacher.teacher_profile') }}" class="inline-flex items-center gap-1.5 px-4 py-2 bg-white dark:bg-[#111827] border border-gray-200 dark:border-gray-800 rounded-xl text-xs font-bold text-gray-600 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all">
+            <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            My Profile
+        </a>
+    </div>
+
+    <!-- Onboarding for new users -->
+    {% if onboarding %}
+    <div class="bg-gradient-to-br from-violet-50 to-primary-50 dark:from-violet-950/40 dark:to-primary-950/40 rounded-[2rem] border border-violet-200 dark:border-violet-800 p-5">
+        <div class="flex items-start gap-4">
+            <div class="w-10 h-10 bg-violet-600 rounded-xl flex items-center justify-center text-white shrink-0">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+            </div>
+            <div class="space-y-2 flex-1">
+                <h2 class="text-lg font-black text-gray-900 dark:text-white">Welcome — let's get you set up</h2>
+                <p class="text-xs text-gray-600 dark:text-gray-400">Follow the steps below. Each unlocks the next.</p>
+                <a href="{{ url_for('teacher.upload_template_profile') }}" class="inline-flex items-center gap-2 px-4 py-2.5 bg-violet-600 text-white rounded-xl text-xs font-black hover:bg-violet-700 transition-colors">
+                    Start Step 1 — Upload Template
+                </a>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Quick Stats -->
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <div class="bg-white dark:bg-[#111827] py-4 px-5 rounded-2xl border-l-4 border-emerald-500 border border-gray-200 dark:border-gray-800 shadow-sm">
+            <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Approved</p>
+            <p class="text-xl font-black text-gray-900 dark:text-white">{{ stats.approved }}</p>
+        </div>
+        <div class="bg-white dark:bg-[#111827] py-4 px-5 rounded-2xl border-l-4 border-yellow-500 border border-gray-200 dark:border-gray-800 shadow-sm">
+            <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Pending</p>
+            <p class="text-xl font-black text-gray-900 dark:text-white">{{ stats.pending }}</p>
+        </div>
+        <div class="bg-white dark:bg-[#111827] py-4 px-5 rounded-2xl border-l-4 border-red-500 border border-gray-200 dark:border-gray-800 shadow-sm">
+            <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Returned</p>
+            <p class="text-xl font-black text-gray-900 dark:text-white">{{ stats.returned }}</p>
+        </div>
+        <div class="bg-white dark:bg-[#111827] py-4 px-5 rounded-2xl border-l-4 border-gray-400 border border-gray-200 dark:border-gray-800 shadow-sm">
+            <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Drafts</p>
+            <p class="text-xl font-black text-gray-900 dark:text-white">{{ stats.draft }}</p>
+        </div>
+    </div>
+
+    <!-- Profile + Subject status bar -->
+    <div class="flex flex-col sm:flex-row gap-3">
+        <a href="{{ url_for('teacher.list_template_profiles') }}" class="flex-1 bg-white dark:bg-[#111827] rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm px-4 py-3 flex items-center justify-between hover:shadow-md transition-shadow">
+            <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded-lg {% if profile_stats.confirmed > 0 %}bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600{% else %}bg-gray-50 dark:bg-gray-800 text-gray-400{% endif %} flex items-center justify-center">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"/></svg>
+                </div>
+                <div>
+                    <p class="text-[10px] font-black uppercase tracking-widest text-gray-400">Templates</p>
+                    <p class="text-xs font-bold text-gray-700 dark:text-gray-200">{% if profile_stats.confirmed > 0 %}{{ profile_stats.confirmed }} confirmed{% else %}<span class="text-amber-600 dark:text-amber-400">None</span>{% endif %}</p>
+                </div>
+            </div>
+            <span class="text-xs font-black text-gray-400">&rarr;</span>
+        </a>
+        <a href="{{ url_for('teacher.manage_subjects') }}" class="flex-1 bg-white dark:bg-[#111827] rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm px-4 py-3 flex items-center justify-between hover:shadow-md transition-shadow">
+            <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded-lg {% if subject_count > 0 %}bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600{% else %}bg-gray-50 dark:bg-gray-800 text-gray-400{% endif %} flex items-center justify-center">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5S19.832 5.477 21 6.253v13C19.832 18.477 18.246 18 16.5 18s-3.332.477-4.5 1.253"/></svg>
+                </div>
+                <div>
+                    <p class="text-[10px] font-black uppercase tracking-widest text-gray-400">Subjects</p>
+                    <p class="text-xs font-bold text-gray-700 dark:text-gray-200">{% if subject_count > 0 %}{{ subject_count }} active{% else %}<span class="text-amber-600 dark:text-amber-400">None</span>{% endif %}</p>
+                </div>
+            </div>
+            <span class="text-xs font-black text-gray-400">&rarr;</span>
+        </a>
+    </div>
+
+    <!-- Next-step prompts -->
+    {% if profile_stats.confirmed > 0 and subject_count == 0 %}
+    <div class="bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-emerald-950/30 dark:to-teal-950/30 border border-emerald-200 dark:border-emerald-900/40 rounded-2xl p-4">
+        <div class="flex items-center gap-4">
+            <div class="w-10 h-10 rounded-xl bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center text-emerald-600 shrink-0">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-3-3v6m-7 4h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+            </div>
+            <div class="flex-1">
+                <p class="text-sm font-bold text-gray-900 dark:text-white">Template ready &mdash; add your subjects</p>
+                <p class="text-xs text-gray-600 dark:text-gray-400 mt-0.5">You have a confirmed template profile. Add the courses you teach this term so AI Copilot can use them.</p>
+            </div>
+            <a href="{{ url_for('teacher.add_subject') }}" class="inline-flex items-center gap-1.5 px-5 py-2.5 bg-emerald-600 text-white rounded-xl text-xs font-bold hover:bg-emerald-700 transition-all shadow-sm shrink-0">
+                Add Subject
+            </a>
+        </div>
+    </div>
+    {% elif profile_stats.confirmed > 0 and subject_count > 0 %}
+    <div class="bg-gradient-to-r from-purple-50 to-rose-50 dark:from-purple-950/30 dark:to-rose-950/30 border border-purple-200 dark:border-purple-900/40 rounded-2xl p-4">
+        <div class="flex items-center gap-4">
+            <div class="w-10 h-10 rounded-xl bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center text-purple-600 shrink-0">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z"/></svg>
+            </div>
+            <div class="flex-1">
+                <p class="text-sm font-bold text-gray-900 dark:text-white">All set &mdash; generate with AI Copilot</p>
+                <p class="text-xs text-gray-600 dark:text-gray-400 mt-0.5">Template profile and subjects are ready. Generate Course Learning Plans for any subject.</p>
+            </div>
+            <a href="{{ url_for('teacher.create_clp_ai_beta') }}" class="inline-flex items-center gap-1.5 px-5 py-2.5 bg-gradient-to-r from-purple-600 to-rose-600 text-white rounded-xl text-xs font-bold hover:from-purple-700 hover:to-rose-700 transition-all shadow-sm shrink-0">
+                Go to AI Copilot
+            </a>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- AI Creation Section -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
+        <!-- Step 1: My Subjects -->
+        <div class="lg:col-span-6">
+            <div class="bg-white dark:bg-[#111827] rounded-[1.5rem] border border-gray-200 dark:border-gray-800 shadow-sm p-5 hover:shadow-lg transition-all">
+                <div class="flex items-center gap-3 mb-4">
+                    <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center text-white shadow-md">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-3-3v6m-7 4h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                    </div>
+                    <div>
+                        <h3 class="text-sm font-bold text-gray-900 dark:text-white">My Subjects</h3>
+                        <p class="text-[11px] text-gray-500 dark:text-gray-400">Active-term subject catalog</p>
+                    </div>
+                </div>
+                <div class="space-y-2">
+                    {% if subject_count > 0 %}
+                    <div class="flex items-center gap-2 text-xs text-gray-700 dark:text-gray-300 mb-3">
+                        <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                        <span class="font-bold">{{ subject_count }} subject(s) registered</span>
+                    </div>
+                    {% endif %}
+                    <a href="{{ url_for('teacher.add_subject') }}" class="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-emerald-600 text-white rounded-xl text-xs font-bold hover:bg-emerald-700 transition-all shadow-sm">Add Subject</a>
+                    <a href="{{ url_for('teacher.manage_subjects') }}" class="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 rounded-xl text-xs font-bold hover:bg-gray-200 dark:hover:bg-gray-700 transition-all">Manage Subjects</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 2: AI Copilot -->
+        <div class="lg:col-span-6">
+            <div class="bg-white dark:bg-[#111827] rounded-[1.5rem] border border-gray-200 dark:border-gray-800 shadow-sm p-5 h-full hover:shadow-lg transition-all">
+                <div class="flex items-center gap-3 mb-4">
+                    <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-purple-400 to-purple-600 flex items-center justify-center text-white shadow-md">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 3.104v5.714a2.25 2.25 0 01-.659 1.591L5 14.5M15 3.104v5.714c0 .597.237 1.169.659 1.591L19.75 14.5"/></svg>
+                    </div>
+                    <div>
+                        <h3 class="text-sm font-bold text-gray-900 dark:text-white">AI Copilot</h3>
+                        <p class="text-[11px] text-gray-500 dark:text-gray-400">Generate from linked template</p>
+                    </div>
+                </div>
+                <div class="space-y-2">
+                    <a href="{{ url_for('teacher.create_clp_ai_beta') }}" class="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-gradient-to-r from-purple-600 to-rose-600 text-white rounded-xl text-xs font-bold hover:from-purple-700 hover:to-rose-700 transition-all shadow-md">
+                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z"/></svg>
+                        Go to AI Copilot
+                    </a>
+                    <a href="{{ url_for('teacher.teacher_my_clps') }}" class="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 text-purple-600 dark:text-purple-400 rounded-xl text-xs font-bold hover:bg-purple-50 dark:hover:bg-purple-900/20 transition-all">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25"/></svg>
+                        View my existing plans
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Links -->
+    <div class="grid grid-cols-3 gap-3">
+        <a href="{{ url_for('teacher.teacher_my_clps') }}" class="group bg-white dark:bg-[#111827] p-4 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm hover:shadow-md transition-all">
+            <div class="w-8 h-8 bg-primary-50 dark:bg-primary-900/20 rounded-lg flex items-center justify-center text-primary-600 mb-2 group-hover:bg-primary-600 group-hover:text-white transition-all">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+            <h3 class="text-xs font-black text-gray-900 dark:text-white">My Plans</h3>
+        </a>
+        <a href="{{ url_for('teacher.teacher_all_clps') }}" class="group bg-white dark:bg-[#111827] p-4 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm hover:shadow-md transition-all">
+            <div class="w-8 h-8 bg-purple-50 dark:bg-purple-900/20 rounded-lg flex items-center justify-center text-purple-600 mb-2 group-hover:bg-purple-600 group-hover:text-white transition-all">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+            <h3 class="text-xs font-black text-gray-900 dark:text-white">All Plans</h3>
+        </a>
+        <a href="{{ url_for('main.list_notifications') }}" class="group bg-white dark:bg-[#111827] p-4 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm hover:shadow-md transition-all">
+            <div class="w-8 h-8 bg-blue-50 dark:bg-blue-900/20 rounded-lg flex items-center justify-center text-blue-600 mb-2 group-hover:bg-blue-600 group-hover:text-white transition-all">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+            <h3 class="text-xs font-black text-gray-900 dark:text-white">Notifications</h3>
+        </a>
+    </div>
+</div>
+{% endblock %}

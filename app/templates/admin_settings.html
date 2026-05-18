@@ -1,0 +1,567 @@
+{% extends "base.html" %}
+
+{% block title %}System Core Config{% endblock %}
+
+{% block content %}
+<div class="space-y-6 max-w-6xl mx-auto pb-10" x-data="settingsPage()">
+    <!-- Header -->
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div class="space-y-1">
+            <h1 class="text-3xl font-black text-gray-900 dark:text-white tracking-tight leading-tight">Global <span
+                    class="text-primary-600">Configuration</span></h1>
+            <p class="text-sm font-medium text-gray-500 dark:text-gray-400 italic">Manage institution-wide logic, AI
+                thresholds, and security protocols.</p>
+        </div>
+    </div>
+
+    <!-- Search -->
+    <div class="relative">
+        <svg class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+        </svg>
+        <input type="text" x-model="search" @input.debounce.300ms="filterSections"
+               placeholder="Search settings..."
+               class="w-full bg-gray-50 dark:bg-gray-800/50 border-gray-200 dark:border-gray-700 rounded-2xl pl-12 pr-4 py-3.5 text-sm focus:ring-primary-500 transition-all">
+    </div>
+
+    <!-- Sections -->
+    <div class="grid grid-cols-1 gap-6">
+
+        {# ─── 1. Identity & Timeline ─── #}
+        <div x-data="{ open: true, saving: false, saved: false, error: '', logoPreview: null }"
+             x-show="isVisible('academic')"
+             class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div class="space-y-2">
+                <button @click="open = !open" type="button"
+                        class="flex items-center gap-2 text-xl font-black text-gray-900 dark:text-white tracking-tight hover:text-primary-600 transition-colors min-h-[44px] w-full text-left">
+                    <span>Identity & Timeline</span>
+                    <svg :class="open ? 'rotate-180' : ''" class="w-5 h-5 transition-transform shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/>
+                    </svg>
+                </button>
+                <p class="text-sm text-gray-500 dark:text-gray-400 font-medium leading-relaxed hidden lg:block">Institution branding and current academic period settings.</p>
+            </div>
+            <div class="lg:col-span-2" x-show="open" x-collapse.duration.300ms>
+                <form @submit.prevent="submitSection($event, 'academic')" data-section="academic" enctype="multipart/form-data"
+                      class="space-y-6 bg-white dark:bg-[#111827] p-6 md:p-8 rounded-[2.5rem] border border-gray-200 dark:border-gray-800 shadow-sm">
+                    {{ form.hidden_tag() }}
+                    {{ form.institution_logo_url(type="hidden") }}
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                        <div class="space-y-2">
+                            {{ form.institution_name.label(class="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1") }}
+                            {{ form.institution_name(class="w-full bg-gray-50 dark:bg-gray-800/50 border-gray-200 dark:border-gray-700 rounded-2xl px-4 py-3.5 text-sm font-bold focus:ring-primary-500 transition-all") }}
+                        </div>
+                        <div class="space-y-2">
+                            {{ form.current_semester.label(class="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1") }}
+                            {{ form.current_semester(class="w-full bg-gray-50 dark:bg-gray-800/50 border-gray-200 dark:border-gray-700 rounded-2xl px-4 py-3.5 text-sm font-bold focus:ring-primary-500 transition-all") }}
+                        </div>
+                        <div class="space-y-2">
+                            {{ form.active_semester.label(class="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1") }}
+                            {{ form.active_semester(class="w-full bg-gray-50 dark:bg-gray-800/50 border-gray-200 dark:border-gray-700 rounded-2xl px-4 py-3.5 text-sm font-bold focus:ring-primary-500 transition-all") }}
+                        </div>
+                        <div class="space-y-2">
+                            {{ form.active_academic_year.label(class="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1") }}
+                            {{ form.active_academic_year(class="w-full bg-gray-50 dark:bg-gray-800/50 border-gray-200 dark:border-gray-700 rounded-2xl px-4 py-3.5 text-sm font-bold focus:ring-primary-500 transition-all") }}
+                        </div>
+                        <div class="space-y-2 md:col-span-2">
+                            {{ form.submission_deadline.label(class="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1") }}
+                            <div class="relative">
+                                {{ form.submission_deadline(class="w-full bg-gray-50 dark:bg-gray-800/50 border-gray-200 dark:border-gray-700 rounded-2xl px-4 py-3.5 text-sm font-bold focus:ring-primary-500 transition-all pr-10") }}
+                                <svg class="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="space-y-3">
+                        <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Institution Mark (Logo)</label>
+                        <div class="flex flex-col md:flex-row items-center gap-6 p-5 bg-gray-50 dark:bg-gray-800/30 rounded-3xl border-2 border-dashed border-gray-200 dark:border-gray-700">
+                            <div class="w-full md:w-32 h-32 bg-white dark:bg-[#111827] rounded-[2rem] flex items-center justify-center p-4 shadow-sm shrink-0 border border-gray-100 dark:border-gray-800">
+                                <template x-if="logoPreview">
+                                    <img :src="logoPreview" alt="Logo preview" class="max-w-full max-h-full object-contain">
+                                </template>
+                                <template x-if="!logoPreview">
+                                    {% if institution_logo %}
+                                    <img src="{{ institution_logo }}" alt="Mark" class="max-w-full max-h-full object-contain">
+                                    {% else %}
+                                    <div class="text-center opacity-20"><svg class="w-10 h-10 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                        </svg></div>
+                                    {% endif %}
+                                </template>
+                            </div>
+                            <div class="space-y-2 flex-1 w-full">
+                                <input type="file" name="institution_logo_file" accept="image/png,image/jpeg,image/svg+xml"
+                                       @change="logoPreview = URL.createObjectURL($event.target.files[0])"
+                                       class="block w-full text-xs text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-[10px] file:font-black file:uppercase file:tracking-widest file:bg-primary-100 file:text-primary-700 hover:file:bg-primary-200 transition-all cursor-pointer">
+                                <p class="text-[10px] text-gray-400 font-bold leading-relaxed uppercase tracking-tighter">Recommended: Square PNG/SVG with transparent background</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="space-y-2">
+                        {{ form.announcement_text.label(class="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1") }}
+                        {{ form.announcement_text(class="w-full bg-gray-50 dark:bg-gray-800/50 border-gray-200 dark:border-gray-700 rounded-2xl px-4 py-3.5 text-sm font-bold focus:ring-primary-500 transition-all", placeholder="Broadcast a message to all users...") }}
+                    </div>
+                    <!-- Save row -->
+                    <div class="flex items-center justify-between pt-5 border-t border-gray-200/80 dark:border-gray-800 md:static md:bg-transparent md:backdrop-blur-none md:p-0 md:border-t-0">
+                        <div>
+                            <span x-show="saved" x-transition.duration.500 class="text-xs font-black text-green-600 uppercase flex items-center gap-1">
+                                <span>✓</span> Saved
+                            </span>
+                            <span x-show="error" x-transition.duration.500 class="text-xs font-black text-red-600 uppercase flex items-center gap-1">
+                                <span>✗</span> <span x-text="error"></span>
+                            </span>
+                        </div>
+                        <button type="submit" :disabled="saving"
+                                class="px-8 py-3 bg-primary-600 text-white text-xs font-black uppercase tracking-[0.2em] rounded-2xl hover:bg-primary-700 disabled:opacity-50 transition-all min-h-[44px]">
+                            <span x-show="!saving">Save Section</span>
+                            <span x-show="saving">Saving...</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        {# ─── 2. AI Intelligence ─── #}
+        <div x-data="{ open: false, saving: false, saved: false, error: '', advOpen: false }"
+             x-show="isVisible('ai')"
+             class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div class="space-y-2">
+                <button @click="open = !open" type="button"
+                        class="flex items-center gap-2 text-xl font-black text-gray-900 dark:text-white tracking-tight hover:text-primary-600 transition-colors min-h-[44px] w-full text-left">
+                    <span>AI Intelligence</span>
+                    <svg :class="open ? 'rotate-180' : ''" class="w-5 h-5 transition-transform shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/>
+                    </svg>
+                </button>
+                <p class="text-sm text-gray-500 dark:text-gray-400 font-medium leading-relaxed hidden lg:block">Gemini model, prompts, and generation limits.</p>
+            </div>
+            <div class="lg:col-span-2" x-show="open" x-collapse.duration.300ms>
+                <form @submit.prevent="submitSection($event, 'ai')" data-section="ai"
+                      class="space-y-6 bg-white dark:bg-[#111827] p-6 md:p-8 rounded-[2.5rem] border border-gray-200 dark:border-gray-800 shadow-sm">
+                    {{ form.hidden_tag() }}
+                    <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
+                        <div class="space-y-2">
+                            {{ form.ai_provider.label(class="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1") }}
+                            {{ form.ai_provider(class="w-full bg-gray-50 dark:bg-gray-800/50 border-gray-200 dark:border-gray-700 rounded-2xl px-4 py-3.5 text-sm font-bold focus:ring-primary-500 transition-all") }}
+                            {{ form.gemini_model.label(class="text-[10px] font-black text-gray-400 uppercase tracking-widest mt-3 ml-1") }}
+                            {{ form.gemini_model(class="w-full bg-gray-50 dark:bg-gray-800/50 border-gray-200 dark:border-gray-700 rounded-2xl px-4 py-3.5 text-sm font-bold focus:ring-primary-500 transition-all") }}
+                        </div>
+                        <div class="space-y-2">
+                            {{ form.gemini_thinking_level.label(class="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1") }}
+                            {{ form.gemini_thinking_level(class="w-full bg-gray-50 dark:bg-gray-800/50 border-gray-200 dark:border-gray-700 rounded-2xl px-4 py-3.5 text-sm font-bold focus:ring-primary-500 transition-all") }}
+                            <p class="text-[11px] text-gray-500 dark:text-gray-400 ml-1">Gemini 3 only. Controls reasoning depth, latency, and cost.</p>
+                        </div>
+                        <div class="space-y-2">
+                            {{ form.ai_temperature.label(class="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1") }}
+                            {{ form.ai_temperature(class="w-full bg-gray-50 dark:bg-gray-800/50 border-gray-200 dark:border-gray-700 rounded-2xl px-4 py-3.5 text-sm font-bold focus:ring-primary-500 transition-all") }}
+                        </div>
+                        <div class="space-y-2">
+                            {{ form.daily_ai_limit.label(class="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1") }}
+                            {{ form.daily_ai_limit(class="w-full bg-gray-50 dark:bg-gray-800/50 border-gray-200 dark:border-gray-700 rounded-2xl px-4 py-3.5 text-sm font-bold focus:ring-primary-500 transition-all") }}
+                        </div>
+                    </div>
+                    <!-- Advanced Prompt Engineering collapse -->
+                    <div class="space-y-4">
+                        <button @click="advOpen = !advOpen" type="button"
+                                class="flex items-center gap-2 text-[10px] font-black text-primary-600 uppercase tracking-[0.2em] hover:text-primary-700 transition-colors min-h-[44px]">
+                            <span>Advanced Prompt Engineering</span>
+                            <svg :class="advOpen ? 'rotate-180' : ''" class="w-4 h-4 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/>
+                            </svg>
+                        </button>
+                        <div x-show="advOpen" x-collapse.duration.300ms class="space-y-4">
+                            <div class="space-y-2">
+                                {{ form.prompt_copilot_beta_clo.label(class="text-[10px] font-black text-gray-400 uppercase ml-1") }}
+                                {{ form.prompt_copilot_beta_clo(class="w-full bg-amber-50 dark:bg-amber-900/10 border-amber-200 dark:border-amber-800 rounded-2xl p-4 text-xs font-mono focus:ring-amber-500 transition-all", rows="3") }}
+                                <p class="text-[11px] text-amber-700 dark:text-amber-300 ml-1">Return JSON only. No markdown fences. Must use the exact beta CLO keys and shape.</p>
+                            </div>
+                            <div class="space-y-2">
+                                {{ form.prompt_copilot_beta_alignment.label(class="text-[10px] font-black text-gray-400 uppercase ml-1") }}
+                                {{ form.prompt_copilot_beta_alignment(class="w-full bg-amber-50 dark:bg-amber-900/10 border-amber-200 dark:border-amber-800 rounded-2xl p-4 text-xs font-mono focus:ring-amber-500 transition-all", rows="3") }}
+                                <p class="text-[11px] text-amber-700 dark:text-amber-300 ml-1">Return JSON only. Arrays must stay arrays. Each alignment list must stay within 1 to 3 items.</p>
+                            </div>
+                            <div class="space-y-2">
+                                {{ form.prompt_copilot_beta_weekly.label(class="text-[10px] font-black text-gray-400 uppercase ml-1") }}
+                                {{ form.prompt_copilot_beta_weekly(class="w-full bg-amber-50 dark:bg-amber-900/10 border-amber-200 dark:border-amber-800 rounded-2xl p-4 text-xs font-mono focus:ring-amber-500 transition-all", rows="3") }}
+                                <p class="text-[11px] text-amber-700 dark:text-amber-300 ml-1">Return JSON only. Use the exact required week labels and keep the full weekly row structure for every week.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Copilot data link -->
+                    <div class="space-y-3 pt-4 border-t border-gray-200/80 dark:border-gray-800">
+                        <p class="text-[10px] font-black text-primary-600 uppercase tracking-[0.2em] ml-1">Production Copilot Data</p>
+                        <p class="text-sm text-gray-500 dark:text-gray-400 ml-1">This data now lives on its own admin page so each department can maintain separate AI alignment references with factual meanings and guidance.</p>
+                        <a href="{{ url_for('admin.manage_copilot_data') }}" class="inline-flex items-center px-5 py-3 rounded-2xl bg-primary-600 hover:bg-primary-700 text-white text-[10px] font-black uppercase tracking-[0.2em] min-h-[44px]">Open Production Copilot Data</a>
+                    </div>
+                    <!-- Save row -->
+                    <div class="flex items-center justify-between pt-5 border-t border-gray-200/80 dark:border-gray-800 md:static md:bg-transparent md:backdrop-blur-none md:p-0 md:border-t-0">
+                        <div>
+                            <span x-show="saved" x-transition.duration.500 class="text-xs font-black text-green-600 uppercase flex items-center gap-1">
+                                <span>✓</span> Saved
+                            </span>
+                            <span x-show="error" x-transition.duration.500 class="text-xs font-black text-red-600 uppercase flex items-center gap-1">
+                                <span>✗</span> <span x-text="error"></span>
+                            </span>
+                        </div>
+                        <button type="submit" :disabled="saving"
+                                class="px-8 py-3 bg-primary-600 text-white text-xs font-black uppercase tracking-[0.2em] rounded-2xl hover:bg-primary-700 disabled:opacity-50 transition-all min-h-[44px]">
+                            <span x-show="!saving">Save Section</span>
+                            <span x-show="saving">Saving...</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        {# ─── 3. Security & Policy ─── #}
+        <div x-data="{ open: false, saving: false, saved: false, error: '' }"
+             x-show="isVisible('security')"
+             class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div class="space-y-2">
+                <button @click="open = !open" type="button"
+                        class="flex items-center gap-2 text-xl font-black text-gray-900 dark:text-white tracking-tight hover:text-primary-600 transition-colors min-h-[44px] w-full text-left">
+                    <span>Security & Policy</span>
+                    <svg :class="open ? 'rotate-180' : ''" class="w-5 h-5 transition-transform shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/>
+                    </svg>
+                </button>
+                <p class="text-sm text-gray-500 dark:text-gray-400 font-medium leading-relaxed hidden lg:block">Access control, maintenance windows, and system integrity.</p>
+            </div>
+            <div class="lg:col-span-2" x-show="open" x-collapse.duration.300ms>
+                <form @submit.prevent="submitSection($event, 'security')" data-section="security"
+                      class="space-y-6 bg-white dark:bg-[#111827] p-6 md:p-8 rounded-[2.5rem] border border-gray-200 dark:border-gray-800 shadow-sm">
+                    {{ form.hidden_tag() }}
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                        <div class="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800/50 rounded-2xl min-h-[44px]">
+                            <div x-data="{ enabled: {{ 'true' if form.allow_signups.data == 'yes' else 'false' }} }">
+                                <p class="text-xs font-black text-gray-900 dark:text-white uppercase tracking-tighter">Self-Registration</p>
+                                <p class="text-[10px] font-bold text-gray-400 uppercase">Allow new user signups</p>
+                            </div>
+                            <label class="relative inline-flex items-center cursor-pointer" x-data="{ enabled: {{ 'true' if form.allow_signups.data == 'yes' else 'false' }} }" @click.prevent="enabled = !enabled">
+                                <input type="hidden" name="allow_signups" :value="enabled ? 'yes' : 'no'">
+                                <div class="w-12 h-6 rounded-full transition-colors duration-200"
+                                     :class="enabled ? 'bg-primary-600' : 'bg-gray-200'">
+                                    <div class="h-6 w-6 rounded-full bg-white shadow-sm transition-transform duration-200"
+                                         :class="enabled ? 'translate-x-6' : 'translate-x-0'">
+                                    </div>
+                                </div>
+                            </label>
+                        </div>
+                        <div class="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800/50 rounded-2xl min-h-[44px]">
+                            <div x-data="{ enabled: {{ 'true' if form.auto_approve_signups.data == 'yes' else 'false' }} }">
+                                <p class="text-xs font-black text-gray-900 dark:text-white uppercase tracking-tighter">Auto-Approve</p>
+                                <p class="text-[10px] font-bold text-gray-400 uppercase">Automatically approve new signups</p>
+                            </div>
+                            <label class="relative inline-flex items-center cursor-pointer" x-data="{ enabled: {{ 'true' if form.auto_approve_signups.data == 'yes' else 'false' }} }" @click.prevent="enabled = !enabled">
+                                <input type="hidden" name="auto_approve_signups" :value="enabled ? 'yes' : 'no'">
+                                <div class="w-12 h-6 rounded-full transition-colors duration-200"
+                                     :class="enabled ? 'bg-primary-600' : 'bg-gray-200'">
+                                    <div class="h-6 w-6 rounded-full bg-white shadow-sm transition-transform duration-200"
+                                         :class="enabled ? 'translate-x-6' : 'translate-x-0'">
+                                    </div>
+                                </div>
+                            </label>
+                        </div>
+                        <div class="flex items-center justify-between p-4 bg-red-50 dark:bg-red-900/10 rounded-2xl border border-red-100 dark:border-red-900/20 min-h-[44px]">
+                            <div x-data="{ enabled: {{ 'true' if form.maintenance_mode.data == 'on' else 'false' }} }">
+                                <p class="text-xs font-black text-red-600 uppercase tracking-tighter">Maintenance Mode</p>
+                                <p class="text-[10px] font-bold text-red-400 uppercase">Lock system for updates</p>
+                            </div>
+                            <label class="relative inline-flex items-center cursor-pointer" x-data="{ enabled: {{ 'true' if form.maintenance_mode.data == 'on' else 'false' }} }" @click.prevent="enabled = !enabled">
+                                <input type="hidden" name="maintenance_mode" :value="enabled ? 'on' : 'off'">
+                                <div class="w-12 h-6 rounded-full transition-colors duration-200"
+                                     :class="enabled ? 'bg-red-600' : 'bg-gray-200'">
+                                    <div class="h-6 w-6 rounded-full bg-white shadow-sm transition-transform duration-200"
+                                         :class="enabled ? 'translate-x-6' : 'translate-x-0'">
+                                    </div>
+                                </div>
+                            </label>
+                        </div>
+                        <div class="space-y-2">
+                            {{ form.session_lifetime_minutes.label(class="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1") }}
+                            {{ form.session_lifetime_minutes(class="w-full bg-gray-50 dark:bg-gray-800/50 border-gray-200 dark:border-gray-700 rounded-2xl px-4 py-3.5 text-sm font-bold focus:ring-primary-500 transition-all") }}
+                        </div>
+                        <div class="space-y-2">
+                            {{ form.max_upload_mb.label(class="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1") }}
+                            {{ form.max_upload_mb(class="w-full bg-gray-50 dark:bg-gray-800/50 border-gray-200 dark:border-gray-700 rounded-2xl px-4 py-3.5 text-sm font-bold focus:ring-primary-500 transition-all") }}
+                        </div>
+                        <div class="space-y-2">
+                            {{ form.audit_log_retention_days.label(class="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1") }}
+                            {{ form.audit_log_retention_days(class="w-full bg-gray-50 dark:bg-gray-800/50 border-gray-200 dark:border-gray-700 rounded-2xl px-4 py-3.5 text-sm font-bold focus:ring-primary-500 transition-all") }}
+                        </div>
+                        <div class="space-y-2">
+                            {{ form.admin_alert_email.label(class="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1") }}
+                            {{ form.admin_alert_email(class="w-full bg-gray-50 dark:bg-gray-800/50 border-gray-200 dark:border-gray-700 rounded-2xl px-4 py-3.5 text-sm font-bold focus:ring-primary-500 transition-all") }}
+                        </div>
+                    </div>
+                    <!-- Save row -->
+                    <div class="flex items-center justify-between pt-5 border-t border-gray-200/80 dark:border-gray-800 md:static md:bg-transparent md:backdrop-blur-none md:p-0 md:border-t-0">
+                        <div>
+                            <span x-show="saved" x-transition.duration.500 class="text-xs font-black text-green-600 uppercase flex items-center gap-1">
+                                <span>✓</span> Saved
+                            </span>
+                            <span x-show="error" x-transition.duration.500 class="text-xs font-black text-red-600 uppercase flex items-center gap-1">
+                                <span>✗</span> <span x-text="error"></span>
+                            </span>
+                        </div>
+                        <button type="submit" :disabled="saving"
+                                class="px-8 py-3 bg-primary-600 text-white text-xs font-black uppercase tracking-[0.2em] rounded-2xl hover:bg-primary-700 disabled:opacity-50 transition-all min-h-[44px]">
+                            <span x-show="!saving">Save Section</span>
+                            <span x-show="saving">Saving...</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        {# ─── 4. System License (display-only, no form) ─── #}
+        <div x-data="{ open: false, licChecking: false, licStatus: '', licData: null, licError: '' }"
+             x-show="isVisible('license')"
+             class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div class="space-y-2">
+                <button @click="open = !open" type="button"
+                        class="flex items-center gap-2 text-xl font-black text-gray-900 dark:text-white tracking-tight hover:text-primary-600 transition-colors min-h-[44px] w-full text-left">
+                    <span>System License</span>
+                    <svg :class="open ? 'rotate-180' : ''" class="w-5 h-5 transition-transform shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/>
+                    </svg>
+                </button>
+                <p class="text-sm text-gray-500 dark:text-gray-400 font-medium leading-relaxed hidden lg:block">Current system authorization status.</p>
+            </div>
+            <div class="lg:col-span-2" x-show="open" x-collapse.duration.300ms>
+                <div class="space-y-6 bg-white dark:bg-[#111827] p-6 md:p-8 rounded-[2.5rem] border border-gray-200 dark:border-gray-800 shadow-sm">
+                    <div class="flex flex-col sm:flex-row items-center justify-between gap-6">
+                        <div class="space-y-1">
+                            <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Active License Status</p>
+                            <div class="flex items-center gap-2">
+                                <template x-if="!licStatus">
+                                    <div class="flex items-center gap-2">
+                                        <div class="w-2 h-2 rounded-full bg-gray-300"></div>
+                                        <span class="text-sm font-bold text-gray-500 italic">Click "Check Status" to verify...</span>
+                                    </div>
+                                </template>
+                                <template x-if="licStatus === 'valid'">
+                                    <div class="flex items-center gap-2">
+                                        <div class="w-2.5 h-2.5 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)]"></div>
+                                        <span class="text-sm font-black text-gray-900 dark:text-white uppercase tracking-tight" x-text="licData?.is_cached ? 'Cached (Offline)' : 'Active & Valid'"></span>
+                                    </div>
+                                </template>
+                                <template x-if="licStatus === 'invalid'">
+                                    <div class="flex items-center gap-2">
+                                        <div class="w-2.5 h-2.5 rounded-full bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.6)]"></div>
+                                        <span class="text-sm font-black text-red-600 uppercase tracking-tight">Invalid or Revoked</span>
+                                    </div>
+                                </template>
+                            </div>
+                        </div>
+                        <button @click="checkLicense()" :disabled="licChecking" type="button"
+                                class="shrink-0 px-10 py-4 bg-primary-600 text-white border border-transparent rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] shadow-lg shadow-primary-200 dark:shadow-none hover:scale-[1.02] active:scale-[0.98] transition-all min-h-[44px]">
+                            <span x-show="!licChecking">Refresh Status</span>
+                            <span x-show="licChecking"><svg class="animate-spin h-3 w-3 mx-auto text-white" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg></span>
+                        </button>
+                    </div>
+                    <div x-show="licData" x-transition
+                         class="p-6 bg-gray-50 dark:bg-gray-800/30 rounded-3xl border border-gray-100 dark:border-gray-800 space-y-4">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div class="space-y-1">
+                                <p class="text-[10px] font-black text-gray-400 uppercase tracking-tighter">Licensee</p>
+                                <p class="text-sm font-bold text-gray-900 dark:text-white" x-text="licData?.licensee || 'Registered Institution'">-</p>
+                            </div>
+                            <div class="space-y-1">
+                                <p class="text-[10px] font-black text-gray-400 uppercase tracking-tighter">Duration / Expiry</p>
+                                <p class="text-sm font-bold text-primary-600" x-text="formatExpiry(licData?.expires_at || licData?.expiry)">-</p>
+                            </div>
+                            <div class="space-y-1">
+                                <p class="text-[10px] font-black text-gray-400 uppercase tracking-tighter">Product</p>
+                                <p class="text-sm font-bold text-gray-700 dark:text-gray-300" x-text="licData?.product || 'LOUIS System'">-</p>
+                            </div>
+                            <div class="space-y-1">
+                                <p class="text-[10px] font-black text-gray-400 uppercase tracking-tighter">Activated Domain</p>
+                                <p class="text-sm font-bold text-gray-700 dark:text-gray-300" x-text="licData?.domain || window.location.hostname">-</p>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="text-[10px] text-gray-400 font-bold italic">License keys are managed securely via the System Gateway. Use the login screen for activations or renewals.</p>
+                    <div x-show="licError" x-transition
+                         class="p-4 bg-white dark:bg-gray-800 border border-red-200 dark:border-red-900/30 shadow-xl rounded-xl">
+                        <p class="text-xs font-bold text-red-600 dark:text-red-400" x-text="licError"></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {# ─── 5. Workflow & Approvals ─── #}
+        <div x-data="{ open: false, saving: false, saved: false, error: '' }"
+             x-show="isVisible('workflow')"
+             class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div class="space-y-2">
+                <button @click="open = !open" type="button"
+                        class="flex items-center gap-2 text-xl font-black text-gray-900 dark:text-white tracking-tight hover:text-primary-600 transition-colors min-h-[44px] w-full text-left">
+                    <span>Workflow & Approvals</span>
+                    <svg :class="open ? 'rotate-180' : ''" class="w-5 h-5 transition-transform shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/>
+                    </svg>
+                </button>
+                <p class="text-sm text-gray-500 dark:text-gray-400 font-medium leading-relaxed hidden lg:block">Approval logic and rejection templates.</p>
+            </div>
+            <div class="lg:col-span-2" x-show="open" x-collapse.duration.300ms>
+                <form @submit.prevent="submitSection($event, 'workflow')" data-section="workflow"
+                      class="space-y-6 bg-white dark:bg-[#111827] p-6 md:p-8 rounded-[2.5rem] border border-gray-200 dark:border-gray-800 shadow-sm">
+                    {{ form.hidden_tag() }}
+                    <!-- require_multi_approval toggle -->
+                    <div class="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800/50 rounded-2xl min-h-[44px]">
+                        <div x-data>
+                            <p class="text-xs font-black text-gray-900 dark:text-white uppercase tracking-tighter">Multi-Level Approval</p>
+                            <p class="text-[10px] font-bold text-gray-400 uppercase">Require two approvers (Dept Head + Dean)</p>
+                        </div>
+                        <label class="relative inline-flex items-center cursor-pointer" x-data="{ enabled: {{ 'true' if form.require_multi_approval.data == 'yes' else 'false' }} }" @click.prevent="enabled = !enabled">
+                            <input type="hidden" name="require_multi_approval" :value="enabled ? 'yes' : 'no'">
+                            <div class="w-12 h-6 rounded-full transition-colors duration-200"
+                                 :class="enabled ? 'bg-primary-600' : 'bg-gray-200'">
+                                <div class="h-6 w-6 rounded-full bg-white shadow-sm transition-transform duration-200"
+                                     :class="enabled ? 'translate-x-6' : 'translate-x-0'">
+                                </div>
+                            </div>
+                        </label>
+                    </div>
+                    <!-- use_dynamic_copilot_prompts toggle -->
+                    <div class="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800/50 rounded-2xl min-h-[44px]">
+                        <div class="flex-1">
+                            <p class="text-xs font-black text-gray-900 dark:text-white uppercase tracking-tighter">Template-Aware AI Prompts</p>
+                            <p class="text-[10px] font-bold text-gray-400 uppercase">Build prompts dynamically from template profile</p>
+                        </div>
+                        <label class="relative inline-flex items-center cursor-pointer shrink-0 ml-4" x-data="{ enabled: {{ 'true' if form.use_dynamic_copilot_prompts.data == 'true' else 'false' }} }" @click.prevent="enabled = !enabled">
+                            <input type="hidden" name="use_dynamic_copilot_prompts" :value="enabled ? 'true' : 'false'">
+                            <div class="w-12 h-6 rounded-full transition-colors duration-200"
+                                 :class="enabled ? 'bg-primary-600' : 'bg-gray-200'">
+                                <div class="h-6 w-6 rounded-full bg-white shadow-sm transition-transform duration-200"
+                                     :class="enabled ? 'translate-x-6' : 'translate-x-0'">
+                                </div>
+                            </div>
+                        </label>
+                    </div>
+                    <p class="text-[10px] text-gray-400 ml-1 -mt-4">When ON, AI prompts are built dynamically from the template profile's detected format, architecture, and column structure. When OFF, the default hardcoded prompts are used. Safe to toggle at any time.</p>
+                    <div class="space-y-2">
+                        {{ form.default_rejection_reasons.label(class="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1") }}
+                        {{ form.default_rejection_reasons(class="w-full bg-gray-50 dark:bg-gray-800/50 border-gray-200 dark:border-gray-700 rounded-2xl p-4 text-sm font-mono focus:ring-primary-500 transition-all", rows="4") }}
+                    </div>
+                    <!-- Save row -->
+                    <div class="flex items-center justify-between pt-5 border-t border-gray-200/80 dark:border-gray-800 md:static md:bg-transparent md:backdrop-blur-none md:p-0 md:border-t-0">
+                        <div>
+                            <span x-show="saved" x-transition.duration.500 class="text-xs font-black text-green-600 uppercase flex items-center gap-1">
+                                <span>✓</span> Saved
+                            </span>
+                            <span x-show="error" x-transition.duration.500 class="text-xs font-black text-red-600 uppercase flex items-center gap-1">
+                                <span>✗</span> <span x-text="error"></span>
+                            </span>
+                        </div>
+                        <button type="submit" :disabled="saving"
+                                class="px-8 py-3 bg-primary-600 text-white text-xs font-black uppercase tracking-[0.2em] rounded-2xl hover:bg-primary-700 disabled:opacity-50 transition-all min-h-[44px]">
+                            <span x-show="!saving">Save Section</span>
+                            <span x-show="saving">Saving...</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+document.addEventListener('alpine:init', () => {
+  Alpine.data('settingsPage', () => ({
+    search: '',
+    init() {
+      this.$watch('search', () => this.filterSections());
+    },
+    isVisible(key) {
+      if (!this.search) return true;
+      const el = document.querySelector(`[data-section="${key}"]`);
+      if (!el) return true;
+      return el.textContent.toLowerCase().includes(this.search.toLowerCase());
+    },
+    filterSections() {
+      // x-show bindings react automatically via isVisible()
+    },
+    async submitSection(event, section) {
+      const form = event.target;
+      const formData = new FormData(form);
+      const container = form.closest('[x-data]');
+      const data = Alpine.$data(container);
+
+      data.saving = true;
+      data.saved = false;
+      data.error = '';
+
+      try {
+        const params = new URLSearchParams(window.location.search);
+        params.set('section', section);
+        const url = window.location.pathname + '?' + params.toString();
+
+        const response = await fetch(url, {
+          method: 'POST',
+          body: formData,
+          headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        });
+
+        const result = await response.json();
+
+        if (result.status === 'ok') {
+          data.saved = true;
+          setTimeout(() => { data.saved = false; }, 3000);
+        } else {
+          data.error = result.errors
+            ? Object.values(result.errors).flat().join(', ')
+            : (result.message || 'Save failed');
+        }
+      } catch (e) {
+        data.error = 'Network error — please try again.';
+      } finally {
+        data.saving = false;
+      }
+    },
+    async checkLicense() {
+      this.licChecking = true;
+      this.licStatus = '';
+      this.licData = null;
+      this.licError = '';
+
+      try {
+        const res = await fetch('{{ url_for("auth.get_license_status_api") }}');
+        const data = await res.json();
+        if (data.status === 'success') {
+          this.licStatus = 'valid';
+          this.licData = data.data.license || data.data || {};
+        } else {
+          this.licStatus = 'invalid';
+          this.licError = data.data?.message || 'Your system license has expired or been revoked.';
+        }
+      } catch(e) {
+        this.licError = 'Error communicating with licensing server.';
+      } finally {
+        this.licChecking = false;
+      }
+    },
+    formatExpiry(rawExpiry) {
+      if (!rawExpiry) return 'Permanent / Lifetime';
+      try {
+        let date;
+        if (!isNaN(rawExpiry) && typeof rawExpiry !== 'object') {
+          date = new Date(parseInt(rawExpiry) * 1000);
+        } else {
+          date = new Date(rawExpiry);
+        }
+        if (!isNaN(date.getTime())) {
+          return date.toLocaleDateString('en-US', {
+            year: 'numeric', month: 'long', day: 'numeric'
+          });
+        }
+      } catch(e) {}
+      return rawExpiry;
+    }
+  }));
+});
+</script>
+{% endblock %}

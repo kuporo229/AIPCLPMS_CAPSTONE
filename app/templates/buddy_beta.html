@@ -1,0 +1,343 @@
+{% extends "base.html" %}
+
+{% block title %}AI Buddy Beta{% endblock %}
+
+{% block content %}
+<style>
+    @keyframes buddyDotPulse {
+        0%, 80%, 100% { opacity: 0.28; transform: translateY(0); }
+        40% { opacity: 1; transform: translateY(-2px); }
+    }
+
+    .buddy-dot {
+        animation: buddyDotPulse 1.2s infinite ease-in-out;
+    }
+
+    .buddy-dot:nth-child(2) {
+        animation-delay: 0.16s;
+    }
+
+    .buddy-dot:nth-child(3) {
+        animation-delay: 0.32s;
+    }
+</style>
+<div class="max-w-7xl mx-auto space-y-8">
+    <section class="rounded-[2rem] border border-primary-200/60 dark:border-primary-900/40 bg-gradient-to-br from-primary-50 via-white to-sky-50 dark:from-primary-950/20 dark:via-[#111827] dark:to-slate-950 p-8 md:p-10">
+        <div class="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6">
+            <div class="space-y-4 max-w-3xl">
+                <span class="inline-flex items-center px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-[0.25em] bg-primary-100 text-primary-700 dark:bg-primary-900/30 dark:text-primary-300">Beta Route</span>
+                <div class="space-y-2">
+                    <h1 class="text-3xl md:text-4xl font-black tracking-tight text-gray-900 dark:text-white">AI Buddy</h1>
+                    <p class="text-sm md:text-base text-gray-600 dark:text-gray-300 leading-relaxed">
+                        This assistant is scoped to your LPMS role and records. It can answer status questions, explain what to do next, and handle a small set of low-risk actions with confirmation.
+                    </p>
+                </div>
+                <div class="flex flex-wrap gap-3">
+                    <span class="inline-flex items-center px-3 py-2 rounded-2xl bg-white/80 dark:bg-gray-900/60 border border-gray-200 dark:border-gray-800 text-xs font-black uppercase tracking-[0.18em] text-gray-700 dark:text-gray-200">Role: {{ role }}</span>
+                    <span class="inline-flex items-center px-3 py-2 rounded-2xl bg-white/80 dark:bg-gray-900/60 border border-gray-200 dark:border-gray-800 text-xs font-black uppercase tracking-[0.18em] text-gray-700 dark:text-gray-200">Read + low-risk actions</span>
+                    <span class="inline-flex items-center px-3 py-2 rounded-2xl bg-white/80 dark:bg-gray-900/60 border border-gray-200 dark:border-gray-800 text-xs font-black uppercase tracking-[0.18em] text-gray-700 dark:text-gray-200">Per-session memory</span>
+                </div>
+            </div>
+            <div class="w-full lg:w-[22rem] rounded-[1.75rem] bg-white/85 dark:bg-gray-900/70 border border-gray-200 dark:border-gray-800 p-5">
+                <h2 class="text-sm font-black uppercase tracking-[0.2em] text-gray-400 mb-4">Live Context</h2>
+                <pre class="text-xs leading-6 text-gray-600 dark:text-gray-300 whitespace-pre-wrap">{{ context_summary | tojson(indent=2) }}</pre>
+            </div>
+        </div>
+    </section>
+
+    <div class="grid grid-cols-1 xl:grid-cols-[1.15fr_0.85fr] gap-8">
+        <section class="rounded-[2rem] border border-gray-200 dark:border-gray-800 bg-white dark:bg-[#111827] shadow-sm overflow-hidden">
+            <div class="border-b border-gray-100 dark:border-gray-800 px-6 py-5 flex items-center justify-between gap-4">
+                <div>
+                    <h2 class="text-xl font-black tracking-tight text-gray-900 dark:text-white">Conversation</h2>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">Ask about your plans, next steps, notifications, or safe LPMS actions.</p>
+                </div>
+                <button id="reset-buddy" class="px-4 py-2 rounded-xl bg-gray-50 dark:bg-gray-900/60 hover:bg-gray-100 dark:hover:bg-gray-900 text-[10px] font-black uppercase tracking-[0.2em] text-gray-600 dark:text-gray-300">
+                    Reset
+                </button>
+            </div>
+
+            <div id="buddy-transcript" class="h-[34rem] overflow-y-auto custom-scrollbar px-6 py-6 space-y-4 bg-gray-50/50 dark:bg-[#0b1220]"></div>
+
+            <div class="p-6 border-t border-gray-100 dark:border-gray-800 space-y-4">
+                <div class="flex flex-wrap gap-2">
+                    <button class="quick-prompt px-3 py-2 rounded-xl bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-300 text-xs font-black" data-prompt="How many plans have I created?">Plan counts</button>
+                    <button class="quick-prompt px-3 py-2 rounded-xl bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-300 text-xs font-black" data-prompt="What do I need to do next?">Next steps</button>
+                    <button class="quick-prompt px-3 py-2 rounded-xl bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-300 text-xs font-black" data-prompt="Show my notifications status.">Notifications</button>
+                    <button class="quick-prompt px-3 py-2 rounded-xl bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-300 text-xs font-black" data-prompt="Open the right page for me.">Open a page</button>
+                </div>
+                <form id="buddy-form" class="flex flex-col md:flex-row gap-3">
+                    <textarea id="buddy-input" rows="3" class="flex-1 rounded-[1.5rem] border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900/50 px-5 py-4 text-sm focus:ring-primary-500" placeholder="Ask about your plans, workflow, feedback, or safe actions..."></textarea>
+                    <button id="buddy-send-button" type="submit" class="md:self-end px-6 py-4 rounded-[1.5rem] bg-primary-600 hover:bg-primary-700 disabled:bg-primary-400 disabled:cursor-not-allowed text-white text-[11px] font-black uppercase tracking-[0.22em] shadow-lg shadow-primary-200 dark:shadow-none transition-all">
+                        Send
+                    </button>
+                </form>
+            </div>
+        </section>
+
+        <aside class="space-y-6">
+            <section class="rounded-[2rem] border border-gray-200 dark:border-gray-800 bg-white dark:bg-[#111827] p-6 shadow-sm">
+                <h2 class="text-lg font-black tracking-tight text-gray-900 dark:text-white mb-4">Suggested Actions</h2>
+                <div id="buddy-actions" class="space-y-3">
+                    {% for action in starter_actions %}
+                        <button
+                            class="starter-action w-full text-left rounded-2xl border border-gray-200 dark:border-gray-800 bg-gray-50/70 dark:bg-gray-900/40 p-4 hover:border-primary-400 dark:hover:border-primary-700 transition-all"
+                            data-action='{{ action | tojson }}'>
+                            <div class="flex items-start justify-between gap-3">
+                                <div>
+                                    <p class="text-sm font-black text-gray-900 dark:text-white">{{ action.label }}</p>
+                                    <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">{{ action.description }}</p>
+                                </div>
+                                {% if action.requires_confirmation %}
+                                    <span class="text-[10px] font-black uppercase tracking-[0.18em] text-amber-600">Confirm</span>
+                                {% endif %}
+                            </div>
+                        </button>
+                    {% endfor %}
+                </div>
+            </section>
+
+            <section class="rounded-[2rem] border border-gray-200 dark:border-gray-800 bg-white dark:bg-[#111827] p-6 shadow-sm">
+                <h2 class="text-lg font-black tracking-tight text-gray-900 dark:text-white mb-4">Role Guides</h2>
+                <div class="space-y-3">
+                    {% for item in docs %}
+                        <a href="{{ item.url }}" class="block rounded-2xl border border-gray-200 dark:border-gray-800 bg-gray-50/70 dark:bg-gray-900/40 p-4 hover:border-primary-400 dark:hover:border-primary-700 transition-all">
+                            <p class="text-sm font-black text-gray-900 dark:text-white">{{ item.label }}</p>
+                            <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">{{ item.snippet }}</p>
+                        </a>
+                    {% endfor %}
+                </div>
+            </section>
+
+            <section class="rounded-[2rem] border border-amber-200 dark:border-amber-900/50 bg-amber-50 dark:bg-amber-950/20 p-6 shadow-sm">
+                <h2 class="text-lg font-black tracking-tight text-amber-900 dark:text-amber-300 mb-3">Beta Guardrails</h2>
+                <ul class="space-y-2 text-sm text-amber-800 dark:text-amber-200">
+                    <li>The buddy only uses your authorized LPMS context.</li>
+                    <li>It can suggest or execute only low-risk actions in this beta.</li>
+                    <li>High-risk actions stay in the normal UI and are out of scope here.</li>
+                </ul>
+            </section>
+        </aside>
+    </div>
+</div>
+
+<script>
+    const transcript = document.getElementById('buddy-transcript');
+    const form = document.getElementById('buddy-form');
+    const input = document.getElementById('buddy-input');
+    const actionsContainer = document.getElementById('buddy-actions');
+    const sendButton = document.getElementById('buddy-send-button');
+    const csrfToken = '{{ csrf_token() }}';
+    let pendingIndicator = null;
+
+    function getJsonHeaders() {
+        return {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': csrfToken,
+            'X-Requested-With': 'XMLHttpRequest',
+        };
+    }
+
+    async function parseBuddyResponse(res) {
+        const contentType = res.headers.get('content-type') || '';
+        if (res.redirected || !contentType.includes('application/json')) {
+            throw new Error('Your session may have expired. Please refresh the page and try again.');
+        }
+        const data = await res.json();
+        if (!res.ok) {
+            throw new Error(data.message || data.error || 'The AI Buddy request failed.');
+        }
+        return data;
+    }
+
+    function appendMessage(role, content) {
+        const wrapper = document.createElement('div');
+        wrapper.className = role === 'user' ? 'flex justify-end' : 'flex justify-start';
+        const bubble = document.createElement('div');
+        bubble.className = role === 'user'
+            ? 'max-w-[85%] rounded-[1.75rem] rounded-br-md bg-primary-600 text-white px-5 py-4 text-sm leading-7 shadow-lg shadow-primary-200 dark:shadow-none'
+            : 'max-w-[92%] rounded-[1.75rem] rounded-bl-md bg-white dark:bg-[#111827] border border-gray-200 dark:border-gray-800 px-5 py-4 text-sm leading-7 text-gray-700 dark:text-gray-200';
+        bubble.textContent = content;
+        wrapper.appendChild(bubble);
+        transcript.appendChild(wrapper);
+        transcript.scrollTop = transcript.scrollHeight;
+    }
+
+    function setBusyState(isBusy) {
+        input.disabled = isBusy;
+        sendButton.disabled = isBusy;
+        sendButton.textContent = isBusy ? 'Waiting...' : 'Send';
+    }
+
+    function showTypingIndicator(label = 'AI Buddy is thinking') {
+        hideTypingIndicator();
+        const wrapper = document.createElement('div');
+        wrapper.className = 'flex justify-start';
+        wrapper.id = 'buddy-typing-indicator';
+        const bubble = document.createElement('div');
+        bubble.className = 'max-w-[92%] rounded-[1.75rem] rounded-bl-md bg-white dark:bg-[#111827] border border-gray-200 dark:border-gray-800 px-5 py-4 text-sm text-gray-700 dark:text-gray-200 shadow-sm';
+        bubble.innerHTML = `
+            <div class="flex items-center gap-3">
+                <span class="text-xs font-black uppercase tracking-[0.18em] text-primary-500 dark:text-primary-300">${label}</span>
+                <div class="flex items-center gap-1.5">
+                    <span class="buddy-dot h-2.5 w-2.5 rounded-full bg-primary-500/90 dark:bg-primary-300/90"></span>
+                    <span class="buddy-dot h-2.5 w-2.5 rounded-full bg-primary-500/90 dark:bg-primary-300/90"></span>
+                    <span class="buddy-dot h-2.5 w-2.5 rounded-full bg-primary-500/90 dark:bg-primary-300/90"></span>
+                </div>
+            </div>
+        `;
+        wrapper.appendChild(bubble);
+        transcript.appendChild(wrapper);
+        transcript.scrollTop = transcript.scrollHeight;
+        pendingIndicator = wrapper;
+    }
+
+    function hideTypingIndicator() {
+        if (pendingIndicator && pendingIndicator.parentNode) {
+            pendingIndicator.parentNode.removeChild(pendingIndicator);
+        }
+        pendingIndicator = null;
+    }
+
+    function renderActions(actions) {
+        actionsContainer.innerHTML = '';
+        if (!actions || !actions.length) {
+            actionsContainer.innerHTML = '<p class="text-sm text-gray-500 dark:text-gray-400">No immediate buddy actions suggested.</p>';
+            return;
+        }
+        actions.forEach((action) => {
+            const button = document.createElement('button');
+            button.type = 'button';
+            button.className = 'w-full text-left rounded-2xl border border-gray-200 dark:border-gray-800 bg-gray-50/70 dark:bg-gray-900/40 p-4 hover:border-primary-400 dark:hover:border-primary-700 transition-all';
+            button.innerHTML = `
+                <div class="flex items-start justify-between gap-3">
+                    <div>
+                        <p class="text-sm font-black text-gray-900 dark:text-white">${action.label}</p>
+                        <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">${action.description || ''}</p>
+                    </div>
+                    ${action.requires_confirmation ? '<span class="text-[10px] font-black uppercase tracking-[0.18em] text-amber-600">Confirm</span>' : ''}
+                </div>
+            `;
+            button.addEventListener('click', () => runAction(action));
+            actionsContainer.appendChild(button);
+        });
+    }
+
+    async function loadHistory() {
+        try {
+            const res = await fetch('{{ url_for("main.buddy_history") }}', {
+                credentials: 'same-origin',
+                headers: {'X-Requested-With': 'XMLHttpRequest'},
+            });
+            const data = await parseBuddyResponse(res);
+            transcript.innerHTML = '';
+            if (!data.history || !data.history.length) {
+                appendMessage('assistant', 'I’m ready. Ask me about your LPMS status, workflow, or next step.');
+                return;
+            }
+            data.history.forEach((item) => appendMessage(item.role, item.content));
+        } catch (error) {
+            transcript.innerHTML = '';
+            appendMessage('assistant', error.message || 'I could not load the current buddy session.');
+        }
+    }
+
+    async function sendMessage(message) {
+        appendMessage('user', message);
+        input.value = '';
+        setBusyState(true);
+        showTypingIndicator();
+        try {
+            const res = await fetch('{{ url_for("main.buddy_message") }}', {
+                method: 'POST',
+                credentials: 'same-origin',
+                headers: getJsonHeaders(),
+                body: JSON.stringify({
+                    message,
+                    route_hint: window.location.pathname,
+                })
+            });
+            const data = await parseBuddyResponse(res);
+            hideTypingIndicator();
+            appendMessage('assistant', data.reply || 'I could not prepare a response.');
+            renderActions(data.suggested_actions || []);
+        } catch (error) {
+            hideTypingIndicator();
+            appendMessage('assistant', error.message || 'I could not prepare a response right now.');
+        } finally {
+            setBusyState(false);
+            input.focus();
+        }
+    }
+
+    async function runAction(action) {
+        const doRun = async () => {
+            setBusyState(true);
+            showTypingIndicator('AI Buddy is working');
+            try {
+                const res = await fetch('{{ url_for("main.buddy_action") }}', {
+                    method: 'POST',
+                    credentials: 'same-origin',
+                    headers: getJsonHeaders(),
+                    body: JSON.stringify({
+                        action_id: action.action_id,
+                        payload: action.payload || {},
+                        confirmed: true,
+                        requires_confirmation: !!action.requires_confirmation,
+                        route_hint: window.location.pathname,
+                    })
+                });
+                const data = await parseBuddyResponse(res);
+                hideTypingIndicator();
+                appendMessage('assistant', data.message || 'Action completed.');
+                if (data.redirect_url) {
+                    window.location.href = data.redirect_url;
+                }
+            } catch (error) {
+                hideTypingIndicator();
+                appendMessage('assistant', error.message || 'I could not complete that action.');
+            } finally {
+                setBusyState(false);
+            }
+        };
+
+        if (action.requires_confirmation && typeof showCustomConfirm === 'function') {
+            showCustomConfirm(`Run "${action.label}"?`, doRun, 'Confirm Buddy Action');
+            return;
+        }
+        await doRun();
+    }
+
+    form.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        const message = input.value.trim();
+        if (!message) return;
+        await sendMessage(message);
+    });
+
+    document.querySelectorAll('.quick-prompt').forEach((button) => {
+        button.addEventListener('click', () => sendMessage(button.dataset.prompt));
+    });
+
+    document.querySelectorAll('.starter-action').forEach((button) => {
+        button.addEventListener('click', () => runAction(JSON.parse(button.dataset.action)));
+    });
+
+    document.getElementById('reset-buddy').addEventListener('click', async () => {
+        try {
+            const res = await fetch('{{ url_for("main.buddy_reset") }}', {
+                method: 'POST',
+                credentials: 'same-origin',
+                headers: getJsonHeaders(),
+            });
+            await parseBuddyResponse(res);
+            await loadHistory();
+            renderActions([]);
+        } catch (error) {
+            appendMessage('assistant', error.message || 'I could not reset the buddy session.');
+        }
+    });
+
+    loadHistory();
+</script>
+{% endblock %}

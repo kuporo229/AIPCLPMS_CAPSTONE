@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+
+{% block title %}Faculty Management{% endblock %}
+
+{% block content %}
+<div class="space-y-10">
+    <!-- Header -->
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
+        <div class="space-y-1">
+            <h1 class="text-3xl font-black text-gray-900 dark:text-white tracking-tight leading-tight">Faculty <span class="text-primary-600">Directory</span></h1>
+            <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Personnel overview for <span class="text-primary-600 font-bold uppercase">{{ department if department else 'All Units' }}</span>.</p>
+        </div>
+    </div>
+
+    <!-- Directory List -->
+    <div class="bg-white dark:bg-[#111827] rounded-[2rem] md:rounded-[2.5rem] border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden">
+        <div class="p-6 md:p-8 border-b border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-800/20 flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-primary-50 dark:bg-primary-900/20 flex items-center justify-center text-primary-600 shrink-0">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+            <h3 class="text-lg md:text-xl font-black text-gray-900 dark:text-white tracking-tight uppercase">Registered Faculty</h3>
+        </div>
+
+        {% if teachers %}
+        <!-- Desktop Table View -->
+        <div class="hidden md:block overflow-x-auto custom-scrollbar">
+            <table class="w-full text-left border-collapse">
+                <thead>
+                    <tr class="bg-gray-50/50 dark:bg-gray-800/20 border-b border-gray-100 dark:border-gray-800">
+                        <th class="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest">Faculty Member</th>
+                        <th class="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest">Digital Entry</th>
+                        <th class="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center">Identity Status</th>
+                        <th class="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
+                    {% for teacher in teachers %}
+                    <tr class="group hover:bg-gray-50/50 dark:hover:bg-primary-900/5 transition-all">
+                        <td class="px-8 py-6">
+                            <div class="flex items-center gap-4">
+                                <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-primary-500 to-primary-700 flex items-center justify-center text-white font-black text-lg uppercase shrink-0 shadow-lg shadow-primary-200 dark:shadow-none">
+                                    {{ teacher.first_name[0] if teacher.first_name else 'T' }}
+                                </div>
+                                <div class="min-w-0">
+                                    <h4 class="text-sm font-black text-gray-900 dark:text-white truncate tracking-tight uppercase">{{ teacher.first_name }} {{ teacher.last_name }}</h4>
+                                    <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">@{{ teacher.username }}</p>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-8 py-6">
+                            <p class="text-xs font-black text-gray-700 dark:text-gray-300 uppercase tracking-tighter">{{ teacher.email }}</p>
+                        </td>
+                        <td class="px-8 py-6 text-center">
+                            {% if teacher.approved %}
+                                <span class="px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest bg-emerald-50 text-emerald-700 border border-emerald-100 dark:bg-emerald-900/20 dark:text-emerald-400 dark:border-emerald-800">Active Access</span>
+                            {% else %}
+                                <span class="px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest bg-amber-50 text-amber-700 border border-amber-100 dark:bg-amber-900/20 dark:text-amber-400 dark:border-amber-800">Pending Review</span>
+                            {% endif %}
+                        </td>
+                        <td class="px-8 py-6 text-right whitespace-nowrap">
+                            <a href="{{ url_for('dean.view_faculty_profile', user_id=teacher.id) }}" class="inline-flex px-6 py-2.5 bg-gray-900 dark:bg-primary-600 text-white text-[9px] font-black uppercase tracking-widest rounded-xl hover:bg-black dark:hover:bg-primary-700 transition-all shadow-xl shadow-gray-200 dark:shadow-none">Open Profile</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Mobile Card View -->
+        <div class="md:hidden divide-y divide-gray-100 dark:divide-gray-800">
+            {% for teacher in teachers %}
+            <div class="p-6 space-y-4">
+                <div class="flex items-center gap-4">
+                    <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-primary-500 to-primary-700 flex items-center justify-center text-white font-black text-lg uppercase shrink-0 shadow-lg shadow-primary-200 dark:shadow-none">
+                        {{ teacher.first_name[0] if teacher.first_name else 'T' }}
+                    </div>
+                    <div class="min-w-0 flex-1">
+                        <h4 class="text-sm font-black text-gray-900 dark:text-white truncate tracking-tight uppercase">{{ teacher.first_name }} {{ teacher.last_name }}</h4>
+                        <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">@{{ teacher.username }}</p>
+                    </div>
+                    <div class="shrink-0">
+                        {% if teacher.approved %}
+                            <div class="w-2 h-2 rounded-full bg-emerald-500 shadow-sm shadow-emerald-200" title="Active"></div>
+                        {% else %}
+                            <div class="w-2 h-2 rounded-full bg-amber-500 shadow-sm shadow-amber-200" title="Pending"></div>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="flex flex-col gap-1">
+                    <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Digital Entry</p>
+                    <p class="text-xs font-bold text-gray-700 dark:text-gray-300 truncate">{{ teacher.email }}</p>
+                </div>
+                <a href="{{ url_for('dean.view_faculty_profile', user_id=teacher.id) }}" class="flex items-center justify-center w-full py-3 bg-gray-900 dark:bg-primary-600 text-white text-[9px] font-black uppercase tracking-widest rounded-xl hover:bg-black dark:hover:bg-primary-700 transition-all">Open Profile</a>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="py-32 flex flex-col items-center justify-center opacity-50 px-6 text-center">
+            <div class="w-20 h-20 bg-gray-50 dark:bg-gray-800 rounded-[2.5rem] flex items-center justify-center mb-6">
+                <svg class="w-10 h-10 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+            <p class="text-sm font-black text-gray-400 uppercase tracking-widest">No faculty registered</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

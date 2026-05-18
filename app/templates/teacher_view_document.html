@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>{{ doc_title }}</title>
+  <script src="{{ onlyoffice_api_js_url  }}"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    html, body { height: 100vh; width: 100vw; margin: 0; padding: 0; overflow: hidden; }
+    #editor { height: 100vh; width: 100vw; }
+  </style>
+</head>
+<body class="bg-gray-100 dark:bg-gray-900 flex flex-col">
+
+  <div class="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 p-4 flex justify-between items-center shadow-sm z-10 shrink-0">
+      <h1 class="text-lg font-bold text-gray-800 dark:text-white truncate">View: {{ doc_title }}</h1>
+      <a href="{{ back_url or url_for('teacher.teacher_all_clps') }}" class="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white text-sm font-medium rounded-md transition-colors">
+          &larr; Back
+      </a>
+  </div>
+
+  <div id="editor" class="flex-grow"></div>
+
+  <script>
+    const config = {{ config|tojson|safe }};
+    if (!config.token) {
+        config.token = "{{ token }}";
+    }
+
+    if (typeof DocsAPI !== 'undefined') {
+        try {
+            new DocsAPI.DocEditor("editor", config);
+        } catch (e) {
+            console.error(e);
+            alert("Error initializing editor: " + e.message);
+        }
+    } else {
+        document.getElementById('editor').innerHTML = 
+            '<div class="flex items-center justify-center h-full text-red-500">Error: ONLYOFFICE API not reachable.</div>';
+    }
+  </script>
+</body>
+</html>

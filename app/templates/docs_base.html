@@ -1,0 +1,201 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="flex flex-col lg:flex-row min-h-screen bg-gray-50 dark:bg-[#0b0f19]">
+    <!-- Docs Sidebar -->
+    <aside class="w-full lg:w-64 flex-shrink-0 bg-white dark:bg-[#111827] border-b lg:border-r border-gray-200 dark:border-gray-800 lg:h-screen lg:sticky lg:top-16 overflow-y-auto custom-scrollbar">
+        <div class="p-6">
+            <h5 class="text-xs font-black uppercase tracking-widest text-gray-400 mb-4 px-2">On This Page</h5>
+            <nav id="docs-sidebar-nav" class="space-y-1">
+                <!-- Nav items will be auto-populated by JS -->
+                <div class="animate-pulse flex space-y-2 flex-col">
+                    <div class="h-4 bg-gray-200 dark:bg-gray-800 rounded w-3/4"></div>
+                    <div class="h-4 bg-gray-200 dark:bg-gray-800 rounded w-1/2"></div>
+                    <div class="h-4 bg-gray-200 dark:bg-gray-800 rounded w-5/8"></div>
+                </div>
+            </nav>
+
+            <div class="mt-8 pt-8 border-t border-gray-100 dark:border-gray-800">
+                <h5 class="text-xs font-black uppercase tracking-widest text-gray-400 mb-4 px-2">Other Guides</h5>
+                <nav class="space-y-1">
+                    <a href="{{ url_for('main.docs_public') }}" class="flex items-center px-3 py-2 text-sm font-bold rounded-xl transition-colors {% if request.endpoint == 'main.docs_public' %}bg-primary-50 text-primary-600 dark:bg-primary-900/20 dark:text-primary-400{% else %}text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800{% endif %}">Public Guide</a>
+                    <a href="{{ url_for('main.docs_teacher') }}" class="flex items-center px-3 py-2 text-sm font-bold rounded-xl transition-colors {% if request.endpoint == 'main.docs_teacher' %}bg-primary-50 text-primary-600 dark:bg-primary-900/20 dark:text-primary-400{% else %}text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800{% endif %}">Teacher Guide</a>
+                    <a href="{{ url_for('main.docs_dean') }}" class="flex items-center px-3 py-2 text-sm font-bold rounded-xl transition-colors {% if request.endpoint == 'main.docs_dean' %}bg-primary-50 text-primary-600 dark:bg-primary-900/20 dark:text-primary-400{% else %}text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800{% endif %}">Dean Guide</a>
+                    <a href="{{ url_for('main.docs_admin') }}" class="flex items-center px-3 py-2 text-sm font-bold rounded-xl transition-colors {% if request.endpoint == 'main.docs_admin' %}bg-primary-50 text-primary-600 dark:bg-primary-900/20 dark:text-primary-400{% else %}text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800{% endif %}">Admin Guide</a>
+                </nav>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 min-w-0 overflow-y-auto lg:h-screen lg:pt-0">
+        <div class="max-w-4xl mx-auto px-6 py-12 lg:px-12">
+            <div class="docs-hero mb-12">
+                <p class="docs-kicker">{% block docs_kicker %}{% endblock %}</p>
+                <h1 class="text-4xl font-black text-gray-900 dark:text-white mb-4">{% block docs_title %}{% endblock %}</h1>
+                <p class="text-lg text-gray-600 dark:text-gray-400">{% block docs_description %}{% endblock %}</p>
+            </div>
+
+            <article class="docs-content prose dark:prose-invert prose-primary max-w-none">
+                <div id="docs-render"></div>
+            </article>
+
+            <!-- Footer Navigation -->
+            <div class="mt-16 pt-8 border-t border-gray-200 dark:border-gray-800 flex justify-between items-center text-sm font-bold uppercase tracking-widest text-gray-500">
+                <span>© {{ institution_name or 'AIPCLPMS' }}</span>
+                <a href="#top" class="hover:text-primary-600 transition-colors flex items-center gap-2">
+                    Back to Top
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M5 15l7-7 7 7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </a>
+            </div>
+        </div>
+    </main>
+</div>
+
+<!-- Markdown Content Source -->
+<script type="text/markdown" id="docs-markdown">
+{% block docs_markdown %}{% endblock %}
+</script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const markdown = document.getElementById('docs-markdown');
+        const target = document.getElementById('docs-render');
+        const sidebarNav = document.getElementById('docs-sidebar-nav');
+        if (!markdown || !target || !sidebarNav) return;
+
+        const slugify = (text) => text
+            .toLowerCase()
+            .trim()
+            .replace(/[^\w\s-]/g, '')
+            .replace(/\s+/g, '-')
+            .replace(/-+/g, '-');
+
+        const renderSidebar = () => {
+            sidebarNav.innerHTML = '';
+            target.querySelectorAll('h2').forEach((heading) => {
+                const id = slugify(heading.textContent || '');
+                heading.id = id;
+                
+                const link = document.createElement('a');
+                link.href = `#${id}`;
+                link.className = 'block px-3 py-2 text-sm font-medium rounded-xl text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-primary-600 dark:hover:text-primary-400 transition-all';
+                link.textContent = heading.textContent;
+                sidebarNav.appendChild(link);
+            });
+        };
+
+        const render = () => {
+            if (window.marked) {
+                target.innerHTML = window.marked.parse(markdown.textContent);
+                renderSidebar();
+                
+                // Active link tracking
+                const observer = new IntersectionObserver((entries) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) {
+                            sidebarNav.querySelectorAll('a').forEach(a => {
+                                a.classList.remove('bg-primary-50', 'text-primary-600', 'dark:bg-primary-900/10', 'dark:text-primary-400');
+                                if (a.getAttribute('href') === `#${entry.target.id}`) {
+                                    a.classList.add('bg-primary-50', 'text-primary-600', 'dark:bg-primary-900/10', 'dark:text-primary-400');
+                                }
+                            });
+                        }
+                    });
+                }, { threshold: 0.1, rootMargin: '-10% 0px -80% 0px' });
+
+                target.querySelectorAll('h2').forEach(h2 => observer.observe(h2));
+
+                if (window.location.hash) {
+                    const el = target.querySelector(window.location.hash);
+                    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            } else {
+                target.textContent = markdown.textContent;
+            }
+        };
+
+        if (window.marked) {
+            render();
+        } else {
+            const script = document.createElement('script');
+            script.src = 'https://cdn.jsdelivr.net/npm/marked/marked.min.js';
+            script.onload = render;
+            document.body.appendChild(script);
+        }
+    });
+</script>
+
+<style>
+    .docs-hero {
+        padding: 2.5rem 2.5rem;
+        border-radius: 2rem;
+        background: linear-gradient(135deg, rgba(59, 130, 246, 0.05), rgba(16, 185, 129, 0.05));
+        border: 1px solid rgba(226, 232, 240, 0.8);
+    }
+    .dark .docs-hero {
+        background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(16, 185, 129, 0.1));
+        border-color: rgba(30, 41, 59, 0.8);
+    }
+    .docs-kicker {
+        font-size: 0.65rem;
+        text-transform: uppercase;
+        letter-spacing: 0.35em;
+        font-weight: 800;
+        color: #3b82f6;
+        margin-bottom: 0.75rem;
+    }
+    .docs-content h2 {
+        border-bottom: 1px solid rgba(226, 232, 240, 0.5);
+        padding-bottom: 0.5rem;
+        margin-top: 3rem;
+        font-weight: 800;
+        color: #1e293b;
+    }
+    .dark .docs-content h2 {
+        border-color: rgba(30, 41, 59, 0.5);
+        color: #f8fafc;
+    }
+    .docs-content p {
+        margin-top: 1rem;
+        line-height: 1.8;
+    }
+    .docs-content ul, .docs-content ol {
+        margin-top: 1rem;
+        padding-left: 1.5rem;
+    }
+    .docs-content li {
+        margin-bottom: 0.5rem;
+    }
+    .docs-content table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 2rem 0;
+        font-size: 0.875rem;
+    }
+    .docs-content th {
+        text-align: left;
+        padding: 0.75rem;
+        background: rgba(241, 245, 249, 0.5);
+        border-bottom: 2px solid #e2e8f0;
+    }
+    .dark .docs-content th {
+        background: rgba(30, 41, 59, 0.5);
+        border-color: #334155;
+    }
+    .docs-content td {
+        padding: 0.75rem;
+        border-bottom: 1px solid #e2e8f0;
+    }
+    .dark .docs-content td {
+        border-color: #334155;
+    }
+    .docs-content blockquote {
+        border-left: 4px solid #3b82f6;
+        padding: 1rem 1.5rem;
+        background: rgba(59, 130, 246, 0.05);
+        border-radius: 0 1rem 1rem 0;
+        margin: 2rem 0;
+    }
+</style>
+{% endblock %}

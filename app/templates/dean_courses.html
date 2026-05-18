@@ -1,0 +1,212 @@
+{% extends "base.html" %}
+
+{% block title %}Course Oversight{% endblock %}
+
+{% block content %}
+<div class="space-y-10">
+    <!-- Header -->
+    <div class="flex flex-col gap-2">
+        <h1 class="text-3xl font-black text-gray-900 dark:text-white tracking-tight leading-tight">Academic <span class="text-primary-600">Oversight</span></h1>
+        <p class="text-gray-500 dark:text-gray-400 font-medium italic">Monitor, review, and approve course learning plans across your department.</p>
+    </div>
+
+    {# Pending Approvals Section #}
+    {% if pending_plans is defined %}
+    <div class="space-y-6">
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 px-1">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-amber-50 dark:bg-amber-900/20 flex items-center justify-center text-amber-600 shrink-0">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </div>
+                <div>
+                    <h3 class="text-xl font-black text-gray-900 dark:text-white tracking-tight">Pending Review</h3>
+                    <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest">{{ pending_plans|length }} items awaiting action</p>
+                </div>
+            </div>
+            
+            {% if pending_plans %}
+            <div class="w-full md:w-auto flex items-center justify-between md:justify-end gap-4 bg-white dark:bg-[#111827] p-2 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm">
+                <label class="flex items-center gap-2 px-3 py-2 text-[10px] font-black text-gray-500 uppercase tracking-widest cursor-pointer hover:text-primary-600 transition-colors">
+                    <input type="checkbox" id="select-all-pending" class="w-4 h-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500">
+                    <span>Select All</span>
+                </label>
+                <div class="w-px h-6 bg-gray-100 dark:bg-gray-800"></div>
+                <button type="submit" form="batch-approve-form" id="batch-approve-btn" disabled
+                        class="flex-1 md:flex-none px-6 py-2 bg-primary-600 text-white text-[10px] font-black uppercase tracking-widest rounded-xl shadow-lg shadow-primary-200 dark:shadow-none opacity-50 cursor-not-allowed transition-all hover:bg-primary-700 whitespace-nowrap">
+                    Batch Approve
+                </button>
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="bg-white dark:bg-[#111827] rounded-[2rem] md:rounded-[2.5rem] border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden">
+            {% if pending_plans %}
+                <form id="batch-approve-form" method="POST" action="{{ url_for('dean.batch_approve') }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <div class="divide-y divide-gray-100 dark:divide-gray-800">
+                        {% for plan in pending_plans %}
+                        <div class="p-5 md:p-8 hover:bg-gray-50/50 dark:hover:bg-gray-800/20 transition-all group">
+                            <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
+                                <div class="flex items-start gap-4 md:gap-6 flex-1 min-w-0 w-full">
+                                    <div class="pt-1 shrink-0">
+                                        <input type="checkbox" name="plan_ids" value="{{ plan.id }}" class="pending-checkbox w-5 h-5 rounded-lg border-gray-300 text-primary-600 focus:ring-primary-500">
+                                    </div>
+                                    <div class="flex-1 min-w-0">
+                                        <div class="flex items-center gap-2 mb-1 overflow-x-auto no-scrollbar">
+                                            <span class="text-[10px] font-black text-amber-600 bg-amber-50 dark:bg-amber-900/30 px-2 py-0.5 rounded uppercase tracking-widest whitespace-nowrap">Awaiting Review</span>
+                                            <span class="text-[10px] font-black text-gray-400 uppercase tracking-widest whitespace-nowrap">{{ plan.department }}</span>
+                                        </div>
+                                        <h4 class="text-base md:text-lg font-black text-gray-900 dark:text-white truncate tracking-tight mb-1">{{ plan.subject }}</h4>
+                                        <div class="flex flex-wrap items-center gap-x-4 gap-y-1">
+                                            <p class="text-xs font-bold text-gray-500 dark:text-gray-400 flex items-center">
+                                                By {{ plan.author.username }}
+                                            </p>
+                                            <p class="text-xs font-bold text-gray-400 flex items-center">
+                                                {{ plan.upload_type.replace('_', ' ').title() }}
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="flex flex-col sm:flex-row items-center gap-3 w-full lg:w-auto">
+                                    <a href="{{ url_for('dean.dean_review_clp', plan_id=plan.id) }}" class="w-full px-8 py-3 bg-gray-900 dark:bg-primary-600 text-white text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-black dark:hover:bg-primary-700 transition-all shadow-xl shadow-gray-200 dark:shadow-none text-center">Open Review</a>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </form>
+            {% else %}
+                <div class="py-20 flex flex-col items-center justify-center opacity-50 px-6 text-center">
+                    <div class="w-16 h-16 bg-gray-50 dark:bg-gray-800 rounded-[2rem] flex items-center justify-center mb-4">
+                        <svg class="w-8 h-8 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    </div>
+                    <p class="text-sm font-black text-gray-400 uppercase tracking-widest">Inbox Zero</p>
+                    <p class="text-[10px] font-bold text-gray-400 mt-1 uppercase tracking-widest">No plans currently pending review</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+
+    {# Approved Plans Section #}
+    <div class="space-y-6 pt-4">
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 px-1">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-900/20 flex items-center justify-center text-emerald-600 shrink-0">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </div>
+                <div>
+                    <h3 class="text-xl font-black text-gray-900 dark:text-white tracking-tight">Approved Plans</h3>
+                    <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest">{{ (plans if plans is defined else approved_plans)|length }} documents finalized</p>
+                </div>
+            </div>
+            
+            <!-- Quick Filter -->
+            <div class="w-full md:w-72 bg-white dark:bg-[#111827] p-2 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm flex items-center">
+                <div class="pl-3 pr-2 text-gray-400 shrink-0">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </div>
+                <select id="teacher-filter" class="w-full bg-transparent border-0 text-[10px] font-black uppercase tracking-widest focus:ring-0 text-gray-600 dark:text-gray-400">
+                    <option value="all">Filter by Faculty Member</option>
+                    {% set teachers = [] %}
+                    {% for plan in (plans if plans is defined else approved_plans) %}
+                        {% if plan.author.username not in teachers %}
+                            {% set _ = teachers.append(plan.author.username) %}
+                            <option value="{{ plan.author.username }}">{{ plan.author.username|upper }}</option>
+                        {% endif %}
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+
+        <div class="bg-white dark:bg-[#111827] rounded-[2rem] md:rounded-[2.5rem] border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden">
+            {% set display_plans = plans if plans is defined else approved_plans %}
+            {% if display_plans %}
+                <div class="divide-y divide-gray-100 dark:divide-gray-800" id="approved-plans-list">
+                    {% for plan in display_plans %}
+                    <div class="approved-card p-5 md:p-8 hover:bg-gray-50/50 dark:hover:bg-gray-800/20 transition-all" data-teacher="{{ plan.author.username }}">
+                        <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
+                            <div class="flex-1 min-w-0 w-full">
+                                <div class="flex items-center gap-2 mb-1 overflow-x-auto no-scrollbar">
+                                    <span class="text-[10px] font-black text-emerald-600 bg-emerald-50 dark:bg-emerald-900/30 px-2 py-0.5 rounded uppercase tracking-widest whitespace-nowrap">Approved</span>
+                                    <span class="text-[10px] font-black text-gray-400 uppercase tracking-widest whitespace-nowrap">{{ plan.department }}</span>
+                                </div>
+                                <h4 class="text-base md:text-lg font-black text-gray-900 dark:text-white truncate tracking-tight mb-1">{{ plan.subject }}</h4>
+                                <div class="flex flex-wrap items-center gap-x-4 gap-y-1 text-[10px] md:text-xs font-bold text-gray-500 dark:text-gray-400">
+                                    <span class="flex items-center">Faculty: {{ plan.author.username }}</span>
+                                    <span class="flex items-center">Posted: {{ plan.date_posted.strftime('%Y-%m-%d') }}</span>
+                                </div>
+                            </div>
+                            <div class="flex flex-wrap items-center gap-2 md:gap-3 w-full lg:w-auto">
+                                <a href="{{ url_for('teacher.view_clp', plan_id=plan.id) }}" class="flex-1 lg:flex-none px-4 md:px-6 py-2.5 bg-gray-50 dark:bg-gray-800 text-gray-700 dark:text-gray-300 text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700 transition-all border border-gray-200 dark:border-gray-700 text-center">Details</a>
+                                
+                                {% if plan.upload_type in ['file_upload', 'ai_generated'] %}
+                                    <a href="{{ url_for('teacher.download_clp', plan_id=plan.id) }}" class="flex-1 lg:flex-none px-4 md:px-6 py-2.5 bg-gray-50 dark:bg-gray-800 text-gray-700 dark:text-gray-300 text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-primary-600 hover:text-white transition-all border border-gray-200 dark:border-gray-700 text-center">Download</a>
+                                {% endif %}
+
+                                <form method="POST" action="{{ url_for('teacher.delete_approved_clp', plan_id=plan.id) }}" class="flex-1 lg:flex-none">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                    <button type="button" onclick="showCustomConfirm('Delete approved plan for \'{{ plan.subject }}\'?', () => this.form.submit(), 'Delete Document')" class="w-full px-4 md:px-6 py-2.5 bg-red-50 dark:bg-red-900/20 text-red-600 text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-red-600 hover:text-white transition-all border border-red-100 dark:border-red-900/30 whitespace-nowrap">Delete</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="py-20 flex flex-col items-center justify-center opacity-50 text-center">
+                    <p class="text-sm font-black text-gray-400 uppercase tracking-widest">No approved plans yet</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // --- Batch Approve Logic ---
+        const selectAll = document.getElementById('select-all-pending');
+        const checkboxes = document.querySelectorAll('.pending-checkbox');
+        const approveBtn = document.getElementById('batch-approve-btn');
+
+        function updateButton() {
+            const checkedCount = Array.from(checkboxes).filter(cb => cb.checked).length;
+            if (checkedCount > 0) {
+                approveBtn.disabled = false;
+                approveBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                approveBtn.textContent = `Approve ${checkedCount} Selected`;
+            } else {
+                approveBtn.disabled = true;
+                approveBtn.classList.add('opacity-50', 'cursor-not-allowed');
+                approveBtn.textContent = 'Batch Approve';
+            }
+        }
+
+        if (selectAll) {
+            selectAll.addEventListener('change', function() {
+                checkboxes.forEach(cb => cb.checked = selectAll.checked);
+                updateButton();
+            });
+        }
+
+        checkboxes.forEach(cb => cb.addEventListener('change', updateButton));
+
+        // --- Teacher Filter Logic ---
+        const teacherFilter = document.getElementById('teacher-filter');
+        const approvedCards = document.querySelectorAll('.approved-card');
+
+        if (teacherFilter) {
+            teacherFilter.addEventListener('change', function(e) {
+                const selectedTeacher = e.target.value;
+                approvedCards.forEach(card => {
+                    if (selectedTeacher === 'all' || card.getAttribute('data-teacher') === selectedTeacher) {
+                        card.style.display = 'block';
+                    } else {
+                        card.style.display = 'none';
+                    }
+                });
+            });
+        }
+    });
+</script>
+{% endblock %}

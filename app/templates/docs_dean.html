@@ -1,0 +1,68 @@
+{% extends "docs_base.html" %}
+
+{% block title %}Dean Docs | AIPCLPMS{% endblock %}
+
+{% block docs_kicker %}Dean Guide{% endblock %}
+{% block docs_title %}Review & Oversight{% endblock %}
+{% block docs_description %}Step-by-step review workflows, analytics, and department management.{% endblock %}
+
+{% block docs_markdown %}
+# Dean Documentation
+
+This guide is for Deans and Department heads. It explains how to review, approve, and oversee curriculum development within your department.
+
+## 1. Dean Dashboard Overview
+
+Your dashboard gives you a high-level view of your department's productivity:
+- **Pending Actions**: Shows all Course Learning Plans (CLPs) recently submitted by teachers.
+- **Approval Rate**: Visual metrics of your department's progress this semester.
+- **Faculty Activity**: A summary of who is actively working on their curriculum.
+
+Use the left sidebar to navigate between **Dean Dashboard**, **CLPs**, **Faculty List**, and **Analytics**.
+
+## 2. Reviewing a CLP
+
+The core of the Dean role is quality assurance. To begin a review:
+1. Navigate to the **Dean CLPs** page.
+2. Select any CLP with a **Pending** status.
+3. Review the tabs:
+   - **Main Content**: Check the course description and weekly roadmap.
+   - **Learning Outcomes**: Validate the CO-PO mapping.
+   - **Assessment Alignment**: Ensure the assessments used are appropriate for the outcomes.
+
+> **Tip**: Look for the **AI Influence** score if available, which shows how much of the plan was generated vs. manually written.
+
+## 3. Approval Workflow
+
+If a plan meets all institutional standards, you can finalize it:
+1. Open the plan and click **Approve**.
+2. **Result**: The teacher will be notified immediately, and the status changes to **Approved**.
+3. **Downloads**: Approved plans can be exported as official Word documents for academic records.
+
+## 4. Return for Revision
+
+If a plan has errors or gaps:
+1. Click **Return for Revision**.
+2. **Comment Box**: Provide clear, actionable feedback. Explain *what* needs fixing (e.g., "Week 12 assessment is missing").
+3. **Submit**: The teacher receives the feedback and will be able to edit and resubmit the plan.
+
+## 5. Department Analytics
+
+AIPCLPMS provides built-in tools for tracking curriculum health:
+- **Coverage Map**: See if all required Program Outcomes are being covered by the various courses in your department.
+- **Timeline Progress**: Identify teachers who are behind on their submissions early in the semester.
+- **Gaps Report**: Identify courses with weak outcome data.
+
+## 6. Faculty Oversight
+
+The **Faculty List** screen shows:
+- How many plans each teacher has in **Draft**, **Pending**, or **Approved** states.
+- Last login activity.
+- Direct links to their active course plans for easy collaboration.
+
+## 7. Best Practices for Deans
+
+- **Consistancy**: Ensure all teachers in your department follow the same standards for weekly content.
+- **Specific Feedback**: When returning a plan, specify exactly which week or outcome needs attention to save the teacher time.
+- **Outcome Verification**: Regularly check that Course Outcomes actually map to the version of Program Outcomes currently approved by the institution.
+{% endblock %}

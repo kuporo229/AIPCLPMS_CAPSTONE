@@ -1,0 +1,433 @@
+{% extends "docs_base.html" %}
+
+{% block title %}Teacher Docs | AIPCLPMS{% endblock %}
+
+{% block docs_kicker %}Teacher Guide{% endblock %}
+{% block docs_title %}Teaching with AIPCLPMS{% endblock %}
+{% block docs_description %}Step-by-step workflows for creating, refining, and submitting Course Learning Plans.{% endblock %}
+
+{% block docs_markdown %}
+# Teacher Documentation
+
+<div class="bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-800 rounded-2xl p-6 my-8">
+  <p class="text-sm font-bold text-amber-800 dark:text-amber-300">
+    <strong>Quick Start:</strong> Go to <strong>My Subjects</strong> → add your courses → go to <strong>Profile</strong> → set consultation hours → <strong>Create CLP</strong> → pick subject → optionally choose a template profile → fill signatories → <strong>Generate Draft</strong>.
+  </p>
+</div>
+
+<div class="bg-white dark:bg-[#111827] border border-gray-200 dark:border-gray-800 rounded-[2.5rem] p-8 my-10 shadow-sm">
+  <h3 class="text-lg font-black text-gray-900 dark:text-white mb-6 text-center tracking-tight">CLP Lifecycle</h3>
+
+  <div class="flex flex-col md:flex-row items-center justify-center gap-3 md:gap-2 text-[10px] font-black uppercase tracking-wider">
+    <div class="bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300 rounded-2xl px-5 py-3 text-center min-w-[100px]">
+      <div class="text-lg mb-1">📝</div>Create Draft
+    </div>
+    <div class="text-gray-400 text-2xl hidden md:block">→</div>
+    <div class="text-gray-400 text-2xl md:hidden rotate-90">→</div>
+    <div class="bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 rounded-2xl px-5 py-3 text-center min-w-[100px]">
+      <div class="text-lg mb-1">🧠</div>Generate CLOs
+    </div>
+    <div class="text-gray-400 text-2xl hidden md:block">→</div>
+    <div class="text-gray-400 text-2xl md:hidden rotate-90">→</div>
+    <div class="bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 rounded-2xl px-5 py-3 text-center min-w-[100px]">
+      <div class="text-lg mb-1">🔗</div>Alignments
+    </div>
+    <div class="text-gray-400 text-2xl hidden md:block">→</div>
+    <div class="text-gray-400 text-2xl md:hidden rotate-90">→</div>
+    <div class="bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 rounded-2xl px-5 py-3 text-center min-w-[100px]">
+      <div class="text-lg mb-1">📅</div>Weekly Plan
+    </div>
+  </div>
+
+  <div class="flex flex-col md:flex-row items-center justify-center gap-3 md:gap-2 mt-3 text-[10px] font-black uppercase tracking-wider">
+    <div class="bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-2xl px-5 py-3 text-center min-w-[100px]">
+      <div class="text-lg mb-1">✅</div>Validate &amp; Mark Ready
+    </div>
+    <div class="text-gray-400 text-2xl hidden md:block">→</div>
+    <div class="text-gray-400 text-2xl md:hidden rotate-90">→</div>
+    <div class="bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300 rounded-2xl px-5 py-3 text-center min-w-[100px]">
+      <div class="text-lg mb-1">📄</div>Insert Into Template
+    </div>
+    <div class="text-gray-400 text-2xl hidden md:block">→</div>
+    <div class="text-gray-400 text-2xl md:hidden rotate-90">→</div>
+    <div class="bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300 rounded-2xl px-5 py-3 text-center min-w-[100px]">
+      <div class="text-lg mb-1">✏️</div>OnlyOffice Edits
+    </div>
+    <div class="text-gray-400 text-2xl hidden md:block">→</div>
+    <div class="text-gray-400 text-2xl md:hidden rotate-90">→</div>
+    <div class="bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-2xl px-5 py-3 text-center min-w-[100px]">
+      <div class="text-lg mb-1">📤</div>Submit to Dean
+    </div>
+  </div>
+
+  <div class="flex justify-center mt-4">
+    <div class="inline-flex items-center gap-2 bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-900/30 rounded-2xl px-5 py-2 text-[10px] font-black uppercase tracking-wider text-red-600 dark:text-red-400">
+      <span class="text-lg">↩️</span> Dean Returns → Edit in OnlyOffice → Re-submit
+    </div>
+  </div>
+
+  <!-- Stage labels reference -->
+  <div class="mt-6 pt-6 border-t border-gray-100 dark:border-gray-800">
+    <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3 text-center">Stage Labels</p>
+    <div class="flex flex-wrap justify-center gap-2 text-[10px] font-bold">
+      <span class="px-3 py-1.5 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400">Metadata ready</span>
+      <span class="px-3 py-1.5 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400">CLO draft ready</span>
+      <span class="px-3 py-1.5 rounded-full bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400">Alignment draft ready</span>
+      <span class="px-3 py-1.5 rounded-full bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400">Weekly outline ready</span>
+      <span class="px-3 py-1.5 rounded-full bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400">Finalized CLP ready</span>
+      <span class="px-3 py-1.5 rounded-full bg-primary-100 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400">Inserted into template</span>
+    </div>
+  </div>
+</div>
+
+---
+
+## 1. Prerequisites
+
+These must be done <em>before</em> you can create a CLP. The system enforces them.
+
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4 my-6">
+  <div class="bg-gray-50 dark:bg-gray-800/40 rounded-2xl p-5 border border-gray-200 dark:border-gray-700">
+    <div class="flex items-center gap-3 mb-2">
+      <span class="w-8 h-8 rounded-lg bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center text-primary-600 text-sm font-black">1</span>
+      <span class="text-xs font-black text-gray-900 dark:text-white uppercase">Add Subjects</span>
+    </div>
+    <p class="text-sm text-gray-600 dark:text-gray-400">Go to <strong>My Subjects</strong> (<code>/teacher/subjects</code>) and add the courses you're teaching this semester. Include course code, title, units, department. The CLP create form pulls metadata from here.</p>
+  </div>
+  <div class="bg-gray-50 dark:bg-gray-800/40 rounded-2xl p-5 border border-gray-200 dark:border-gray-700">
+    <div class="flex items-center gap-3 mb-2">
+      <span class="w-8 h-8 rounded-lg bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center text-primary-600 text-sm font-black">2</span>
+      <span class="text-xs font-black text-gray-900 dark:text-white uppercase">Set Consultation Hours</span>
+    </div>
+    <p class="text-sm text-gray-600 dark:text-gray-400">Go to your <strong>Profile</strong> (<code>/teacher/teacher_profile</code>) and set at least one consultation day with a time <strong>and</strong> room. The system will block generation until this is done.</p>
+  </div>
+  <div class="bg-gray-50 dark:bg-gray-800/40 rounded-2xl p-5 border border-gray-200 dark:border-gray-700">
+    <div class="flex items-center gap-3 mb-2">
+      <span class="w-8 h-8 rounded-lg bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center text-primary-600 text-sm font-black">3</span>
+      <span class="text-xs font-black text-gray-900 dark:text-white uppercase">Template Profile</span>
+    </div>
+    <p class="text-sm text-gray-600 dark:text-gray-400">Optional but recommended: upload or confirm a <strong>Template Profile</strong> at <code>/teacher/template-profiles</code>. This ensures the generated DOCX matches your institution's exact format. Profiles are department-scoped.</p>
+  </div>
+</div>
+
+---
+
+## 2. The Create Page — Entering Metadata
+
+Navigate to <strong>Create CLP</strong> (<code>/teacher/copilot/create</code>) from your dashboard. This one form is the entry point for all CLPs.
+
+### Sections on the Create Form
+
+<div class="bg-white dark:bg-[#111827] border border-gray-200 dark:border-gray-800 rounded-[2rem] p-6 my-6 space-y-8">
+  <div>
+    <h4 class="text-sm font-black text-gray-900 dark:text-white mb-2 flex items-center gap-2">
+      <span class="text-primary-600">1.</span> Course Metadata
+    </h4>
+    <p class="text-sm text-gray-600 dark:text-gray-400">The active term is shown at the top. Pick a <strong>subject</strong> from your pre-added list. Its code, title, department, and other details are filled automatically from the subject record.</p>
+  </div>
+  <div>
+    <h4 class="text-sm font-black text-gray-900 dark:text-white mb-2 flex items-center gap-2">
+      <span class="text-primary-600">2.</span> Teaching Logistics
+    </h4>
+    <p class="text-sm text-gray-600 dark:text-gray-400">Fill in <strong>Class Schedule</strong> (e.g., "Mon/Wed 1:00–2:30 PM") and <strong>Room Assignment</strong>. These go into the generated DOCX.</p>
+  </div>
+  <div>
+    <h4 class="text-sm font-black text-gray-900 dark:text-white mb-2 flex items-center gap-2">
+      <span class="text-primary-600">3.</span> Signatory Information
+    </h4>
+    <p class="text-sm text-gray-600 dark:text-gray-400 mb-3">Four signatory blocks that populate the document's signature page. Each has a name field and a position/title field:</p>
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">
+      <div class="bg-gray-50 dark:bg-gray-800/50 rounded-xl p-3 font-bold">Prepared By<br><span class="font-normal text-gray-500">(you — Instructor)</span></div>
+      <div class="bg-gray-50 dark:bg-gray-800/50 rounded-xl p-3 font-bold">Reviewed By<br><span class="font-normal text-gray-500">(Program Coordinator)</span></div>
+      <div class="bg-gray-50 dark:bg-gray-800/50 rounded-xl p-3 font-bold">Endorsed By<br><span class="font-normal text-gray-500">(Dean)</span></div>
+      <div class="bg-gray-50 dark:bg-gray-800/50 rounded-xl p-3 font-bold">Approved By<br><span class="font-normal text-gray-500">(Vice President)</span></div>
+    </div>
+    <p class="text-xs text-gray-500 dark:text-gray-400 mt-2">Defaults are pulled from your profile and department signatory settings. You can override them here and later on the review page.</p>
+  </div>
+  <div>
+    <h4 class="text-sm font-black text-gray-900 dark:text-white mb-2 flex items-center gap-2">
+      <span class="text-primary-600">4.</span> Context for the AI Draft
+    </h4>
+    <p class="text-sm text-gray-600 dark:text-gray-400">
+      <strong>Service Learning Component</strong> — describe any community-based learning component.<br>
+      <strong>Source Context</strong> — paste any existing syllabus text, notes, or references you want the AI to use as input material.
+    </p>
+  </div>
+  <div>
+    <h4 class="text-sm font-black text-gray-900 dark:text-white mb-2 flex items-center gap-2">
+      <span class="text-primary-600">5.</span> Template Profile <span class="text-[10px] text-gray-400 font-normal normal-case">(optional)</span>
+    </h4>
+    <p class="text-sm text-gray-600 dark:text-gray-400">
+      If you have confirmed template profiles, a dropdown lets you choose one. When selected, the system runs a <strong>compatibility check</strong>:
+    </p>
+    <ul class="text-sm text-gray-600 dark:text-gray-400 mt-2 space-y-1 ml-4 list-disc">
+      <li><span class="text-green-600 font-bold">✓ Compatible</span> — green check, proceed normally.</li>
+      <li><span class="text-amber-600 font-bold">⚠ Warning</span> — the profile's structure partially matches your subject. You can check "I understand the mismatch — continue anyway" to proceed.</li>
+    </ul>
+    <p class="text-sm text-gray-600 dark:text-gray-400 mt-2">You can also <strong>Upload a new template</strong> or <strong>Manage profiles</strong> from links below the selector.</p>
+  </div>
+</div>
+
+### Generating
+
+Click <strong>Generate Draft</strong>. The system:
+1. Saves the initial draft with status <code>generating</code>.
+2. Redirects you to the review page.
+3. Background tasks generate the CLOs, alignments, and weekly plan asynchronously.
+4. A progress overlay shows the generation status — <strong>do not close or navigate away</strong> during generation.
+
+---
+
+## 3. The Review Page — Generating & Editing Content
+
+After creation, you land on the review page (<code>/teacher/copilot/review/&lt;plan_id&gt;</code>). This is where all editing happens.
+
+### Stage System
+
+The review page tracks your progress through stages. Each stage unlocks the next:
+
+| Stage | Label | What's available |
+|-------|-------|-----------------|
+| 0 — Metadata | <span class="text-gray-500">Metadata ready</span> | Review course info, edit signatories, set references |
+| 1 — CLOs | <span class="text-blue-600">CLO draft ready</span> | Generate/edit/regenerate Course Learning Outcomes |
+| 2 — Alignments | <span class="text-purple-600">Alignment draft ready</span> | Map CLOs → Program Outcomes → Institutional Outcomes |
+| 3 — Weekly | <span class="text-green-600">Weekly outline ready</span> | Build 18-week topic plan with assessments |
+| 4 — Finalized | <span class="text-amber-600">Finalized CLP ready</span> | Validate & mark ready for template insertion |
+| 5 — Inserted | <span class="text-primary-600">Inserted into template</span> | Open in OnlyOffice for final DOCX edits |
+
+Each section is editable even if later stages aren't generated yet. You can jump around freely.
+
+### Generation Mode Toggle
+
+At the top of the review page, you'll see a <strong>Generation Mode</strong> toggle:
+
+- **Template-Matched** (default) — the AI respects item counts from your template profile (e.g., number of CLOs, weeks). Use this when you have a template profile selected.
+- **Unconstrained** — no item limits. Use this if you don't have a template profile or need more flexibility.
+
+### Step-by-Step on the Review Page
+
+**Step 1: Generate CLOs**
+- Click <strong>Generate CLOs</strong> (or <strong>Regenerate CLOs</strong> if already generated).
+- The AI proposes Course Learning Outcomes based on your subject and department context.
+- Each CLO has: code, title, description, taxonomy level (Bloom's), and delivery type.
+- You can edit any CLO inline, add new ones, or <strong>Regenerate</strong> individual CLO rows without affecting the rest.
+
+**Step 2: Generate Alignments**
+- Click <strong>Generate Alignments</strong> (or <strong>Regenerate Alignment</strong>).
+- The AI maps each CLO to Program Outcomes (PO), Institutional Outcomes (IO), Graduate Attributes, and Core Values.
+- Each alignment list is limited to 1–3 items. If the AI generates more, it's automatically clamped.
+- You can edit individual alignment links.
+
+**Step 3: Generate Weekly Plan**
+- Click <strong>Generate Weekly</strong> (or <strong>Regenerate Weekly</strong>).
+- The AI builds an 18-week roadmap. Each week includes: topic, linked CLOs, teaching method, assessment type, and delivery mode.
+- Click any week row to expand and edit individual fields. Changes save immediately.
+- You can regenerate individual weeks without losing the rest.
+
+### Validation & Final Review
+
+After all three sections are generated:
+
+1. Click <strong>Validate & Mark Ready</strong>.
+2. The system runs a final AI review, checking for:
+   - Missing content in any section
+   - CLOs not linked to any week
+   - Broken or missing outcome mappings
+   - Weeks without topics or assessment methods
+   - Inconsistent signatories
+3. If <strong>issues</strong> are found, a red panel appears with details.
+4. Click <strong>Fix With AI</strong> to let the AI auto-repair the flagged issues, or fix them manually.
+5. If only <strong>warnings</strong> appear (amber panel), you can proceed.
+6. Once passed, the stage advances to <span class="text-amber-600 font-bold">"Finalized CLP ready"</span>.
+
+### Insert Into Template
+
+When finalized:
+1. Click <strong>Insert Final Data Into Template</strong>.
+2. The system fills your selected (or default) DOCX template with the CLP content.
+3. On success, the stage advances to <span class="text-primary-600 font-bold">"Inserted into template"</span>.
+4. You can now <strong>Open Inserted Document</strong> to edit in OnlyOffice (browser-based Word editor).
+
+#### OnlyOffice Editing
+
+Once inserted:
+1. Click <strong>Open Inserted Document</strong> to launch the OnlyOffice editor in your browser.
+2. Make final formatting tweaks, adjust tables, fix any DOCX layout issues.
+3. The document auto-saves back to the system.
+4. Any changes in OnlyOffice are preserved when you download the final file.
+
+### Action Buttons Summary
+
+| Button | When available | What it does |
+|--------|---------------|-------------|
+| Generate CLOs | Stage 0 | AI generates Course Learning Outcomes |
+| Regenerate CLOs | Stage 1+ | Replace all CLOs with new AI output |
+| Regenerate [CLO #] | Stage 1+ | Regenerate a single CLO row |
+| Generate Alignments | Stage 1+ | AI maps CLOs to Program/Institutional Outcomes |
+| Regenerate Alignment | Stage 2+ | Replace all alignments |
+| Generate Weekly | Stage 2+ | AI builds 18-week topic plan |
+| Regenerate Weekly | Stage 3+ | Replace all weeks |
+| Regenerate [Week #] | Stage 3+ | Regenerate a single week row |
+| Validate & Mark Ready | Stage 3+ | Run final AI review |
+| Fix With AI | Stage 3+ (when issues found) | Auto-repair validation issues |
+| Insert Final Data Into Template | Stage 4 | Fill DOCX template with CLP content |
+| Open Inserted Document | Stage 5 | Edit in OnlyOffice |
+| Save Draft | Any time | Save all changes |
+
+---
+
+## 4. Submitting to Dean
+
+Once your CLP is complete (DOCX inserted and edited):
+
+1. Go to <strong>My CLPs</strong> (<code>/teacher/my_clps</code>) from the sidebar.
+2. Find your CLP card and click <strong>Submit to Dean</strong>.
+3. The status changes to <span class="text-amber-600 font-bold">Pending</span>.
+4. You can no longer edit the plan while under review.
+
+### If the Dean Returns It
+
+1. You'll receive a <strong>notification</strong> (bell icon, top bar).
+2. The status changes to <span class="text-red-600 font-bold">Returned</span>.
+3. Open the plan — the Dean's comments appear at the top of the review page.
+4. <strong>Open the document in OnlyOffice</strong> to make the requested changes.
+5. Click <strong>Submit to Dean</strong> again to resubmit.
+
+### Status Reference
+
+| Status | Badge | What it means |
+|--------|-------|---------------|
+| Draft | <span class="px-2 py-0.5 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-600 text-[10px] font-bold">Draft</span> | Still working on it |
+| Generating | <span class="px-2 py-0.5 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-600 text-[10px] font-bold">Generating</span> | AI is generating in the background |
+| Pending | <span class="px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-900/30 text-amber-600 text-[10px] font-bold">Pending</span> | Awaiting Dean's decision |
+| Returned | <span class="px-2 py-0.5 rounded-full bg-red-100 dark:bg-red-900/30 text-red-600 text-[10px] font-bold">Returned</span> | Dean requested changes |
+| Approved | <span class="px-2 py-0.5 rounded-full bg-green-100 dark:bg-green-900/30 text-green-600 text-[10px] font-bold">Approved</span> | Dean approved the plan |
+| Finalized | <span class="px-2 py-0.5 rounded-full bg-purple-100 dark:bg-purple-900/30 text-purple-600 text-[10px] font-bold">Finalized</span> | Final version — read-only |
+
+---
+
+## 5. Template Profiles
+
+Template Profiles are DOCX layouts that the AI uses when generating and inserting your CLP document.
+
+### How They Work
+
+1. **Upload a DOCX** at <code>/teacher/template-profiles/upload</code> — your institution provides a template with placeholder markers (<code>{{course_title}}</code>, <code>{{clo_table}}</code>, etc.).
+2. **Confirm the profile** — the system scans the template, detects its structure (tables, headings, placeholders), and shows you a summary. You confirm it looks right.
+3. **Select it** when creating a CLP or on the review page.
+4. **Generate** — the AI adapts its output to match the template's detected layout, column structure, and item counts.
+5. **Insert** — when you click "Insert Final Data Into Template", the system fills the actual DOCX with your CLP content.
+
+### Managing Profiles
+
+| Action | Where |
+|--------|-------|
+| View profiles | <code>/teacher/template-profiles</code> |
+| Upload new template | <code>/teacher/template-profiles/upload</code> |
+| Confirm / re-profile | Click a profile → <strong>Confirm</strong> or <strong>Re-Profile</strong> |
+| Clone | Click a profile → <strong>Clone</strong> |
+| Set department default | Admin action in department settings |
+| Delete | Click a profile → <strong>Delete</strong> |
+
+> <strong>Tip:</strong> If no profile is selected, the system uses a built-in default placeholder template. The output will still be structured, but may not match your institution's official format.
+
+---
+
+## 6. Subjects
+
+### Adding Subjects
+
+Go to <strong>My Subjects</strong> (<code>/teacher/subjects</code>):
+
+1. Click <strong>Add Subject</strong>.
+2. Fill in: course code, title, description, type (lecture/lab/workshop), units, contact hours, prerequisites, department, and service learning component.
+3. The subject becomes available immediately when creating a CLP.
+
+Subjects are semester-specific — the system checks the active semester and academic year.
+
+---
+
+## 7. Versions & History
+
+Every time you save or generate, a <strong>version snapshot</strong> is created.
+
+- Go to <strong>Versions</strong> on any CLP to see its history.
+- Each version records: timestamp, what changed, and the user who made the change.
+- You can restore any previous version — the current content is replaced.
+- Versions are preserved even after submission, so the Dean sees what you submitted.
+
+---
+
+## 8. Profile & Account
+
+<div class="bg-gray-50 dark:bg-gray-800/30 rounded-2xl p-6 my-6">
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <div>
+      <p class="text-[10px] font-black text-gray-400 uppercase tracking-wider mb-1">Your Department</p>
+      <p class="text-sm font-bold text-gray-900 dark:text-white">Set in your <a href="/teacher/teacher_profile" class="text-primary-600 hover:underline">Teacher Profile</a>. Determines which outcomes, templates, and copilot reference data you see.</p>
+    </div>
+    <div>
+      <p class="text-[10px] font-black text-gray-400 uppercase tracking-wider mb-1">Consultation Hours</p>
+      <p class="text-sm font-bold text-gray-900 dark:text-white">Set in your profile. Each day needs both a time range <strong>and</strong> a room. The system blocks CLP generation until at least one is set.</p>
+    </div>
+    <div>
+      <p class="text-[10px] font-black text-gray-400 uppercase tracking-wider mb-1">Notifications</p>
+      <p class="text-sm font-bold text-gray-900 dark:text-white">Click the bell icon to see Dean feedback, approval confirmations, and background task status updates.</p>
+    </div>
+    <div>
+      <p class="text-[10px] font-black text-gray-400 uppercase tracking-wider mb-1">AI Buddy</p>
+      <p class="text-sm font-bold text-gray-900 dark:text-white">Click the chat bubble (bottom-right corner) for instant answers about CLP workflows. It has context of your role and your CLPs.</p>
+    </div>
+  </div>
+</div>
+
+---
+
+## 9. Quick Reference
+
+### Keyboard Shortcuts
+
+| Shortcut | Where | Action |
+|----------|-------|--------|
+| `Ctrl + S` | Review page | Save draft |
+
+### Common Tasks
+
+| Task | Navigation |
+|------|-----------|
+| Add a subject | Dashboard → <strong>My Subjects</strong> → <strong>Add Subject</strong> |
+| Set consultation hours | Dashboard → <strong>Profile</strong> → Consultation section |
+| Upload a template profile | Dashboard → <strong>My Templates</strong> → <strong>Upload</strong> |
+| Create a CLP | Dashboard → <strong>Create CLP</strong> |
+| Continue editing a draft | Dashboard → <strong>My CLPs</strong> → click plan → <strong>Edit</strong> |
+| Generate CLOs | Review page → <strong>Generate CLOs</strong> |
+| Generate alignments | Review page → <strong>Generate Alignments</strong> |
+| Generate weekly plan | Review page → <strong>Generate Weekly</strong> |
+| Validate & Mark Ready | Review page → <strong>Validate & Mark Ready</strong> |
+| Fix validation issues | Review page → <strong>Fix With AI</strong> |
+| Insert into template | Review page → <strong>Insert Final Data Into Template</strong> |
+| Open in OnlyOffice | Review page → <strong>Open Inserted Document</strong> |
+| Download DOCX | <strong>My CLPs</strong> → click plan → <strong>Download</strong> |
+| Submit to Dean | <strong>My CLPs</strong> → click <strong>Submit to Dean</strong> |
+| View Dean's comments | Open plan → review page, comments at top |
+| Restore a version | Plan → <strong>Versions</strong> → <strong>Restore</strong> |
+
+### Best Practices
+
+<ol class="space-y-2">
+  <li><strong class="text-primary-600">Add subjects first.</strong> The create form pulls metadata from subjects — you can't generate without them.</li>
+  <li><strong class="text-primary-600">Set consultation hours.</strong> Not just recommended — the system blocks generation until you do.</li>
+  <li><strong class="text-primary-600">Upload a template profile.</strong> Without one, the DOCX output uses a generic placeholder template. A profiled template matches your institution's exact format.</li>
+  <li><strong class="text-primary-600">Review CLOs before generating alignments.</strong> Alignments depend on CLO content — bad CLOs mean bad alignments.</li>
+  <li><strong class="text-primary-600">Run Validate & Mark Ready before inserting.</strong> The final review catches common issues automatically. Fix With AI handles most of them in one click.</li>
+  <li><strong class="text-primary-600">Use OnlyOffice for final DOCX polish.</strong> The browser editor lets you adjust tables, fonts, and layout before submitting.</li>
+  <li><strong class="text-primary-600">Write actionable CLOs.</strong> Use active Bloom's Taxonomy verbs (Analyze, Design, Evaluate) instead of vague ones (Understand, Learn).</li>
+  <li><strong class="text-primary-600">Make sure your department is correct.</strong> The wrong department means wrong outcomes, copilot data, and template profiles.</li>
+</ol>
+
+---
+
+> Still stuck? Click the <strong>AI Buddy</strong> icon (chat bubble, bottom-right). It knows your role, your active CLPs, and the current system state — it can walk you through any step.
+
+> For administrators: see the <a href="/docs/admin">Admin Guide</a> for managing users, departments, outcomes, and system settings.
+{% endblock %}

@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Template Terminal: {{ doc_title }}</title>
+  
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="{{ onlyoffice_api_js_url }}"></script>
+  <link href="{{ url_for('static', filename='css/transitions.css') }}" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+        darkMode: 'class',
+        theme: {
+            extend: {
+                fontFamily: { sans: ['Plus Jakarta Sans', 'sans-serif'] },
+                colors: { primary: {"50":"#eff6ff","100":"#dbeafe","200":"#bfdbfe","300":"#93c5fd","400":"#60a5fa","500":"#3b82f6","600":"#2563eb","700":"#1d4ed8","800":"#1e40af","900":"#1e3a8a","950":"#172554"} }
+            }
+        }
+    }
+  </script>
+
+  <style>
+    html, body { height: 100vh; width: 100vw; margin: 0; padding: 0; overflow: hidden; }
+    #editor { height: 100vh; width: 100vw; }
+    [x-cloak] { display: none !important; }
+    @keyframes fadeInUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    .animate-fade-in-up { animation: fadeInUp 0.3s ease-out forwards; }
+  </style>
+</head>
+<body class="bg-gray-50 dark:bg-[#0b0f19] flex flex-col antialiased">
+
+  <!-- Header Section -->
+  <header class="bg-white/80 dark:bg-[#111827]/80 backdrop-blur-xl border-b border-gray-200 dark:border-gray-800 h-16 shrink-0 z-50">
+      <div class="px-6 h-full flex items-center justify-between">
+          <div class="flex items-center gap-4 min-w-0">
+              <div class="w-10 h-10 rounded-xl bg-primary-50 dark:bg-primary-900/20 flex items-center justify-center text-primary-600 shadow-sm shrink-0">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </div>
+              <div class="min-w-0">
+                  <p class="text-[9px] font-black text-primary-600 uppercase tracking-[0.2em] mb-0.5">Global Template Terminal</p>
+                  <h1 class="text-sm font-black text-gray-900 dark:text-white truncate uppercase tracking-tighter leading-none">{{ doc_title }}</h1>
+              </div>
+          </div>
+
+          <div class="flex items-center gap-3">
+              <span class="hidden md:inline-flex px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest bg-primary-50 text-primary-700 dark:bg-primary-900/20 dark:text-primary-400 border border-primary-100 dark:border-primary-800">Direct Protocol Enabled</span>
+              <a href="{{ url_for('admin.manage_templates') }}" class="inline-flex items-center gap-2 px-5 py-2 bg-gray-900 dark:bg-primary-600 text-white text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-black dark:hover:bg-primary-700 transition-all shadow-xl shadow-gray-200 dark:shadow-none">
+                  <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M15 19l-7-7 7-7" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                  Exit
+              </a>
+          </div>
+      </div>
+  </header>
+
+  <!-- Editor Canvas -->
+  <main id="editor" class="flex-grow bg-white dark:bg-[#111827]">
+      <div id="loading-state" class="h-full flex flex-col items-center justify-center opacity-50 p-8 text-center">
+          <div class="w-12 h-12 border-4 border-primary-100 border-t-primary-600 rounded-full animate-spin mb-4"></div>
+          <p class="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">Synchronizing Asset Data...</p>
+      </div>
+  </main>
+
+  <!-- Status Notification -->
+  <div id="status" class="fixed bottom-8 right-8 px-6 py-4 rounded-2xl shadow-2xl text-[10px] font-black uppercase tracking-[0.2em] z-[100] hidden animate-fade-in-up"></div>
+
+  <script>
+    function showStatus(msg, isError=false) {
+        const el = document.getElementById('status');
+        el.textContent = msg;
+        el.className = `fixed bottom-8 right-8 px-6 py-4 rounded-2xl shadow-2xl text-[10px] font-black uppercase tracking-[0.2em] z-[100] text-white ${isError ? 'bg-red-600' : 'bg-emerald-600 shadow-emerald-200 dark:shadow-none'}`;
+        el.classList.remove('hidden');
+        setTimeout(() => el.classList.add('hidden'), 5000);
+    }
+
+    const config = {{ config|tojson|safe }};
+    if (!config.token) {
+        config.token = "{{ token }}";
+    }
+
+    window.addEventListener('load', function() {
+        if (typeof DocsAPI !== 'undefined') {
+            try {
+                const docEditor = new DocsAPI.DocEditor("editor", config);
+                // Remove loader once initialized (DocsAPI handles the actual content loading)
+                const loader = document.getElementById('loading-state');
+                if(loader) loader.style.display = 'none';
+            } catch (e) {
+                showStatus("CRITICAL: Terminal Failure - " + e.message, true);
+            }
+        } else {
+            document.getElementById('editor').innerHTML = `
+                <div class="h-full flex flex-col items-center justify-center opacity-50 p-8 text-center">
+                    <svg class="w-16 h-16 text-red-500 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    <p class="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">Access Denied: ONLYOFFICE Protocol Error</p>
+                </div>`;
+        }
+    });
+  </script>
+</body>
+</html>

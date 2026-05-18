@@ -1,0 +1,130 @@
+{% extends "base.html" %}
+
+{% block title %}AI Template Generator Beta{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto space-y-8">
+    <div class="rounded-[2rem] border border-amber-200/70 bg-gradient-to-br from-amber-50 to-white dark:from-amber-950/20 dark:to-[#111827] dark:border-amber-900/50 p-8 md:p-10">
+        <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-6">
+            <div class="space-y-3 max-w-3xl">
+                <span class="inline-flex items-center px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-[0.25em] bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300">Beta Route</span>
+                <h1 class="text-3xl md:text-4xl font-black tracking-tight text-gray-900 dark:text-white">AI Template Generator</h1>
+                <p class="text-sm md:text-base text-gray-600 dark:text-gray-300 leading-relaxed">
+                    This is an isolated admin-only beta workflow. Generated drafts stay outside the production template library until you explicitly promote them.
+                </p>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs font-bold">
+                    <div class="rounded-2xl bg-white/80 dark:bg-gray-900/60 border border-gray-200 dark:border-gray-800 px-4 py-3">DOCX only</div>
+                    <div class="rounded-2xl bg-white/80 dark:bg-gray-900/60 border border-gray-200 dark:border-gray-800 px-4 py-3">Review required</div>
+                    <div class="rounded-2xl bg-white/80 dark:bg-gray-900/60 border border-gray-200 dark:border-gray-800 px-4 py-3">Not auto-added to templates</div>
+                </div>
+            </div>
+            <div class="shrink-0 text-xs text-gray-500 dark:text-gray-400 font-semibold">
+                Direct beta URL
+                <div class="mt-2 rounded-2xl bg-gray-900 text-gray-100 px-4 py-3 font-mono text-[11px] break-all">
+                    /admin/templates/beta/generate
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 xl:grid-cols-[1.2fr_0.8fr] gap-8">
+        <div class="rounded-[2rem] border border-gray-200 dark:border-gray-800 bg-white dark:bg-[#111827] shadow-sm overflow-hidden">
+            <div class="p-8 md:p-10 space-y-8">
+                <div class="space-y-2">
+                    <h2 class="text-2xl font-black tracking-tight text-gray-900 dark:text-white">Generate Beta Draft</h2>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">Upload one CLP `.docx`, use that document as the draft base, and replace only detected input-like values with placeholders before review.</p>
+                </div>
+
+                <form method="POST" enctype="multipart/form-data" class="space-y-6">
+                    {{ form.hidden_tag() }}
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="space-y-2">
+                            {{ form.name.label(class="text-[10px] font-black uppercase tracking-[0.25em] text-gray-400") }}
+                            {{ form.name(class="w-full rounded-2xl border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/40 px-4 py-3.5 text-sm font-semibold focus:ring-primary-500", placeholder="e.g. BSIT Beta Draft from Capstone 2") }}
+                        </div>
+                        <div class="space-y-2">
+                            {{ form.department.label(class="text-[10px] font-black uppercase tracking-[0.25em] text-gray-400") }}
+                            {{ form.department(class="w-full rounded-2xl border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/40 px-4 py-3.5 text-sm font-semibold focus:ring-primary-500") }}
+                        </div>
+                    </div>
+
+                    <div class="space-y-2">
+                        {{ form.notes.label(class="text-[10px] font-black uppercase tracking-[0.25em] text-gray-400") }}
+                        {{ form.notes(class="w-full rounded-2xl border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/40 px-4 py-3.5 text-sm focus:ring-primary-500") }}
+                    </div>
+
+                    <div class="rounded-2xl border border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-900/30 px-4 py-4">
+                        <label class="flex items-start gap-3">
+                            {{ form.ai_assist(class="mt-1 rounded border-gray-300 text-primary-600 focus:ring-primary-500", disabled=not ai_assist_available) }}
+                            <span class="space-y-1">
+                                <span class="block text-sm font-black text-gray-900 dark:text-white">Optional AI Assist</span>
+                                <span class="block text-xs text-gray-500 dark:text-gray-400">
+                                    {% if ai_assist_available %}
+                                        Let AI review unresolved labels after the rule-based pass and suggest extra placeholders for low-risk inputs only.
+                                    {% else %}
+                                        AI assist is currently disabled in server configuration. The generator will use the rule-based pass only.
+                                    {% endif %}
+                                </span>
+                            </span>
+                        </label>
+                    </div>
+
+                    <div class="space-y-3">
+                        <label class="text-[10px] font-black uppercase tracking-[0.25em] text-gray-400">Source CLP Document</label>
+                        <div class="relative border-2 border-dashed border-gray-200 dark:border-gray-700 rounded-[2rem] bg-gray-50 dark:bg-gray-900/30 p-8 text-center">
+                            <div class="space-y-2">
+                                <div class="w-14 h-14 mx-auto rounded-2xl bg-primary-50 dark:bg-primary-900/20 text-primary-600 flex items-center justify-center">
+                                    <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 16V4m0 0l-4 4m4-4l4 4M4 17v1a3 3 0 003 3h10a3 3 0 003-3v-1" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                                </div>
+                                <p class="text-sm font-bold text-gray-700 dark:text-gray-200">Upload a structured `.docx` CLP</p>
+                                <p class="text-xs text-gray-500 dark:text-gray-400">Best on documents with clean headings, labels, signatory blocks, and weekly tables.</p>
+                            </div>
+                            {{ form.source_file(class="absolute inset-0 w-full h-full opacity-0 cursor-pointer") }}
+                        </div>
+                    </div>
+
+                    <div class="flex items-center justify-between gap-4 flex-wrap">
+                        <p class="text-xs text-gray-500 dark:text-gray-400 max-w-2xl">This beta route preserves the uploaded layout and branding, creates a draft only, and will not appear in the production template library until you explicitly promote it.</p>
+                        {{ form.submit(class="px-6 py-3.5 rounded-2xl bg-primary-600 hover:bg-primary-700 text-white text-[11px] font-black uppercase tracking-[0.2em] shadow-lg shadow-primary-200 dark:shadow-none") }}
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="space-y-6">
+            <div class="rounded-[2rem] border border-gray-200 dark:border-gray-800 bg-white dark:bg-[#111827] p-6 shadow-sm">
+                <h3 class="text-lg font-black tracking-tight text-gray-900 dark:text-white mb-4">Beta Rules</h3>
+                <ul class="space-y-3 text-sm text-gray-600 dark:text-gray-300">
+                    <li>Only `DOCX` is supported in beta.</li>
+                    <li>The generator prefers fewer safe placeholders over risky replacements.</li>
+                    <li>Generated drafts must be reviewed before promotion.</li>
+                    <li>Promotion is the only step that creates a real template record.</li>
+                </ul>
+            </div>
+
+            <div class="rounded-[2rem] border border-gray-200 dark:border-gray-800 bg-white dark:bg-[#111827] p-6 shadow-sm">
+                <div class="flex items-center justify-between gap-4 mb-4">
+                    <h3 class="text-lg font-black tracking-tight text-gray-900 dark:text-white">Recent Drafts</h3>
+                </div>
+                {% if drafts %}
+                    <div class="space-y-3">
+                        {% for draft in drafts %}
+                            <a href="{{ url_for('admin.review_template_beta_draft', draft_id=draft.id) }}" class="block rounded-2xl border border-gray-200 dark:border-gray-800 hover:border-primary-400 dark:hover:border-primary-700 bg-gray-50/70 dark:bg-gray-900/50 p-4 transition-all">
+                                <div class="flex items-start justify-between gap-4">
+                                    <div class="min-w-0">
+                                        <p class="text-sm font-black text-gray-900 dark:text-white truncate">{{ draft.name }}</p>
+                                        <p class="text-[11px] text-gray-500 dark:text-gray-400 mt-1">Status: {{ draft.status|replace('_', ' ')|title }}</p>
+                                    </div>
+                                    <span class="text-[10px] font-black uppercase tracking-[0.2em] text-primary-600">Review</span>
+                                </div>
+                            </a>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="text-sm text-gray-500 dark:text-gray-400">No beta drafts yet.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

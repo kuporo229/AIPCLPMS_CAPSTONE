@@ -1,0 +1,730 @@
+{% extends "base.html" %}
+
+{% block title %}{{ content_data.get('descriptive_title') or plan.subject }} - AIPCLPMS{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+
+    {# --- LOADING STATE (FULL SCREEN) --- #}
+    <div id="global-loading-overlay"
+        class="fixed inset-0 z-[140] bg-slate-950/80 backdrop-blur-sm flex items-center justify-center px-3 sm:px-6 overflow-y-auto py-6 sm:py-10 {{ 'flex' if plan.status in ['generating', 'generating_doc'] else 'hidden' }}">
+        <div class="w-full max-w-xl rounded-[1.5rem] sm:rounded-[2rem] border border-primary-400/20 bg-white dark:bg-[#111827] p-5 sm:p-8 shadow-2xl mx-auto my-auto">
+            <!-- Header -->
+            <div class="flex items-center gap-2.5 sm:gap-3 mb-4">
+                <div class="relative flex-shrink-0">
+                    <div class="h-9 w-9 sm:h-12 sm:w-12 rounded-full border-[3px] border-primary-200 dark:border-primary-900/40 border-t-primary-600 animate-spin"></div>
+                    <div class="absolute inset-0 flex items-center justify-center">
+                        <span id="progress-percent" class="text-[8px] sm:text-[9px] font-black text-primary-600">{% if plan.status in ['generating', 'generating_doc'] %}5%{% else %}0%{% endif %}</span>
+                    </div>
+                </div>
+                <div class="min-w-0 flex-1">
+                    <p class="text-[9px] sm:text-[10px] font-black uppercase tracking-[0.2em] sm:tracking-[0.25em] text-primary-600">AI Generating</p>
+                    <h2 id="loading-title" class="text-sm sm:text-lg font-black tracking-tight text-gray-900 dark:text-white truncate">
+                        {% if plan.status == 'generating' %}Refining Intelligence{% elif plan.status == 'generating_doc' %}Finalizing Architect{% else %}Initializing{% endif %}
+                    </h2>
+                </div>
+                <div class="flex-shrink-0 text-right">
+                    <span class="text-[9px] sm:text-[10px] font-black uppercase tracking-widest text-gray-400 tabular-nums" id="polling-elapsed">0:00</span>
+                </div>
+            </div>
+
+            <!-- Progress bar -->
+            <div class="h-1.5 w-full overflow-hidden rounded-full bg-gray-100 dark:bg-gray-800">
+                <div id="progress-bar" class="h-1.5 rounded-full bg-gradient-to-r from-primary-500 to-primary-600 transition-all duration-700 ease-out" style="width: {{ '5%' if plan.status in ['generating', 'generating_doc'] else '2%' }};"></div>
+            </div>
+
+            <!-- Message -->
+            <p id="loading-subtitle" class="mt-3 sm:mt-4 text-xs sm:text-sm leading-relaxed text-gray-500 dark:text-gray-400">
+                {{ 'Synchronizing...' if plan.status in ['generating', 'generating_doc'] else 'Preparing Request...' }}
+            </p>
+
+            {% if plan.status in ['generating', 'generating_doc'] %}
+            <div class="mt-6 pt-5 border-t border-gray-100 dark:border-gray-800 flex justify-center">
+                <button type="button" onclick="showCustomConfirm('Cancel AI generation and return to dashboard?', function() {
+                        localStorage.removeItem('is_generating');
+                        document.getElementById('global-loading-overlay').classList.add('hidden');
+                        fetch('{{ url_for('teacher.abort_generation', plan_id=plan.id) }}', {
+                            method: 'POST',
+                            headers: {'X-CSRFToken': '{{ csrf_token() }}'}
+                        }).finally(function() { window.location.reload(); });
+                    }, 'Cancel Generation')"
+                    class="px-6 py-2.5 bg-gray-50 dark:bg-gray-900/50 text-[10px] font-black text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl uppercase tracking-[0.2em] transition-all border border-gray-100 dark:border-gray-800">
+                    Abort Generation
+                </button>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    {% if plan.status in ['generating', 'generating_doc'] %}
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const bar = document.getElementById('progress-bar');
+            const text = document.getElementById('loading-subtitle');
+            const percentText = document.getElementById('progress-percent');
+            const planId = "{{ plan.id }}";
+            let width = 5;
+            const pollInterval = setInterval(() => {
+                fetch(`/teacher/clp/${planId}/status?t=${new Date().getTime()}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.percent !== undefined) {
+                            bar.style.width = data.percent + '%';
+                            percentText.innerText = data.percent + '%';
+                        }
+                        if (data.label) {
+                            text.innerText = data.label;
+                        }
+
+                        if (data.status && data.status !== 'generating' && data.status !== 'generating_doc') {
+                            clearInterval(pollInterval);
+                            bar.style.width = '100%';
+                            percentText.innerText = '100%';
+                            text.innerText = "Blueprint Ready!";
+                            setTimeout(() => window.location.reload(), 800);
+                        }
+                    }).catch(() => { });
+            }, 2500);
+        });
+    </script>
+    {% endif %}
+
+    {# --- MAIN CONTENT (only visible when not generating) --- #}
+    <div
+        class="{{ 'opacity-20 pointer-events-none blur-sm' if plan.status in ['generating', 'generating_doc'] else '' }}">
+
+
+        {# --- FLOATING ACTION BAR --- #}
+        {% if not is_version_view %}
+        <div
+            class="fixed bottom-8 left-4 right-4 md:left-1/2 md:-translate-x-1/2 md:right-auto z-50 bg-white/80 dark:bg-gray-800/80 backdrop-blur-md border border-gray-200 dark:border-gray-700 px-4 md:px-6 py-3 rounded-2xl shadow-2xl flex items-center justify-around md:justify-center md:space-x-4 transition-all hover:scale-[1.02] md:hover:scale-105">
+            <button onclick="runValidation()" id="validate-btn"
+                class="flex flex-col md:flex-row items-center md:space-x-2 text-[10px] md:text-sm font-bold text-purple-600 dark:text-purple-400 hover:text-purple-700 transition-colors">
+                <svg class="w-5 h-5 mb-1 md:mb-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                <span>Validate</span>
+            </button>
+
+            <div class="w-px h-6 bg-gray-200 dark:bg-gray-700 hidden md:block"></div>
+
+            <a href="{{ url_for('teacher.list_clp_versions', plan_id=plan.id) }}"
+                class="flex flex-col md:flex-row items-center md:space-x-2 text-[10px] md:text-sm font-bold text-gray-600 dark:text-gray-400 hover:text-indigo-600 transition-colors">
+                <svg class="w-5 h-5 mb-1 md:mb-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                <span>Timeline</span>
+            </a>
+        </div>
+        {% endif %}
+
+        {# --- HEADER --- #}
+        <div
+            class="bg-white dark:bg-gray-800 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden mb-8">
+            <div class="bg-gradient-to-r from-indigo-600 to-purple-700 px-8 py-10 text-white">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+                    <div>
+                        <div class="flex items-center gap-3 mb-4">
+                            <span
+                                class="inline-flex items-center px-3 py-1 rounded-full text-xs font-black bg-white/20 backdrop-blur-sm text-white uppercase tracking-widest">
+                                {{ plan.status.replace('_', ' ') }}
+                            </span>
+                            {% if is_version_view %}
+                            <span
+                                class="inline-flex items-center px-3 py-1 rounded-full text-xs font-black bg-amber-400 text-amber-900 uppercase tracking-widest shadow-lg">
+                                Archive: Version {{ version_number }}
+                            </span>
+                            {% endif %}
+                        </div>
+                        <h1 class="text-2xl sm:text-4xl font-black tracking-tight leading-tight mb-2">
+                            {{ content_data.get('descriptive_title') or plan.subject }}
+                        </h1>
+                        <p class="text-indigo-100 text-base sm:text-lg font-semibold">{{ plan.department }}</p>
+                    </div>
+                    <div class="flex flex-wrap gap-3">
+                        {% if is_version_view %}
+                        <a href="{{ url_for('teacher.list_clp_versions', plan_id=plan.id) }}"
+                            class="bg-white/20 backdrop-blur-md border border-white/30 text-white font-black py-3 px-6 rounded-xl hover:bg-white/30 transition-all text-sm">
+                            Back to History
+                        </a>
+                        <form
+                            action="{{ url_for('teacher.restore_clp_version', plan_id=plan.id, version_number=version_number) }}"
+                            method="POST"
+                            onsubmit="return confirm('Restore this version? This will create a new current version.')">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button type="submit"
+                                class="bg-white text-indigo-600 font-black py-3 px-6 rounded-xl shadow-lg hover:bg-indigo-50 transition-all text-sm">
+                                Restore this Version
+                            </button>
+                        </form>
+                        {% else %}
+                        {% if plan.status == 'draft_review' %}
+                        <a href="{{ url_for('teacher.edit_clp', plan_id=plan.id) }}"
+                            class="bg-white text-indigo-600 font-black py-3 px-6 rounded-xl shadow-lg hover:bg-indigo-50 transition-all transform hover:-translate-y-1 text-sm">
+                            Edit Draft Data
+                        </a>
+                        <form id="finalize-form" method="POST"
+                            action="{{ url_for('teacher.finalize_clp', plan_id=plan.id) }}">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button type="submit"
+                                class="bg-indigo-900/40 border border-white/30 backdrop-blur-md text-white font-black py-3 px-6 rounded-xl hover:bg-indigo-900/60 transition-all transform hover:-translate-y-1 text-sm">
+                                Finalize Document
+                            </button>
+                        </form>
+                        {% endif %}
+
+                        {% if plan.filename %}
+                        <a href="{{ url_for('teacher.download_clp', plan_id=plan.id) }}"
+                            class="bg-emerald-500 text-white font-black py-3 px-6 rounded-xl shadow-lg hover:bg-emerald-600 transition-all transform hover:-translate-y-1 flex items-center">
+                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                            </svg>
+                            Download DOCX
+                        </a>
+                        {% endif %}
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 md:grid-cols-4 border-t border-gray-100 dark:border-gray-700">
+                <div class="p-6 border-r border-gray-100 dark:border-gray-700">
+                    <p class="text-xs font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-1">Course
+                        Code</p>
+                    <p class="text-base sm:text-lg font-extrabold text-gray-900 dark:text-white">{{
+                        content_data.get('course_code') or content_data.get('course_number') or '-' }}</p>
+                </div>
+                <div class="p-6 border-r border-gray-100 dark:border-gray-700">
+                    <p class="text-xs font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-1">Units
+                    </p>
+                    <p class="text-base sm:text-lg font-extrabold text-gray-900 dark:text-white">{{
+                        content_data.get('units') or '-' }}</p>
+                </div>
+                <div class="p-6 border-r border-gray-100 dark:border-gray-700">
+                    <p class="text-xs font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-1">
+                        Contact
+                        Hours</p>
+                    <p class="text-base sm:text-lg font-extrabold text-gray-900 dark:text-white">{{
+                        content_data.get('Contact_hours_per_week') or '-' }}</p>
+                </div>
+                <div class="p-6">
+                    <p class="text-xs font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-1">Type
+                    </p>
+                    <p class="text-base sm:text-lg font-extrabold text-gray-900 dark:text-white">{{
+                        content_data.get('type_of_course') or 'Lecture' }}</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+
+            {# --- LEFT COLUMN: DETAILS --- #}
+            <div class="lg:col-span-2 space-y-8">
+
+                <section
+                    class="bg-white dark:bg-gray-800 rounded-3xl p-6 sm:p-8 shadow-sm border border-gray-100 dark:border-gray-700">
+                    <h2 class="text-xl sm:text-2xl font-black text-gray-900 dark:text-white mb-6 flex items-center">
+                        <span class="w-2 h-8 bg-indigo-600 rounded-full mr-3"></span>
+                        Course Description
+                    </h2>
+                    <p
+                        class="text-gray-600 dark:text-gray-300 leading-relaxed text-base sm:text-lg font-medium italic text-left">
+                        "{{ content_data.get('course_description', 'No description available.') | replace('\\n', '<br>')
+                        | replace('\n', '<br>') | safe }}"
+                    </p>
+                </section>
+
+                <section
+                    class="bg-white dark:bg-gray-800 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden mb-8 space-y-6">
+                    <details
+                        class="group bg-white dark:bg-gray-800 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
+                        <summary
+                            class="p-8 cursor-pointer flex justify-between items-center list-none hover:bg-gray-50 dark:hover:bg-gray-900/50 transition-colors">
+                            <h2 class="text-xl font-black text-gray-900 dark:text-white uppercase tracking-tighter">View
+                                Outcome Mapping Matrix</h2>
+                            <svg class="w-6 h-6 transform group-open:rotate-180 transition-transform text-gray-400"
+                                fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M19 9l-7 7-7-7"></path>
+                            </svg>
+                        </summary>
+                        <div class="p-8 border-t border-gray-50 dark:border-gray-700 space-y-10">
+                            {# Matrix 1 #}
+                            <div>
+                                <h4 class="font-black text-gray-400 text-sm uppercase tracking-widest mb-4">Program vs
+                                    Institutional Outcomes</h4>
+                                <div class="overflow-x-auto rounded-2xl border border-gray-100 dark:border-gray-700">
+                                    <table class="min-w-full text-sm">
+                                        <thead class="bg-gray-50 dark:bg-gray-900/50">
+                                            <tr>
+                                                <th
+                                                    class="p-4 text-left border-b font-black border-gray-100 dark:border-gray-700">
+                                                    CODE</th>
+                                                {% for h in institutional_headers %}
+                                                <th
+                                                    class="p-4 text-center border-b font-black border-gray-100 dark:border-gray-700">
+                                                    {{ h }}</th>
+                                                {% endfor %}
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for po in program_outcomes %}
+                                            <tr
+                                                class="hover:bg-indigo-50/30 dark:hover:bg-indigo-900/10 transition-colors">
+                                                <td
+                                                    class="p-4 font-black border-b border-gray-50 dark:border-gray-700 text-indigo-600">
+                                                    {{ po.code }}</td>
+                                                {% for h in institutional_headers %}
+                                                <td
+                                                    class="p-4 text-center border-b border-gray-50 dark:border-gray-700 font-bold">
+                                                    {{ content_data.get(po.code + '_' + h, '') }}</td>
+                                                {% endfor %}
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                            {# Matrix 2 #}
+                            <div>
+                                <h4 class="font-black text-gray-400 text-sm uppercase tracking-widest mb-4">Course vs
+                                    Program Outcomes</h4>
+                                <div class="overflow-x-auto rounded-2xl border border-gray-100 dark:border-gray-700">
+                                    <table class="min-w-full text-sm">
+                                        <thead class="bg-gray-50 dark:bg-gray-900/50">
+                                            <tr>
+                                                <th
+                                                    class="p-4 text-left border-b font-black border-gray-100 dark:border-gray-700">
+                                                    COURSE OUTCOME</th>
+                                                {% for h in program_headers %}
+                                                <th
+                                                    class="p-4 text-center border-b font-black border-gray-100 dark:border-gray-700">
+                                                    {{ h }}</th>
+                                                {% endfor %}
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for co in course_outcomes %}
+                                            <tr
+                                                class="hover:bg-purple-50/30 dark:hover:bg-purple-900/10 transition-colors">
+                                                <td
+                                                    class="p-4 font-bold border-b border-gray-50 dark:border-gray-700 max-w-xs">
+                                                    {{ co.description }}</td>
+                                                {% for ph in program_headers %}
+                                                <td
+                                                    class="p-4 text-center border-b border-gray-50 dark:border-gray-700 font-black text-purple-600">
+                                                    {{ content_data.get(co.code + '_' + ph, '') }}</td>
+                                                {% endfor %}
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </details>
+                </section>
+
+                <section
+                    class="bg-white dark:bg-gray-800 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
+                    <div
+                        class="p-6 sm:p-8 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center">
+                        <h2 class="text-xl sm:text-2xl font-black text-gray-900 dark:text-white flex items-center">
+                            <span class="w-2 h-8 bg-purple-600 rounded-full mr-3"></span>
+                            Weekly Learning Roadmap
+                        </h2>
+                    </div>
+                    <div class="divide-y divide-gray-100 dark:divide-gray-700">
+                        {% for i in range(1, 19) %}
+                        {% set prefix = 'W' ~ i %}
+                        {% if i == 10 or i == 11 %}{% set prefix = 'W1011' %}{% endif %}
+                        {% if i == 14 or i == 15 %}{% set prefix = 'W1415' %}{% endif %}
+                        {% if i == 16 or i == 17 %}{% set prefix = 'W1617' %}{% endif %}
+
+                        {% if i not in [11, 15, 17] %}
+                        <div class="p-6 sm:p-8 hover:bg-gray-50 dark:hover:bg-gray-900/50 transition-colors group">
+                            <div class="flex items-start gap-4 sm:gap-6">
+                                <div
+                                    class="flex-shrink-0 w-14 h-14 sm:w-16 sm:h-16 bg-indigo-50 dark:bg-indigo-900/30 rounded-2xl flex flex-col items-center justify-center border border-indigo-100 dark:border-indigo-800 transition-transform group-hover:scale-110">
+                                    <span
+                                        class="text-xs sm:text-xs font-black text-indigo-400 dark:text-indigo-500 uppercase tracking-tighter">Week</span>
+                                    <span class="text-xl sm:text-2xl font-black text-indigo-600 dark:text-indigo-400">
+                                        {{ i }}{% if i==10 %}+{% elif i==14 %}+{% elif i==16 %}+{% endif %}
+                                    </span>
+                                </div>
+                                <div class="flex-1">
+                                    <h3 class="text-lg sm:text-xl font-black text-gray-900 dark:text-white mb-3">
+                                        {{ content_data.get(prefix ~ '_TO', 'Untitled Topic') | replace('\\n', '<br>') |
+                                        replace('\n', '<br>') | safe }}
+                                    </h3>
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm">
+                                        <div>
+                                            <p
+                                                class="font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest text-xs mb-2">
+                                                Learning Outcomes</p>
+                                            <p
+                                                class="text-gray-600 dark:text-gray-400 font-medium leading-relaxed text-left">
+                                                {{ content_data.get(prefix ~ '_LO', '-') | replace('\\n', '<br>') |
+                                                replace('\n', '<br>') | safe }}</p>
+                                        </div>
+                                        <div>
+                                            <p
+                                                class="font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest text-xs mb-2">
+                                                Assessment Strategy</p>
+                                            <p
+                                                class="text-gray-600 dark:text-gray-400 leading-relaxed font-bold text-indigo-600 dark:text-indigo-400 text-left">
+                                                {{ content_data.get(prefix ~ '_Assesment', '-') | replace('\\n', '<br>')
+                                                | replace('\n', '<br>') | safe }}
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <div class="mt-4 flex flex-wrap gap-2">
+                                        <span
+                                            class="px-3 py-1 bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 rounded-full text-xs sm:text-sm font-extrabold italic uppercase tracking-wider">
+                                            Method: {{ content_data.get(prefix ~ '_Method', 'Lecture') }}
+                                        </span>
+                                        <span
+                                            class="px-3 py-1 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 rounded-full text-xs sm:text-sm font-black uppercase tracking-wider">
+                                            Mapped COs: {{ content_data.get(prefix ~ '_Mapped_COs', '-') }}
+                                        </span>
+                                        <span
+                                            class="px-3 py-1 bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 rounded-full text-xs sm:text-sm font-black uppercase tracking-wider">
+                                            Assessed COs: {{ content_data.get(prefix ~ '_Assessment_COs', '-') }}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                        {% endfor %}
+                    </div>
+                </section>
+            </div>
+
+            {# --- RIGHT COLUMN: MAPPINGS & META --- #}
+            <div class="space-y-8">
+                <section class="bg-gray-900 rounded-3xl p-6 sm:p-8 text-white shadow-2xl border border-gray-800">
+                    <h3 class="text-lg sm:text-xl font-black mb-6 flex items-center tracking-tight">
+                        <svg class="w-6 h-6 mr-2 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                        </svg>
+                        AIPCLPMS Insights
+                    </h3>
+                    <div class="space-y-6">
+                        <div>
+                            <p class="text-xs font-black text-gray-500 uppercase tracking-widest mb-2">Alignment
+                                Rationale
+                            </p>
+                            <p class="text-sm font-medium text-gray-300 leading-relaxed italic">
+                                "{{ (content_data.get('po_io_rationale') or 'The curriculum is aligned with
+                                institutional goals.') | replace('\\n', '<br>') | replace('\n', '<br>') | safe }}"
+                            </p>
+                        </div>
+                        <div class="pt-6 border-t border-gray-800">
+                            <p class="text-xs font-black text-gray-500 uppercase tracking-widest mb-2">Pedagogical
+                                Weight
+                            </p>
+                            <p class="text-sm font-medium text-gray-300 leading-relaxed">
+                                {{ (content_data.get('co_po_rationale') or 'Course outcomes map directly to program
+                                competencies.') | replace('\\n', '<br>') | replace('\n', '<br>') | safe }}
+                            </p>
+                        </div>
+                    </div>
+                </section>
+
+                <section
+                    class="bg-white dark:bg-gray-800 rounded-3xl p-6 sm:p-8 shadow-sm border border-gray-100 dark:border-gray-700">
+                    <h3 class="text-lg font-black text-gray-900 dark:text-white mb-4 tracking-tight">Course
+                        Prerequisites
+                    </h3>
+                    <div class="space-y-4">
+                        <div
+                            class="flex justify-between items-center py-3 border-b border-gray-50 dark:border-gray-700">
+                            <span
+                                class="text-sm font-extrabold text-gray-400 dark:text-gray-500 uppercase tracking-tight">Pre-req</span>
+                            <span class="text-sm font-black text-gray-900 dark:text-white uppercase tracking-tight">{{
+                                content_data.get('pre_requisite', 'None') }}</span>
+                        </div>
+                        <div class="flex justify-between items-center py-3">
+                            <span
+                                class="text-sm font-extrabold text-gray-400 dark:text-gray-500 uppercase tracking-tight">Co-req</span>
+                            <span class="text-sm font-black text-gray-900 dark:text-white uppercase tracking-tight">{{
+                                content_data.get('co_requisite', 'None') }}</span>
+                        </div>
+                    </div>
+                </section>
+
+                {% if content_data.get('references') %}
+                <section
+                    class="bg-indigo-50 dark:bg-indigo-900/20 rounded-3xl p-8 border border-indigo-100 dark:border-indigo-800">
+                    <h3 class="text-lg font-black text-indigo-900 dark:text-indigo-300 mb-4 tracking-tight">Key
+                        References
+                    </h3>
+                    <div class="text-sm text-indigo-800 dark:text-indigo-400 leading-relaxed whitespace-pre-wrap">
+                        {{ content_data.get('references') | replace('\\n', '<br>') | replace('\n', '<br>') | safe }}
+                    </div>
+                </section>
+                {% endif %}
+            </div>
+        </div>
+
+    </div>
+
+    {# --- AI MODALS (REFINED) --- #}
+    <div id="ai-modal" class="fixed inset-0 z-[100] hidden" aria-labelledby="modal-title" role="dialog"
+        aria-modal="true">
+        <div class="absolute inset-0 bg-[#08101d]/80 backdrop-blur-md transition-opacity" aria-hidden="true"
+            onclick="closeAIModal()"></div>
+        <div class="relative flex min-h-full items-center justify-center p-3 sm:p-4 md:p-6">
+            <div
+                class="flex w-full max-w-3xl max-h-[calc(100vh-1.5rem)] sm:max-h-[calc(100vh-2rem)] md:max-h-[calc(100vh-3rem)] flex-col overflow-hidden rounded-[1.75rem] md:rounded-[2rem] border border-slate-600/40 bg-[#111b2e] text-left shadow-2xl">
+                <div class="relative shrink-0 px-5 pt-5 pb-5 sm:px-7 sm:pt-7 sm:pb-6 md:px-8 md:pt-8 md:pb-6 bg-gradient-to-b from-slate-800/80 to-[#111b2e] border-b border-slate-700/50">
+                    <button type="button" onclick="closeAIModal()"
+                        class="absolute right-4 top-4 sm:right-6 sm:top-6 w-10 h-10 sm:w-11 sm:h-11 rounded-2xl border border-slate-600/40 bg-slate-900/40 text-slate-300 hover:text-white hover:bg-slate-800 transition-all flex items-center justify-center">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                    <div id="modal-icon" class="w-16 h-16 sm:w-[4.5rem] sm:h-[4.5rem] rounded-[1.35rem] sm:rounded-[1.6rem] flex items-center justify-center mb-5 sm:mb-6">
+                    </div>
+                    <h3 class="text-3xl sm:text-4xl font-black text-white tracking-tighter leading-none pr-12" id="ai-modal-title">
+                        AI Results</h3>
+                    <p id="ai-modal-subtitle" class="mt-3 sm:mt-4 text-sm sm:text-base text-slate-300 font-semibold leading-relaxed max-w-2xl">
+                        Review the current audit output and decide whether to apply AI-assisted improvements.
+                    </p>
+                </div>
+                <div class="flex-1 min-h-0 overflow-y-auto px-5 py-5 sm:px-7 sm:py-6 md:px-8 md:py-7 custom-scrollbar"
+                    id="ai-modal-content">
+                    </div>
+                <div class="shrink-0 px-5 py-4 sm:px-7 sm:py-5 md:px-8 md:py-6 bg-[#0c1526] border-t border-slate-700/60 flex justify-end">
+                    <button type="button" onclick="closeAIModal()"
+                        class="w-full sm:w-auto min-w-32 bg-indigo-600 text-white font-black py-3 px-6 sm:px-8 rounded-2xl hover:bg-indigo-500 transition-all shadow-xl shadow-indigo-950/40">
+                        Got it
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const finalizeForm = document.getElementById('finalize-form');
+        if (finalizeForm) {
+            finalizeForm.addEventListener('submit', function () {
+                localStorage.setItem('is_generating', 'true');
+            });
+        }
+
+        function closeAIModal() { document.getElementById('ai-modal').classList.add('hidden'); }
+        function showAIModal(title, htmlContent, color, subtitle = '') {
+            document.getElementById('ai-modal-title').innerText = title;
+            document.getElementById('ai-modal-content').innerHTML = htmlContent;
+            document.getElementById('ai-modal-subtitle').innerText = subtitle || 'Review the current audit output and decide whether to apply AI-assisted improvements.';
+            const iconDiv = document.getElementById('modal-icon');
+            const colorThemes = {
+                purple: {
+                    className: 'w-[4.5rem] h-[4.5rem] rounded-[1.6rem] flex items-center justify-center mb-6 bg-violet-900/70 text-violet-200 border border-violet-500/20 shadow-[0_0_0_1px_rgba(139,92,246,0.08)]',
+                    icon: '<svg class="w-9 h-9" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M9 12l2 2 4-4m5 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>'
+                },
+                indigo: {
+                    className: 'w-[4.5rem] h-[4.5rem] rounded-[1.6rem] flex items-center justify-center mb-6 bg-indigo-900/70 text-indigo-200 border border-indigo-500/20 shadow-[0_0_0_1px_rgba(99,102,241,0.08)]',
+                    icon: '<svg class="w-9 h-9" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>'
+                }
+            };
+            const theme = colorThemes[color] || colorThemes.purple;
+            iconDiv.className = theme.className;
+            iconDiv.innerHTML = theme.icon;
+            document.getElementById('ai-modal').classList.remove('hidden');
+        }
+
+        const changeSummary = {{ content_data.get('last_change_summary', {}) | tojson | safe }};
+        if (changeSummary && Array.isArray(changeSummary.items) && changeSummary.items.length) {
+            const changeKey = `change-summary-{{ plan.id }}-${changeSummary.change_id || changeSummary.generated_at || 'latest'}`;
+            if (!sessionStorage.getItem(changeKey)) {
+                const listItems = changeSummary.items.map(item => {
+                    return `
+                        <div class="p-4 bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm">
+                            <p class="text-[10px] uppercase tracking-[0.2em] text-indigo-500 font-black mb-2">${item.field}</p>
+                            <div class="grid grid-cols-1 gap-2 text-sm">
+                                <div class="bg-gray-50 dark:bg-gray-800 rounded-xl p-3">
+                                    <p class="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-1">Before</p>
+                                    <p class="text-gray-700 dark:text-gray-300 font-medium whitespace-pre-wrap">${item.before || '—'}</p>
+                                </div>
+                                <div class="bg-emerald-50 dark:bg-emerald-900/20 rounded-xl p-3">
+                                    <p class="text-[10px] font-bold uppercase tracking-widest text-emerald-500 mb-1">After</p>
+                                    <p class="text-emerald-700 dark:text-emerald-300 font-medium whitespace-pre-wrap">${item.after || '—'}</p>
+                                </div>
+                            </div>
+                        </div>`;
+                }).join('');
+
+                const countText = changeSummary.count ? `${changeSummary.count} updates` : 'Updates';
+                const html = `
+                    <div class="mb-6 p-4 bg-indigo-50 dark:bg-indigo-900/20 rounded-2xl border border-indigo-100 dark:border-indigo-800 text-center">
+                        <p class="text-xs font-black uppercase tracking-[0.2em] text-indigo-500">Refinement Summary</p>
+                        <p class="text-lg font-bold text-indigo-700 dark:text-indigo-300 mt-2">${countText} applied</p>
+                    </div>
+                    <div class="space-y-4">${listItems}</div>
+                `;
+
+                showAIModal("Refinement Updates", html, "indigo", "AIPCLPMS applied a focused set of changes to improve the current learning plan draft.");
+                sessionStorage.setItem(changeKey, 'shown');
+            }
+        }
+
+        function runValidation() {
+            const btn = document.getElementById('validate-btn');
+            const originalHtml = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<div class="w-5 h-5 border-2 border-purple-600 border-t-transparent rounded-full animate-spin"></div><span>Validating...</span>';
+
+            fetch(`/teacher/clp/{{ plan.id }}/validate`, { method: 'POST', headers: { 'X-CSRFToken': '{{ csrf_token() }}' } })
+                .then(r => r.json())
+                .then(data => {
+                    if (data.error) {
+                        throw new Error(data.error);
+                    }
+
+                    window.lastValidationReport = data;
+                    const issues = Array.isArray(data.issues) ? data.issues : [];
+                    const issueCount = issues.length;
+                    const score = Number.isFinite(Number(data.score)) ? Number(data.score) : 0;
+
+                    let html = `
+                        <div class="grid grid-cols-1 md:grid-cols-[220px_1fr] gap-5 mb-8">
+                            <div class="rounded-[1.75rem] border border-violet-500/20 bg-[#0d1526] p-6">
+                                <p class="text-[11px] uppercase tracking-[0.28em] text-violet-300/70 font-black">Compliance Score</p>
+                                <div class="mt-5 flex items-end gap-2">
+                                    <span class="text-6xl font-black text-white leading-none">${score}</span>
+                                    <span class="text-lg font-black text-violet-300 mb-1">%</span>
+                                </div>
+                                <p class="mt-4 text-sm font-semibold text-slate-300 leading-relaxed">
+                                    ${issueCount === 0 ? 'No Bloom-alignment issues were detected in this draft.' : `${issueCount} issue${issueCount === 1 ? '' : 's'} flagged for revision.`}
+                                </p>
+                            </div>
+                            <div class="rounded-[1.75rem] border border-slate-700/70 bg-[#0d1526] p-6">
+                                <div class="flex flex-wrap items-center gap-3 mb-4">
+                                    <span class="inline-flex items-center rounded-full border border-violet-500/20 bg-violet-500/10 px-3 py-1 text-[11px] font-black uppercase tracking-[0.2em] text-violet-200">Bloom Audit</span>
+                                    <span class="inline-flex items-center rounded-full border border-slate-600/60 bg-slate-800/80 px-3 py-1 text-[11px] font-black uppercase tracking-[0.2em] text-slate-300">${issueCount} Finding${issueCount === 1 ? '' : 's'}</span>
+                                </div>
+                                <p class="text-lg font-semibold text-white leading-relaxed">${data.summary || 'Validation completed.'}</p>
+                            </div>
+                        </div>
+                    `;
+
+                    if (issueCount > 0) {
+                        html += `<div class="space-y-4">`;
+                        issues.forEach(issue => {
+                            html += `
+                                <article class="rounded-[1.5rem] sm:rounded-[1.75rem] border border-slate-700/70 bg-[#0d1526] p-5 sm:p-6 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]">
+                                    <div class="flex items-center gap-3 mb-4">
+                                        <span class="inline-flex h-7 w-7 items-center justify-center rounded-full bg-rose-500 text-white">
+                                            <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-10.293a1 1 0 00-1.414-1.414L10 8.586 7.707 6.293a1 1 0 00-1.414 1.414L8.586 10l-2.293 2.293a1 1 0 101.414 1.414L10 11.414l2.293 2.293a1 1 0 001.414-1.414L11.414 10l2.293-2.293z" clip-rule="evenodd"></path></svg>
+                                        </span>
+                                        <span class="text-sm font-black uppercase tracking-[0.18em] text-rose-300">${issue.location}</span>
+                                    </div>
+                                    <p class="text-xl sm:text-2xl font-black tracking-tight text-white leading-snug">${issue.issue}</p>
+                                    <div class="mt-5 rounded-2xl border border-emerald-500/10 bg-emerald-500/10 px-4 sm:px-5 py-4">
+                                        <p class="text-[11px] font-black uppercase tracking-[0.2em] text-emerald-300/70 mb-2">Recommendation</p>
+                                        <p class="text-base sm:text-lg font-semibold text-emerald-200 leading-relaxed">${issue.suggestion}</p>
+                                    </div>
+                                </article>
+                            `;
+                        });
+                        html += `</div>
+                            <div class="mt-8 pt-6 border-t border-slate-700/70">
+                                <button onclick='applyValidationFixes()' class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-black py-4 px-6 rounded-[1.4rem] shadow-xl transition-all flex items-center justify-center gap-3">
+                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                                    <span>Apply AI Improvements</span>
+                                </button>
+                                <p class="text-[10px] text-slate-400 text-center mt-3 font-bold uppercase tracking-[0.2em]">AIPCLPMS will create a cleaner revised draft using these findings.</p>
+                            </div>`;
+                    } else {
+                        html += `
+                            <div class="rounded-[1.75rem] border border-emerald-500/15 bg-emerald-500/10 px-6 py-6">
+                                <p class="text-[11px] font-black uppercase tracking-[0.2em] text-emerald-300/70 mb-2">Audit Result</p>
+                                <p class="text-xl font-black text-white">This draft already passes the Bloom’s Taxonomy audit.</p>
+                                <p class="mt-3 text-sm font-semibold text-emerald-100/80">No automatic revision is needed right now.</p>
+                            </div>
+                        `;
+                    }
+                    showAIModal("Bloom's Taxonomy Audit", html, "purple", "This audit highlights outcome phrasing that may be too vague, too broad, or difficult to measure in a formal course plan.");
+                })
+                .catch(err => {
+                    showCustomConfirm(`Validation failed: ${err.message || 'Unknown error'}`, () => { }, 'Validation Error');
+                })
+                .finally(() => { btn.disabled = false; btn.innerHTML = originalHtml; });
+        }
+
+        function applyValidationFixes() {
+            const validationData = window.lastValidationReport;
+            if (!validationData) {
+                alert("Validation data lost. Please run validation again.");
+                return;
+            }
+
+            showCustomConfirm("AI will now refactor your CLP based on the validation feedback. This will create a new draft. Proceed?", () => {
+                closeAIModal();
+
+                // Show the full-screen loading overlay immediately
+                const overlay = document.getElementById('global-loading-overlay');
+                if (overlay) {
+                    overlay.classList.remove('hidden');
+                    overlay.classList.add('flex');
+                    document.getElementById('loading-title').innerText = "Refining Intelligence...";
+                    document.getElementById('progress-text').innerText = "Initializing AI Refinement...";
+                }
+
+                localStorage.setItem('is_generating', 'true');
+
+                fetch(`/teacher/clp/{{ plan.id }}/apply_fixes`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': '{{ csrf_token() }}',
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ validation_data: validationData })
+                })
+                    .then(r => r.json())
+                    .then(data => {
+                        if (data.success) {
+                            window.location.reload();
+                        } else {
+                            alert("Error starting refinement: " + (data.error || "Unknown error"));
+                            localStorage.removeItem('is_generating');
+                            if (overlay) overlay.classList.add('hidden');
+                        }
+                    })
+                    .catch(err => {
+                        alert("Network error: " + err);
+                        localStorage.removeItem('is_generating');
+                        if (overlay) overlay.classList.add('hidden');
+                    });
+            }, "Apply Improvements");
+        }
+
+    </script>
+
+    <style>
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background-color: #e2e8f0;
+            border-radius: 20px;
+        }
+
+        .dark .custom-scrollbar::-webkit-scrollbar-thumb {
+            background-color: #334155;
+        }
+    </style>
+    {% endblock %}

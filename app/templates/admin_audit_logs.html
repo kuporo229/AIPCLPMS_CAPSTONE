@@ -1,0 +1,205 @@
+{% extends "base.html" %}
+{% block title %}Audit Logs{% endblock %}
+{% block content %}
+<div class="min-h-screen bg-gradient-to-br from-gray-50 via-white to-primary-50/30 dark:from-[#050816] dark:via-[#0d1117] dark:to-[#050816] py-6 sm:py-10">
+    <div class="max-w-[96rem] mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="mb-8 sm:mb-10 flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+            <div>
+                <p class="text-[10px] font-black uppercase tracking-[0.35em] text-primary-600/80 mb-3">ADMIN PANEL · AUDIT TRAIL</p>
+                <h1 class="text-3xl lg:text-5xl font-black text-gray-900 dark:text-white tracking-tight">Audit Logs</h1>
+                <p class="mt-3 text-sm sm:text-base text-gray-500 dark:text-gray-400 max-w-3xl">Monitor system activity with event, result, status code, and latency details. The layout stays readable on both mobile cards and wide desktop tables.</p>
+            </div>
+
+            <div class="flex flex-col sm:flex-row gap-3 sm:items-center">
+                <form method="GET" class="flex flex-col sm:flex-row gap-3 sm:items-center">
+                    <div class="relative">
+                        <select name="user_id" onchange="this.form.submit()" class="w-full sm:w-[22rem] appearance-none bg-white dark:bg-[#111827] border border-gray-200 dark:border-gray-800 rounded-2xl px-5 py-3.5 text-sm font-semibold text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 shadow-sm">
+                            <option value="all" {% if selected_user == 'all' %}selected{% endif %}>All Users</option>
+                            {% for u in users %}
+                            <option value="{{ u.id }}" {% if selected_user == u.id %}selected{% endif %}>
+                                {{ u.first_name|upper }} {{ u.last_name|upper }} (@{{ u.username }})
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </form>
+                <a href="{% if selected_user and selected_user != 'all' %}{{ url_for('admin.export_audit_logs_pdf', user_id=selected_user) }}{% else %}{{ url_for('admin.export_audit_logs_pdf') }}{% endif %}" class="inline-flex items-center justify-center px-6 py-3.5 rounded-2xl bg-primary-600 text-white text-[10px] font-black uppercase tracking-widest shadow-sm hover:bg-primary-700 transition-all">
+                    Export PDF
+                </a>
+                {% if selected_user and selected_user != 'all' %}
+                <a href="{{ url_for('admin.view_audit_logs') }}" class="px-6 py-3.5 text-[10px] font-black uppercase tracking-widest text-primary-600 hover:bg-primary-50 dark:hover:bg-primary-900/20 rounded-2xl transition-all">Clear Filter</a>
+                {% endif %}
+            </div>
+        </div>
+
+        {% if logs %}
+        <div class="space-y-6">
+            <div class="md:hidden space-y-4">
+                {% for log in logs %}
+                <div class="bg-white dark:bg-[#111827] p-5 rounded-[2rem] border border-gray-200 dark:border-gray-800 shadow-sm space-y-4">
+                    <div class="flex items-start justify-between gap-3">
+                        <div class="min-w-0 flex-1">
+                            <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest">{{ log.timestamp.strftime('%d %b %Y · %I:%M %p') }}</p>
+                            <div class="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 min-w-0">
+                                <span class="text-xs font-black text-gray-900 dark:text-white uppercase truncate max-w-[11ch]">{{ log.actor.username if log.actor else 'SYSTEM' }}</span>
+                                <span class="text-[10px] font-bold text-gray-400 truncate max-w-[15ch]">@{{ log.ip_address or '0.0.0.0' }}</span>
+                            </div>
+                        </div>
+                        <span class="shrink-0 inline-flex items-center px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border shadow-sm {% if 'Login' in log.action %} bg-blue-50 text-blue-700 border-blue-100 dark:bg-blue-900/20 dark:text-blue-400 {% elif 'Created' in log.action %} bg-emerald-50 text-emerald-700 border-emerald-100 dark:bg-emerald-900/20 dark:text-emerald-400 {% elif 'Error' in log.result|string %} bg-rose-50 text-rose-700 border-rose-100 dark:bg-rose-900/20 dark:text-rose-400 {% elif log.status_code and log.status_code >= 400 %} bg-amber-50 text-amber-700 border-amber-100 dark:bg-amber-900/20 dark:text-amber-400 {% else %} bg-gray-50 text-gray-600 border-gray-100 dark:bg-gray-800 dark:text-gray-400 {% endif %}">
+                            {{ log.action | replace('Access: ', '') | replace('Submit: ', '') | truncate(14, True) }}
+                        </span>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-2">
+                        <div class="rounded-2xl bg-gray-50 dark:bg-gray-800/50 px-3 py-2.5 min-w-0">
+                            <p class="text-[8px] font-black text-gray-400 uppercase tracking-widest">Status</p>
+                            <p class="mt-1 text-[10px] font-black text-gray-900 dark:text-white truncate">{{ log.status_code or 'N/A' }}</p>
+                        </div>
+                        <div class="rounded-2xl bg-gray-50 dark:bg-gray-800/50 px-3 py-2.5 min-w-0">
+                            <p class="text-[8px] font-black text-gray-400 uppercase tracking-widest">Latency</p>
+                            <p class="mt-1 text-[10px] font-black text-gray-900 dark:text-white truncate">{{ log.latency_ms or 'N/A' }} ms</p>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-2 text-[10px]">
+                        <div class="rounded-2xl bg-gray-50 dark:bg-gray-800/50 px-3 py-2.5 min-w-0">
+                            <p class="text-[8px] font-black text-gray-400 uppercase tracking-widest mb-1">Event</p>
+                            <p class="font-bold text-gray-700 dark:text-gray-200 truncate">{{ log.event_type or 'N/A' }}</p>
+                        </div>
+                        <div class="rounded-2xl bg-gray-50 dark:bg-gray-800/50 px-3 py-2.5 min-w-0">
+                            <p class="text-[8px] font-black text-gray-400 uppercase tracking-widest mb-1">Resource</p>
+                            <p class="font-bold text-gray-700 dark:text-gray-200 truncate">{{ log.resource_id or 'N/A' }}</p>
+                        </div>
+                    </div>
+
+                    <div class="space-y-2 rounded-2xl bg-gray-50 dark:bg-gray-800/50 p-4">
+                        <div class="flex items-start justify-between gap-3">
+                            <span class="text-[9px] font-black text-gray-400 uppercase tracking-tighter shrink-0">Endpoint</span>
+                            <span class="text-[10px] font-bold text-primary-600 text-right break-all max-w-[16rem]">{{ log.endpoint or '/' }}</span>
+                        </div>
+                        {% if log.result %}
+                        <div class="flex items-start justify-between gap-3">
+                            <span class="text-[9px] font-black text-gray-400 uppercase tracking-tighter shrink-0">Result</span>
+                            <span class="text-[10px] font-bold text-gray-700 dark:text-gray-200 text-right break-words max-w-[16rem]">{{ log.result }}</span>
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    {% if log.details %}
+                    <div class="pt-2 border-t border-gray-100 dark:border-gray-700">
+                        <p class="text-[9px] font-black text-gray-400 uppercase tracking-tighter mb-2">Metadata</p>
+                        <div class="grid grid-cols-1 gap-2">
+                            {% for key, val in log.details.items() %}
+                            <div class="flex items-start justify-between gap-3 rounded-xl bg-gray-50/70 dark:bg-gray-900/30 px-3 py-2">
+                                <span class="text-[9px] font-black text-gray-400 uppercase tracking-tighter shrink-0">{{ key }}</span>
+                                <span class="text-[9px] font-medium text-gray-600 dark:text-gray-400 break-words text-right max-w-[16rem]">{{ val|string|truncate(40, True) }}</span>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+
+            <div class="hidden md:block bg-white dark:bg-[#111827] rounded-[2.5rem] border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden">
+                <div class="overflow-x-auto custom-scrollbar">
+                    <table class="w-full min-w-[1440px] lg:min-w-[1560px] text-left border-collapse table-fixed">
+                        <thead class="sticky top-0 z-10">
+                            <tr class="bg-gray-50/95 dark:bg-gray-900/95 backdrop-blur border-b border-gray-100 dark:border-gray-800">
+                                <th class="px-6 py-5 w-[140px] text-[10px] font-black text-gray-400 uppercase tracking-widest">Timestamp</th>
+                                <th class="px-6 py-5 w-[220px] text-[10px] font-black text-gray-400 uppercase tracking-widest">Actor / IP</th>
+                                <th class="px-6 py-5 w-[180px] text-[10px] font-black text-gray-400 uppercase tracking-widest">Event Action</th>
+                                <th class="px-6 py-5 w-[140px] text-[10px] font-black text-gray-400 uppercase tracking-widest">Event</th>
+                                <th class="px-6 py-5 w-[140px] text-[10px] font-black text-gray-400 uppercase tracking-widest">Result</th>
+                                <th class="px-6 py-5 w-[100px] text-[10px] font-black text-gray-400 uppercase tracking-widest">Status</th>
+                                <th class="px-6 py-5 w-[90px] text-[10px] font-black text-gray-400 uppercase tracking-widest">Method</th>
+                                <th class="px-6 py-5 w-[260px] lg:w-[300px] text-[10px] font-black text-gray-400 uppercase tracking-widest">Endpoint</th>
+                                <th class="px-6 py-5 w-[180px] text-[10px] font-black text-gray-400 uppercase tracking-widest">Resource</th>
+                                <th class="px-6 py-5 w-[120px] text-[10px] font-black text-gray-400 uppercase tracking-widest">Latency</th>
+                                <th class="px-6 py-5 w-[320px] lg:w-[360px] text-[10px] font-black text-gray-400 uppercase tracking-widest">Metadata Details</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
+                            {% for log in logs %}
+                            <tr class="group hover:bg-gray-50/50 dark:hover:bg-primary-900/5 transition-all">
+                                <td class="px-6 py-6 align-top">
+                                    <p class="text-xs font-black text-gray-900 dark:text-white tracking-tighter">{{ log.timestamp.strftime('%I:%M:%S %p') }}</p>
+                                    <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{{ log.timestamp.strftime('%d %b %Y') }}</p>
+                                </td>
+                                <td class="px-6 py-6 align-top">
+                                    <div class="flex items-center gap-4">
+                                        <div class="w-10 h-10 rounded-xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-gray-400 group-hover:text-primary-600 transition-colors shrink-0">
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M16 7a4 4 0 11-8 0 4 4 0 008 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                                        </div>
+                                        <div class="min-w-0">
+                                            {% if log.actor %}
+                                                <p class="text-xs font-black text-gray-900 dark:text-white truncate uppercase max-w-[12rem]">{{ log.actor.username }}</p>
+                                                <p class="text-[10px] font-bold text-gray-400 tracking-widest truncate max-w-[12rem]">{{ log.ip_address or '0.0.0.0' }}</p>
+                                            {% else %}
+                                                <p class="text-xs font-black text-gray-400 italic">SYSTEM_CORE</p>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-6 align-top">
+                                    <span class="inline-flex px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-[0.1em] border {% if 'Login' in log.action %} bg-blue-50 text-blue-700 border-blue-100 dark:bg-blue-900/20 dark:text-blue-400 dark:border-blue-800 {% elif 'Registration' in log.action %} bg-purple-50 text-purple-700 border-purple-100 dark:bg-purple-900/20 dark:text-purple-400 dark:border-purple-800 {% elif 'Created' in log.action %} bg-emerald-50 text-emerald-700 border-emerald-100 dark:bg-emerald-900/20 dark:text-emerald-400 dark:border-emerald-800 {% elif 'Submit' in log.action %} bg-amber-50 text-amber-700 border-amber-100 dark:bg-amber-900/20 dark:text-amber-400 dark:border-amber-800 {% else %} bg-gray-50 text-gray-600 border-gray-100 dark:bg-gray-900 dark:text-gray-400 dark:border-gray-800 {% endif %}">
+                                        {{ log.action | replace('Access: ', '') | replace('Submit: ', '') | truncate(28, True) }}
+                                    </span>
+                                </td>
+                                <td class="px-6 py-6 align-top hidden xl:table-cell">
+                                    <span class="inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-[0.12em] bg-gray-50 text-gray-600 dark:bg-gray-900 dark:text-gray-300 truncate max-w-[9rem] shadow-sm">{{ log.event_type or 'N/A' }}</span>
+                                </td>
+                                <td class="px-6 py-6 align-top hidden xl:table-cell">
+                                    <span class="inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-[0.12em] bg-gray-50 text-gray-600 dark:bg-gray-900 dark:text-gray-300 truncate max-w-[9rem] shadow-sm">{{ log.result or 'N/A' }}</span>
+                                </td>
+                                <td class="px-6 py-6 align-top hidden lg:table-cell">
+                                    <span class="inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-[0.12em] shadow-sm {% if log.status_code and log.status_code >= 400 %} bg-rose-50 text-rose-700 dark:bg-rose-900/20 dark:text-rose-400 {% elif log.status_code and log.status_code >= 300 %} bg-amber-50 text-amber-700 dark:bg-amber-900/20 dark:text-amber-400 {% else %} bg-emerald-50 text-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-400 {% endif %}">
+                                        {{ log.status_code or 'N/A' }}
+                                    </span>
+                                </td>
+                                <td class="px-6 py-6 align-top hidden lg:table-cell">
+                                    <span class="inline-flex px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-[0.12em] bg-primary-50 text-primary-700 dark:bg-primary-900/20 dark:text-primary-400 shadow-sm">{{ log.method or 'GET' }}</span>
+                                </td>
+                                <td class="px-6 py-6 align-top">
+                                    <p class="text-[10px] font-bold text-gray-400 truncate max-w-[16rem] leading-tight" title="{{ log.endpoint or '/' }}">{{ log.endpoint or '/' }}</p>
+                                </td>
+                                <td class="px-6 py-6 align-top hidden xl:table-cell">
+                                    <p class="text-[10px] font-bold text-gray-400 truncate max-w-[12rem]" title="{{ log.resource_id or 'N/A' }}">{{ log.resource_id or 'N/A' }}</p>
+                                </td>
+                                <td class="px-6 py-6 align-top hidden xl:table-cell">
+                                    <p class="text-[10px] font-bold text-gray-400">{{ log.latency_ms or 'N/A' }}</p>
+                                </td>
+                                <td class="px-6 py-6 align-top hidden xl:table-cell">
+                                    <div class="max-w-[20rem] lg:max-w-[24rem] space-y-1 break-words">
+                                        {% if log.details %}
+                                            {% for key, val in log.details.items() %}
+                                                <div class="flex items-start gap-2 bg-gray-50/60 dark:bg-gray-900/30 rounded-xl px-2.5 py-1.5">
+                                                    <span class="text-[9px] font-black text-gray-400 uppercase tracking-tighter shrink-0 pt-0.5">{{ key }}:</span>
+                                                    <span class="text-[10px] font-bold text-gray-500 dark:text-gray-400 break-words leading-tight">{{ val|string|truncate(50, True) }}</span>
+                                                </div>
+                                            {% endfor %}
+                                        {% else %}
+                                            <span class="text-[10px] font-bold text-gray-300 dark:text-gray-700 uppercase tracking-widest italic">No extra metadata</span>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <div class="py-32 flex flex-col items-center justify-center opacity-50 text-center px-4">
+            <div class="w-20 h-20 bg-gray-50 dark:bg-gray-800 rounded-[2rem] flex items-center justify-center mb-6">
+                <svg class="w-10 h-10 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+            <p class="text-sm font-black text-gray-400 uppercase tracking-widest">No audit logs yet</p>
+            <p class="mt-2 text-xs text-gray-500 dark:text-gray-400 max-w-md">Once actions start being recorded, they will appear here with the event type, result, status code, and resource details.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

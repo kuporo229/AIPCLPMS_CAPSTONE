@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block title %}System Error - 500{% endblock %}
+
+{% block content %}
+<div class="flex flex-col items-center justify-center min-h-[calc(100vh-160px)] px-4 text-center">
+    <div class="relative mb-12">
+        <div class="absolute inset-0 bg-red-100 dark:bg-red-900/20 rounded-full blur-3xl opacity-50 scale-150 animate-pulse"></div>
+        <h1 class="relative text-[10rem] md:text-[15rem] font-black text-gray-900 dark:text-white tracking-tighter leading-none select-none opacity-10">500</h1>
+        <div class="absolute inset-0 flex flex-col items-center justify-center">
+            <div class="w-20 h-20 bg-white dark:bg-[#111827] rounded-[2rem] border border-gray-200 dark:border-gray-800 shadow-2xl flex items-center justify-center text-red-600 mb-4">
+                <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+            <p class="text-xs font-black text-red-600 uppercase tracking-[0.3em]">Critical Failure</p>
+        </div>
+    </div>
+
+    <div class="max-w-md space-y-6 relative">
+        <h2 class="text-3xl font-black text-gray-900 dark:text-white tracking-tight uppercase">Process <span class="text-primary-600">Interrupted</span></h2>
+        <p class="text-sm font-medium text-gray-500 dark:text-gray-400 italic leading-relaxed">The central engine encountered an unhandled exception. Our technical unit has been dispatched to investigate this registry fault.</p>
+        
+        <div class="pt-6 flex flex-col sm:flex-row items-center justify-center gap-4">
+            <a href="{{ url_for('main.dashboard') }}" class="w-full sm:w-auto inline-flex items-center justify-center gap-3 px-10 py-4 bg-primary-600 text-white text-[10px] font-black uppercase tracking-[0.2em] rounded-2xl hover:bg-primary-700 transition-all shadow-xl shadow-primary-200 dark:shadow-none">
+                Return to Core
+            </a>
+            <button onclick="window.location.reload()" class="w-full sm:w-auto px-10 py-4 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 text-[10px] font-black uppercase tracking-[0.2em] rounded-2xl border border-gray-200 dark:border-gray-700 hover:bg-gray-50 transition-all">
+                Retry Connection
+            </button>
+        </div>
+    </div>
+</div>
+{% endblock %}

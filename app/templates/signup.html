@@ -1,0 +1,243 @@
+{% extends "base.html" %}
+
+{% block title %}Register Account{% endblock %}
+
+{% block content %}
+<div class="flex flex-col items-center justify-center min-h-[calc(100vh-160px)] px-4 py-12">
+    <div class="w-full max-w-xl">
+        <!-- Brand / Logo -->
+        <div class="text-center mb-10">
+            <div class="inline-flex items-center justify-center w-16 h-16 bg-primary-600 rounded-[2rem] text-white shadow-2xl shadow-primary-200 dark:shadow-none mb-6">
+                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+            <h1 class="text-3xl font-black text-gray-900 dark:text-white tracking-tighter uppercase">Member Onboarding</h1>
+            <p class="text-gray-500 dark:text-gray-400 font-bold text-[10px] uppercase tracking-[0.2em] mt-2">Join the institution's academic planning network</p>
+        </div>
+
+        <!-- Form Card -->
+        <div class="bg-white dark:bg-[#111827] rounded-[2.5rem] border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden p-8 md:p-12">
+            <form method="post" action="{{ url_for('auth.signup') }}" class="space-y-8" novalidate>
+                {{ form.hidden_tag() }} 
+
+                <div class="space-y-6">
+                    <p class="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] ml-1">Identity Details</p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="space-y-2">
+                            {{ form.first_name.label(class="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1") }}
+                            {{ form.first_name(class="w-full bg-gray-50 dark:bg-gray-800/50 border-gray-200 dark:border-gray-700 rounded-2xl px-4 py-3.5 text-sm font-bold focus:ring-primary-500 transition-all", placeholder="First name") }}
+                            {% for error in form.first_name.errors %}
+                                <p class="text-red-500 text-[10px] font-bold mt-1 ml-1">{{ error }}</p>
+                            {% endfor %}
+                        </div>
+                        <div class="space-y-2">
+                            {{ form.last_name.label(class="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1") }}
+                            {{ form.last_name(class="w-full bg-gray-50 dark:bg-gray-800/50 border-gray-200 dark:border-gray-700 rounded-2xl px-4 py-3.5 text-sm font-bold focus:ring-primary-500 transition-all", placeholder="Last name") }}
+                            {% for error in form.last_name.errors %}
+                                <p class="text-red-500 text-[10px] font-bold mt-1 ml-1">{{ error }}</p>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="space-y-2">
+                            {{ form.username.label(class="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1") }}
+                            {{ form.username(class="w-full bg-gray-50 dark:bg-gray-800/50 border-gray-200 dark:border-gray-700 rounded-2xl px-4 py-3.5 text-sm font-bold focus:ring-primary-500 transition-all", placeholder="Username") }}
+                            {% for error in form.username.errors %}
+                                <p class="text-red-500 text-[10px] font-bold mt-1 ml-1">{{ error }}</p>
+                            {% endfor %}
+                        </div>
+                        <div class="space-y-2">
+                            {{ form.title.label(class="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1") }}
+                            {{ form.title(class="w-full bg-gray-50 dark:bg-gray-800/50 border-gray-200 dark:border-gray-700 rounded-2xl px-4 py-3.5 text-sm font-bold focus:ring-primary-500 transition-all", placeholder="e.g. Ph.D., DIT") }}
+                            {% for error in form.title.errors %}
+                                <p class="text-red-500 text-[10px] font-bold mt-1 ml-1">{{ error }}</p>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <div class="space-y-2">
+                        {{ form.email.label(class="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1") }}
+                        {{ form.email(class="w-full bg-gray-50 dark:bg-gray-800/50 border-gray-200 dark:border-gray-700 rounded-2xl px-4 py-3.5 text-sm font-bold focus:ring-primary-500 transition-all", placeholder="Institutional email") }}
+                        {% for error in form.email.errors %}
+                            <p class="text-red-500 text-[10px] font-bold mt-1 ml-1">{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <div class="space-y-6">
+                    <p class="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] ml-1">Account Configuration</p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="space-y-2">
+                            {{ form.password.label(class="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1") }}
+                            {{ form.password(class="w-full bg-gray-50 dark:bg-gray-800/50 border-gray-200 dark:border-gray-700 rounded-2xl px-4 py-3.5 text-sm font-bold focus:ring-primary-500 transition-all", placeholder="Password", id="password-field") }}
+                            <div class="mt-3 rounded-[1.4rem] border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/40 p-4">
+                                <div class="flex items-center justify-between gap-3">
+                                    <span class="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400">Password Strength</span>
+                                    <span id="password-strength-label" class="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400">Too Weak</span>
+                                </div>
+                                <div class="mt-3 h-2 w-full overflow-hidden rounded-full bg-gray-200 dark:bg-gray-800">
+                                    <div id="password-strength-bar" class="h-full w-0 rounded-full bg-rose-500 transition-all duration-300"></div>
+                                </div>
+                                <div class="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                    <div id="rule-length" class="password-rule text-[11px] font-bold text-gray-400">At least 8 characters</div>
+                                    <div id="rule-upper" class="password-rule text-[11px] font-bold text-gray-400">One uppercase letter</div>
+                                    <div id="rule-lower" class="password-rule text-[11px] font-bold text-gray-400">One lowercase letter</div>
+                                    <div id="rule-number" class="password-rule text-[11px] font-bold text-gray-400">One number</div>
+                                    <div id="rule-special" class="password-rule text-[11px] font-bold text-gray-400 sm:col-span-2">One special character</div>
+                                </div>
+                                <p class="mt-3 text-[10px] font-bold text-gray-400">Password must include uppercase, lowercase, number, and special character.</p>
+                            </div>
+                            {% for error in form.password.errors %}
+                                <p class="text-red-500 text-[10px] font-bold mt-1 ml-1">{{ error }}</p>
+                            {% endfor %}
+                        </div>
+                        <div class="space-y-2">
+                            {{ form.confirm_password.label(class="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1") }}
+                            {{ form.confirm_password(class="w-full bg-gray-50 dark:bg-gray-800/50 border-gray-200 dark:border-gray-700 rounded-2xl px-4 py-3.5 text-sm font-bold focus:ring-primary-500 transition-all", placeholder="Confirm Password", id="confirm-password-field") }}
+                            <p id="password-match-label" class="text-[10px] font-bold mt-2 ml-1 text-gray-400">Confirm your password to verify the match.</p>
+                            {% for error in form.confirm_password.errors %}
+                                <p class="text-red-500 text-[10px] font-bold mt-1 ml-1">{{ error }}</p>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <div class="space-y-2">
+                        {{ form.role.label(class="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1") }}
+                        {{ form.role(class="w-full bg-gray-50 dark:bg-gray-800/50 border-gray-200 dark:border-gray-700 rounded-2xl px-4 py-3.5 text-sm font-bold focus:ring-primary-500 transition-all") }}
+                        {% for error in form.role.errors %}
+                            <p class="text-red-500 text-[10px] font-bold mt-1 ml-1">{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                    <div class="space-y-2">
+                        {{ form.department.label(class="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1") }}
+                        {{ form.department(class="w-full bg-gray-50 dark:bg-gray-800/50 border-gray-200 dark:border-gray-700 rounded-2xl px-4 py-3.5 text-sm font-bold focus:ring-primary-500 transition-all") }}
+                        {% for error in form.department.errors %}
+                            <p class="text-red-500 text-[10px] font-bold mt-1 ml-1">{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <div class="pt-4">
+                    {{ form.submit(class="w-full py-4 bg-primary-600 text-white text-xs font-black uppercase tracking-[0.2em] rounded-2xl hover:bg-primary-700 transition-all shadow-xl shadow-primary-200 dark:shadow-none cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed", disabled=True, id="signup-submit-btn") }}
+                </div>
+            </form>
+
+            <div class="mt-8 pt-8 border-t border-gray-100 dark:border-gray-800 text-center">
+                <p class="text-xs font-bold text-gray-400 uppercase tracking-widest">
+                    Already a member? <a class="text-primary-600 hover:text-primary-700 underline underline-offset-4 ml-1" href="{{ url_for('auth.login') }}">Member Login</a>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+(function() {
+    function initPasswordStrength() {
+        const passwordField = document.getElementById('password-field');
+        const confirmPasswordField = document.getElementById('confirm-password-field');
+        const strengthBar = document.getElementById('password-strength-bar');
+        const strengthLabel = document.getElementById('password-strength-label');
+        const matchLabel = document.getElementById('password-match-label');
+
+        if (!passwordField || !confirmPasswordField || !strengthBar || !strengthLabel || !matchLabel) {
+            return;
+        }
+
+        const rules = {
+            length: { element: document.getElementById('rule-length'), test: (value) => value.length >= 8 },
+            upper: { element: document.getElementById('rule-upper'), test: (value) => /[A-Z]/.test(value) },
+            lower: { element: document.getElementById('rule-lower'), test: (value) => /[a-z]/.test(value) },
+            number: { element: document.getElementById('rule-number'), test: (value) => /\d/.test(value) },
+            special: { element: document.getElementById('rule-special'), test: (value) => /[^A-Za-z0-9]/.test(value) }
+        };
+
+        function paintRule(element, passed) {
+            if (!element) return;
+            element.classList.remove('text-gray-400', 'text-rose-400', 'text-emerald-400');
+            element.classList.add(passed ? 'text-emerald-400' : 'text-rose-400');
+        }
+
+        function updateMatchState() {
+            const password = passwordField.value;
+            const confirm = confirmPasswordField.value;
+
+            matchLabel.classList.remove('text-gray-400', 'text-rose-400', 'text-emerald-400');
+            if (!confirm) {
+                matchLabel.textContent = 'Confirm your password to verify the match.';
+                matchLabel.classList.add('text-gray-400');
+                return;
+            }
+
+            if (password === confirm) {
+                matchLabel.textContent = 'Passwords match.';
+                matchLabel.classList.add('text-emerald-400');
+            } else {
+                matchLabel.textContent = 'Passwords do not match.';
+                matchLabel.classList.add('text-rose-400');
+            }
+        }
+
+        function updatePasswordState() {
+            const value = passwordField.value;
+            const passedRules = Object.values(rules).reduce((count, rule) => {
+                const passed = rule.test(value);
+                paintRule(rule.element, value ? passed : false);
+                return count + (passed ? 1 : 0);
+            }, 0);
+            
+            // Enable submit only when all 5 rules pass
+            const submitBtn = document.getElementById('signup-submit-btn');
+            if (submitBtn) {
+                submitBtn.disabled = !(value && passedRules === 5);
+            }
+
+            if (!value) {
+                strengthBar.style.width = '0%';
+                strengthBar.className = 'h-full w-0 rounded-full bg-rose-500 transition-all duration-300';
+                strengthLabel.textContent = 'Too Weak';
+                strengthLabel.className = 'text-[10px] font-black uppercase tracking-[0.2em] text-gray-400';
+                Object.values(rules).forEach((rule) => {
+                    if (rule.element) {
+                        rule.element.classList.remove('text-rose-400', 'text-emerald-400');
+                        rule.element.classList.add('text-gray-400');
+                    }
+                });
+                updateMatchState();
+                return;
+            }
+
+            const percentage = (passedRules / 5) * 100;
+            strengthBar.style.width = `${percentage}%`;
+
+            if (passedRules <= 2) {
+                strengthBar.className = 'h-full rounded-full bg-rose-500 transition-all duration-300';
+                strengthLabel.textContent = 'Too Weak';
+                strengthLabel.className = 'text-[10px] font-black uppercase tracking-[0.2em] text-rose-400';
+            } else if (passedRules <= 4) {
+                strengthBar.className = 'h-full rounded-full bg-amber-500 transition-all duration-300';
+                strengthLabel.textContent = 'Almost There';
+                strengthLabel.className = 'text-[10px] font-black uppercase tracking-[0.2em] text-amber-400';
+            } else {
+                strengthBar.className = 'h-full rounded-full bg-emerald-500 transition-all duration-300';
+                strengthLabel.textContent = 'Strong';
+                strengthLabel.className = 'text-[10px] font-black uppercase tracking-[0.2em] text-emerald-400';
+            }
+
+            updateMatchState();
+        }
+
+        passwordField.addEventListener('input', updatePasswordState);
+        confirmPasswordField.addEventListener('input', updateMatchState);
+        updatePasswordState();
+    }
+
+    // Run on initial load (DOMContentLoaded already fired at this point)
+    if (document.readyState !== 'loading') {
+        initPasswordStrength();
+    } else {
+        document.addEventListener('DOMContentLoaded', initPasswordStrength);
+    }
+})();
+</script>
+{% endblock %}

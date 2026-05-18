@@ -1,0 +1,292 @@
+{% extends "base.html" %}
+
+{% block title %}System Analytics{% endblock %}
+
+{% block content %}
+<div class="space-y-10">
+    <div class="flex flex-col lg:flex-row lg:items-end justify-between gap-6">
+        <div class="space-y-1">
+            <h1 class="text-3xl font-black text-gray-900 dark:text-white tracking-tight leading-tight">System <span class="text-primary-600">Analytics</span></h1>
+            <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Operational analytics for approvals, CLP throughput, pending load, and recent platform activity.</p>
+        </div>
+        <div class="flex flex-col sm:flex-row gap-3">
+            <div class="px-5 py-3 bg-white dark:bg-[#111827] border border-gray-200 dark:border-gray-800 rounded-2xl text-sm font-semibold text-gray-600 dark:text-gray-300 shadow-sm">
+                Last updated:
+                <span class="font-black text-gray-900 dark:text-white">{{ last_updated.strftime('%b %d, %Y %I:%M %p') if last_updated else 'Unavailable' }}</span>
+            </div>
+            <a href="{{ url_for('admin.admin_operations') }}" class="inline-flex items-center gap-2 px-6 py-3 bg-white dark:bg-[#111827] border border-gray-200 dark:border-gray-800 rounded-2xl text-sm font-black text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all shadow-sm group">
+                <svg class="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 9v3m0 4h.01M10.29 3.86l-7.4 12.82A1 1 0 003.76 18h16.48a1 1 0 00.87-1.5l-7.4-12.82a1 1 0 00-1.74 0z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                Operations
+            </a>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
+        <div class="bg-white dark:bg-[#111827] p-8 rounded-[2rem] border border-gray-200 dark:border-gray-800 shadow-sm">
+            <p class="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-2">Total Documentation</p>
+            <p class="text-4xl font-black text-gray-900 dark:text-white tracking-tighter">{{ total }}</p>
+            <div class="mt-4 flex items-center text-[10px] font-bold text-primary-600 uppercase tracking-widest bg-primary-50 dark:bg-primary-900/30 px-2 py-1 rounded-lg w-fit">Across System</div>
+        </div>
+        <div class="bg-white dark:bg-[#111827] p-8 rounded-[2rem] border border-gray-200 dark:border-gray-800 shadow-sm">
+            <p class="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-2">Approved Plans</p>
+            <p class="text-4xl font-black text-emerald-600 tracking-tighter">{{ approved }}</p>
+            <div class="mt-4 flex items-center text-[10px] font-bold text-emerald-600 uppercase tracking-widest bg-emerald-50 dark:bg-emerald-900/30 px-2 py-1 rounded-lg w-fit">Finalized</div>
+        </div>
+        <div class="bg-white dark:bg-[#111827] p-8 rounded-[2rem] border border-gray-200 dark:border-gray-800 shadow-sm">
+            <p class="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-2">Pending Review</p>
+            <p class="text-4xl font-black text-amber-600 tracking-tighter">{{ pending }}</p>
+            <div class="mt-4 flex items-center text-[10px] font-bold text-amber-600 uppercase tracking-widest bg-amber-50 dark:bg-amber-900/30 px-2 py-1 rounded-lg w-fit">Awaiting Oversight</div>
+        </div>
+        <div class="bg-white dark:bg-[#111827] p-8 rounded-[2rem] border border-gray-200 dark:border-gray-800 shadow-sm">
+            <p class="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-2">Needs Revision</p>
+            <p class="text-4xl font-black text-red-600 tracking-tighter">{{ returned }}</p>
+            <div class="mt-4 flex items-center text-[10px] font-bold text-red-600 uppercase tracking-widest bg-red-50 dark:bg-red-900/30 px-2 py-1 rounded-lg w-fit">Action Required</div>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
+        <div class="bg-white dark:bg-[#111827] p-6 rounded-[2rem] border border-gray-200 dark:border-gray-800 shadow-sm">
+            <p class="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">Pending Users</p>
+            <p class="mt-3 text-3xl font-black text-amber-500 tracking-tighter">{{ pending_users }}</p>
+        </div>
+        <div class="bg-white dark:bg-[#111827] p-6 rounded-[2rem] border border-gray-200 dark:border-gray-800 shadow-sm">
+            <p class="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">Inactive Users</p>
+            <p class="mt-3 text-3xl font-black text-slate-600 dark:text-slate-300 tracking-tighter">{{ inactive_users }}</p>
+        </div>
+        <div class="bg-white dark:bg-[#111827] p-6 rounded-[2rem] border border-gray-200 dark:border-gray-800 shadow-sm">
+            <p class="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">Failed Tasks (24h)</p>
+            <p class="mt-3 text-3xl font-black text-red-500 tracking-tighter">{{ failed_tasks_24h }}</p>
+        </div>
+        <div class="bg-white dark:bg-[#111827] p-6 rounded-[2rem] border border-gray-200 dark:border-gray-800 shadow-sm">
+            <p class="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">Activity Volume (24h)</p>
+            <p class="mt-3 text-3xl font-black text-primary-600 tracking-tighter">{{ activity_24h }}</p>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 min-h-[400px]">
+        <div class="bg-white dark:bg-[#111827] p-6 md:p-10 rounded-[2.5rem] border border-gray-200 dark:border-gray-800 shadow-sm flex flex-col">
+            <div class="flex items-center justify-between gap-4 mb-8">
+                <div>
+                    <h3 class="text-xl font-black text-gray-900 dark:text-white tracking-tight">Status Distribution</h3>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">Current CLP status mix across all departments.</p>
+                </div>
+                <div class="px-3 py-2 rounded-xl bg-amber-50 dark:bg-amber-900/20 text-[10px] font-black uppercase tracking-widest text-amber-600">
+                    Oldest pending: {{ oldest_pending_hours }}h
+                </div>
+            </div>
+            <div class="relative flex-1">
+                <canvas id="statusChart"></canvas>
+            </div>
+        </div>
+
+        <div class="bg-white dark:bg-[#111827] p-6 md:p-10 rounded-[2.5rem] border border-gray-200 dark:border-gray-800 shadow-sm flex flex-col">
+            <div class="flex items-center justify-between gap-4 mb-8">
+                <div>
+                    <h3 class="text-xl font-black text-gray-900 dark:text-white tracking-tight">Departmental Breakdown</h3>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">How plan volume is distributed across academic units.</p>
+                </div>
+                <div class="px-3 py-2 rounded-xl bg-red-50 dark:bg-red-900/20 text-[10px] font-black uppercase tracking-widest text-red-600">
+                    AI failures (24h): {{ ai_failures_24h }}
+                </div>
+            </div>
+            <div class="relative flex-1">
+                <canvas id="deptChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 xl:grid-cols-2 gap-8">
+        <div class="bg-white dark:bg-[#111827] rounded-[2.5rem] border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden">
+            <div class="px-8 py-6 border-b border-gray-100 dark:border-gray-800">
+                <h3 class="text-lg font-black text-gray-900 dark:text-white tracking-tight">Approval Load by Department</h3>
+                <p class="text-sm text-gray-500 dark:text-gray-400">Useful for identifying where review pressure is building.</p>
+            </div>
+            <div class="overflow-x-auto custom-scrollbar">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-gray-50/50 dark:bg-gray-800/20 border-b border-gray-100 dark:border-gray-800">
+                            <th class="px-8 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Department</th>
+                            <th class="px-8 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Approved</th>
+                            <th class="px-8 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Pending</th>
+                            <th class="px-8 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Returned</th>
+                            <th class="px-8 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Other</th>
+                        </tr>
+                    </thead>
+                    <tbody id="dept-table-body" class="divide-y divide-gray-100 dark:divide-gray-800">
+                        {% set dept_items = approval_by_department.items() | list %}
+                        {% for department, stats in dept_items %}
+                        <tr class="dept-row" data-dept-idx="{{ loop.index0 }}">
+                            <td class="px-8 py-5 text-sm font-black text-gray-900 dark:text-white uppercase tracking-tight">{{ department }}</td>
+                            <td class="px-8 py-5 text-xs font-black text-emerald-600">{{ stats.approved }}</td>
+                            <td class="px-8 py-5 text-xs font-black text-amber-600">{{ stats.pending }}</td>
+                            <td class="px-8 py-5 text-xs font-black text-red-600">{{ stats.returned }}</td>
+                            <td class="px-8 py-5 text-xs font-black text-gray-500 dark:text-gray-400">{{ stats.other }}</td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="5" class="px-8 py-12 text-center text-[10px] font-black text-gray-400 uppercase tracking-widest">No department analytics available.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <!-- Pagination for dept table -->
+            <div id="dept-pagination" class="flex items-center justify-center gap-3 px-8 py-4 border-t border-gray-100 dark:border-gray-800 hidden">
+                <button id="dept-prev-page" class="px-4 py-2 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 text-[10px] font-black uppercase tracking-widest hover:bg-gray-200 dark:hover:bg-gray-700 transition-all disabled:opacity-30 disabled:cursor-not-allowed" disabled>&larr; Previous</button>
+                <span id="dept-page-info" class="text-xs font-bold text-gray-500 dark:text-gray-400 tabular-nums">Page 1 of 1</span>
+                <button id="dept-next-page" class="px-4 py-2 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 text-[10px] font-black uppercase tracking-widest hover:bg-gray-200 dark:hover:bg-gray-700 transition-all disabled:opacity-30 disabled:cursor-not-allowed" disabled>Next &rarr;</button>
+            </div>
+        </div>
+
+        <div class="bg-white dark:bg-[#111827] rounded-[2.5rem] border border-gray-200 dark:border-gray-800 shadow-sm p-8 space-y-5">
+            <div>
+                <h3 class="text-lg font-black text-gray-900 dark:text-white tracking-tight">Operator Readout</h3>
+                <p class="text-sm text-gray-500 dark:text-gray-400">A compact summary of the signals that matter for daily admin decisions.</p>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div class="rounded-2xl bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-700 p-5">
+                    <p class="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">Approval Backlog</p>
+                    <p class="mt-3 text-2xl font-black text-amber-600">{{ pending }}</p>
+                    <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">CLPs currently waiting on reviewer action.</p>
+                </div>
+                <div class="rounded-2xl bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-700 p-5">
+                    <p class="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">User Intake Queue</p>
+                    <p class="mt-3 text-2xl font-black text-primary-600">{{ pending_users }}</p>
+                    <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">Accounts still waiting for administrative approval.</p>
+                </div>
+                <div class="rounded-2xl bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-700 p-5">
+                    <p class="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">Inactive Accounts</p>
+                    <p class="mt-3 text-2xl font-black text-slate-600 dark:text-slate-300">{{ inactive_users }}</p>
+                    <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">Users intentionally disabled instead of hard-deleted.</p>
+                </div>
+                <div class="rounded-2xl bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-700 p-5">
+                    <p class="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">AI Failure Load</p>
+                    <p class="mt-3 text-2xl font-black text-red-600">{{ ai_failures_24h }}</p>
+                    <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">Failed AI runs recorded in the last 24 hours.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    let statusChart, deptChart;
+
+    function getThemeColors() {
+        const isDark = document.documentElement.classList.contains('dark');
+        return {
+            text: isDark ? '#94a3b8' : '#64748b',
+            grid: isDark ? '#1e293b' : '#f1f5f9',
+            accent: '#3b82f6'
+        };
+    }
+
+    function initCharts() {
+        const colors = getThemeColors();
+
+        const statusCtx = document.getElementById('statusChart').getContext('2d');
+        statusChart = new Chart(statusCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Approved', 'Pending', 'Returned', 'Others'],
+                datasets: [{
+                    data: [{{ approved }}, {{ pending }}, {{ returned }}, {{ [total - (approved + pending + returned), 0] | max }}],
+                    backgroundColor: ['#10b981', '#f59e0b', '#ef4444', '#94a3b8'],
+                    hoverOffset: 18,
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '74%',
+                plugins: {
+                    legend: { position: 'bottom', labels: { color: colors.text, usePointStyle: true, padding: 24, font: { weight: '800', size: 10 } } }
+                }
+            }
+        });
+
+        const deptCtx = document.getElementById('deptChart').getContext('2d');
+        deptChart = new Chart(deptCtx, {
+            type: 'bar',
+            data: {
+                labels: {{ dept_counts.keys() | list | tojson }},
+                datasets: [{
+                    label: 'Active Plans',
+                    data: {{ dept_counts.values() | list | tojson }},
+                    backgroundColor: colors.accent,
+                    borderRadius: 12,
+                    barThickness: 20
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: { grid: { color: colors.grid, drawBorder: false }, ticks: { color: colors.text, font: { weight: '800', size: 10 } } },
+                    x: { grid: { display: false }, ticks: { color: colors.text, font: { weight: '800', size: 10 } } }
+                },
+                plugins: { legend: { display: false } }
+            }
+        });
+    }
+
+    function updateCharts() {
+        const colors = getThemeColors();
+        if (statusChart) {
+            statusChart.options.plugins.legend.labels.color = colors.text;
+            statusChart.update();
+        }
+        if (deptChart) {
+            deptChart.options.scales.y.grid.color = colors.grid;
+            deptChart.options.scales.y.ticks.color = colors.text;
+            deptChart.options.scales.x.ticks.color = colors.text;
+            deptChart.update();
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', initCharts);
+    const obs = new MutationObserver((m) => m.forEach((mu) => mu.attributeName === 'class' && updateCharts()));
+    obs.observe(document.documentElement, { attributes: true });
+
+    // --- Department table pagination ---
+    (function() {
+        const rows = document.querySelectorAll('.dept-row');
+        const prevBtn = document.getElementById('dept-prev-page');
+        const nextBtn = document.getElementById('dept-next-page');
+        const pageInfo = document.getElementById('dept-page-info');
+        const paginationEl = document.getElementById('dept-pagination');
+        if (!rows.length || !prevBtn || !nextBtn || !pageInfo) return;
+
+        const PER_PAGE = 8;
+        const totalPages = Math.max(1, Math.ceil(rows.length / PER_PAGE));
+        let currentPage = 1;
+
+        if (rows.length > PER_PAGE) {
+            paginationEl.classList.remove('hidden');
+        }
+
+        function applyPagination() {
+            rows.forEach(function(row, idx) {
+                const pageIdx = Math.floor(idx / PER_PAGE) + 1;
+                row.style.display = (pageIdx === currentPage) ? '' : 'none';
+            });
+            pageInfo.textContent = 'Page ' + currentPage + ' of ' + totalPages;
+            prevBtn.disabled = (currentPage <= 1);
+            nextBtn.disabled = (currentPage >= totalPages);
+        }
+
+        prevBtn.addEventListener('click', function() {
+            if (currentPage > 1) { currentPage--; applyPagination(); }
+        });
+        nextBtn.addEventListener('click', function() {
+            if (currentPage < totalPages) { currentPage++; applyPagination(); }
+        });
+
+        applyPagination();
+    })();
+</script>
+{% endblock %}

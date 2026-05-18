@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="space-y-8">
+    <!-- Header -->
+    <div class="flex flex-col gap-2">
+        <h1 class="text-3xl font-black text-gray-900 dark:text-white tracking-tight">
+            Welcome back!
+        </h1>
+        <p class="text-gray-500 dark:text-gray-400 font-medium">Manage your course plans and stay updated with your department.</p>
+    </div>
+
+    <!-- Role Card -->
+    <div class="bg-white dark:bg-[#111827] rounded-3xl p-8 border border-gray-200 dark:border-gray-800 shadow-sm relative overflow-hidden group">
+        <div class="absolute top-0 right-0 -mt-4 -mr-4 w-32 h-32 bg-primary-50 dark:bg-primary-900/10 rounded-full blur-3xl group-hover:bg-primary-100 dark:group-hover:bg-primary-900/20 transition-colors duration-500"></div>
+        
+        <div class="relative flex flex-col md:flex-row items-center gap-8">
+            <div class="w-20 h-20 bg-primary-50 dark:bg-primary-900/20 rounded-2xl flex items-center justify-center text-primary-600 dark:text-primary-400 shrink-0 shadow-inner">
+                <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
+            </div>
+            <div class="text-center md:text-left space-y-2">
+                <h3 class="text-2xl font-black text-gray-900 dark:text-white tracking-tight">
+                    Authenticated as {{ session['role']|title }}
+                </h3>
+                <p class="text-gray-500 dark:text-gray-400 max-w-2xl font-medium leading-relaxed">
+                    Your dashboard is customized for your role. Access your specific tools and resources using the navigation menu.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions/Stats Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="p-6 bg-white dark:bg-[#111827] border border-gray-200 dark:border-gray-800 rounded-3xl">
+            <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-4">Quick Navigation</p>
+            <div class="space-y-3">
+                {% if session.get('role') == 'teacher' %}
+                    <a href="{{ url_for('teacher.teacher_my_clps') }}" class="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800/50 rounded-2xl hover:bg-primary-50 dark:hover:bg-primary-900/20 group transition-all">
+                        <span class="font-bold text-gray-700 dark:text-gray-300 group-hover:text-primary-600">My Plans</span>
+                        <svg class="w-5 h-5 text-gray-400 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    </a>
+                {% elif session.get('role') == 'dean' %}
+                    <a href="{{ url_for('dean.dean_courses') }}" class="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800/50 rounded-2xl hover:bg-primary-50 dark:hover:bg-primary-900/20 group transition-all">
+                        <span class="font-bold text-gray-700 dark:text-gray-300 group-hover:text-primary-600">Course Reviews</span>
+                        <svg class="w-5 h-5 text-gray-400 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    </a>
+                {% elif session.get('role') == 'admin' %}
+                    <a href="{{ url_for('admin.admin_analytics') }}" class="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800/50 rounded-2xl hover:bg-primary-50 dark:hover:bg-primary-900/20 group transition-all">
+                        <span class="font-bold text-gray-700 dark:text-gray-300 group-hover:text-primary-600">Analytics</span>
+                        <svg class="w-5 h-5 text-gray-400 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

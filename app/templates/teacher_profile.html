@@ -1,0 +1,236 @@
+{% extends "base.html" %}
+
+{% block title %}Teacher Identity Core{% endblock %}
+
+{% block content %}
+<div class="space-y-10 max-w-6xl mx-auto pb-20">
+    <!-- Header -->
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
+        <div class="space-y-1">
+            <h1 class="text-3xl font-black text-gray-900 dark:text-white tracking-tight leading-tight">Faculty <span class="text-primary-600">Profile</span></h1>
+            <p class="text-sm font-medium text-gray-500 dark:text-gray-400 italic">Manage your professional credentials, consultation hours, and secure access.</p>
+        </div>
+    </div>
+
+    <!-- Identity Header Card -->
+    <div class="bg-white dark:bg-[#111827] rounded-[2.5rem] border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden relative group">
+        <div class="h-32 bg-primary-600 relative overflow-hidden">
+            <div class="absolute inset-0 opacity-10 pointer-events-none">
+                <div class="grid grid-cols-12 gap-4 h-full transform -skew-y-12">
+                    {% for i in range(12) %}<div class="border-r border-white h-full"></div>{% endfor %}
+                </div>
+            </div>
+        </div>
+        <div class="px-10 pb-10">
+            <div class="relative flex flex-col md:flex-row items-center md:items-end -mt-12 gap-8">
+                {% set first_initial = (user.first_name or user.username or '?')[:1] %}
+                {% set last_initial = (user.last_name or user.username or '?')[:1] %}
+                <div class="h-32 w-32 rounded-[2rem] border-8 border-white dark:border-[#111827] bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-4xl font-black text-primary-600 shadow-2xl overflow-hidden uppercase">
+                    {{ first_initial }}{{ last_initial }}
+                </div>
+                <div class="flex-1 text-center md:text-left mb-2">
+                    <h2 class="text-3xl font-black text-gray-900 dark:text-white tracking-tight uppercase">
+                        {{ user.first_name or user.username or 'Faculty User' }} {{ user.last_name or '' }}<span class="text-gray-400 font-medium ml-3 text-xl normal-case">{% if user.title %}, {{ user.title }}{% endif %}</span>
+                    </h2>
+                    <div class="flex flex-wrap justify-center md:justify-start items-center gap-4 mt-2">
+                        <span class="inline-flex items-center text-xs font-bold text-gray-500 dark:text-gray-400">
+                            <svg class="w-4 h-4 mr-2 text-primary-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                            {{ user.email }}
+                        </span>
+                        <span class="px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-[0.1em] bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 border border-primary-100 dark:border-primary-800">
+                            {{ user.role }} Account
+                        </span>
+                        {% if user.assigned_department %}
+                        <span class="px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-[0.1em] bg-gray-50 dark:bg-gray-800 text-gray-500 dark:text-gray-400 border border-gray-100 dark:border-gray-700">
+                            Unit: {{ user.assigned_department }}
+                        </span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-10">
+        <!-- Main Configuration -->
+        <div class="lg:col-span-2 space-y-10">
+            <div class="bg-white dark:bg-[#111827] rounded-[2.5rem] p-10 border border-gray-200 dark:border-gray-800 shadow-sm">
+                <div class="flex items-center gap-3 mb-10 px-1">
+                    <div class="w-10 h-10 rounded-xl bg-primary-50 dark:bg-primary-900/20 flex items-center justify-center text-primary-600">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    </div>
+                    <h3 class="text-xl font-black text-gray-900 dark:text-white tracking-tight uppercase">Credentials</h3>
+                </div>
+
+                <form method="POST" enctype="multipart/form-data" action="{{ url_for(request.endpoint) }}" class="space-y-10">
+                    {{ info_form.hidden_tag() }}
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div class="space-y-2">
+                            {{ info_form.first_name.label(class="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1") }}
+                            {{ info_form.first_name(class="w-full bg-gray-50 dark:bg-gray-800/50 border-gray-200 dark:border-gray-700 rounded-2xl px-5 py-4 text-sm font-bold focus:ring-primary-500 transition-all") }}
+                        </div>
+                        <div class="space-y-2">
+                            {{ info_form.last_name.label(class="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1") }}
+                            {{ info_form.last_name(class="w-full bg-gray-50 dark:bg-gray-800/50 border-gray-200 dark:border-gray-700 rounded-2xl px-5 py-4 text-sm font-bold focus:ring-primary-500 transition-all") }}
+                        </div>
+                        <div class="md:col-span-2 space-y-2">
+                            {{ info_form.title.label(class="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1") }}
+                            {{ info_form.title(class="w-full bg-gray-50 dark:bg-gray-800/50 border-gray-200 dark:border-gray-700 rounded-2xl px-5 py-4 text-sm font-bold focus:ring-primary-500 transition-all") }}
+                            <p class="text-[10px] font-bold text-gray-400 uppercase tracking-tighter px-1">Institutional title used for formal end-point documentation.</p>
+                        </div>
+                    </div>
+
+                    <div class="space-y-4">
+                        <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Profile Photo</label>
+                        <div class="flex flex-col md:flex-row items-center gap-8 p-8 bg-gray-50 dark:bg-gray-800/30 rounded-[2rem] border-2 border-dashed border-gray-200 dark:border-gray-700">
+                            <div class="w-24 h-24 bg-white dark:bg-[#111827] rounded-full flex items-center justify-center p-2 shadow-inner shrink-0 border border-gray-100 dark:border-gray-800 overflow-hidden">
+                                {% if user.profile_photo_url %}
+                                    <img id="profile-photo-preview" src="{{ user.profile_photo_url }}" alt="Profile Photo" class="w-full h-full object-cover rounded-full">
+                                {% else %}
+                                    <div id="profile-photo-placeholder" class="text-center">
+                                        <svg class="w-8 h-8 text-gray-200 mx-auto mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                                        <span class="text-[9px] font-black text-gray-300 uppercase tracking-widest">No Photo</span>
+                                    </div>
+                                    <img id="profile-photo-preview" class="w-full h-full object-cover rounded-full hidden">
+                                {% endif %}
+                            </div>
+                            <div class="space-y-3 flex-1 text-center md:text-left">
+                                {{ info_form.profile_photo(id="profile-photo-input", onchange="previewProfilePhoto(this)", class="block w-full text-[10px] text-gray-500 file:mr-4 file:py-2.5 file:px-5 file:rounded-xl file:border-0 file:text-[10px] file:font-black file:uppercase file:tracking-[0.15em] file:bg-primary-600 file:text-white hover:file:bg-primary-700 transition-all cursor-pointer") }}
+                                <p class="text-[10px] font-bold text-gray-400 uppercase tracking-tighter leading-relaxed">JPG, PNG, or WebP (MAX 2MB). Square crop recommended.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="space-y-4">
+                        <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Verified Endorsement (Signature)</label>
+                        <div class="flex flex-col md:flex-row items-center gap-8 p-8 bg-gray-50 dark:bg-gray-800/30 rounded-[2rem] border-2 border-dashed border-gray-200 dark:border-gray-700">
+                            <div class="w-48 h-24 bg-white dark:bg-[#111827] rounded-2xl flex items-center justify-center p-4 shadow-inner shrink-0 border border-gray-100 dark:border-gray-800 overflow-hidden">
+                                {% if user.signature_url %}
+                                    <img src="{{ user.signature_url }}" alt="Signature Trace" class="max-h-full max-w-full object-contain">
+                                {% else %}
+                                    <div class="text-center">
+                                        <svg class="w-8 h-8 text-gray-200 mx-auto mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.036 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                                        <span class="text-[9px] font-black text-gray-300 uppercase tracking-widest">Null Registry</span>
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <div class="space-y-3 flex-1 text-center md:text-left">
+                                {{ info_form.signature(class="block w-full text-[10px] text-gray-500 file:mr-4 file:py-2.5 file:px-5 file:rounded-xl file:border-0 file:text-[10px] file:font-black file:uppercase file:tracking-[0.15em] file:bg-primary-600 file:text-white hover:file:bg-primary-700 transition-all cursor-pointer") }}
+                                <p class="text-[10px] font-bold text-gray-400 uppercase tracking-tighter leading-relaxed">Identity validation: Transparent PNG (MAX 2MB) recommended.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Availability Matrix -->
+                    <div id="consultation" class="space-y-6 scroll-mt-24">
+                        <div class="flex items-center gap-3 px-1">
+                            <div class="w-8 h-8 rounded-lg bg-primary-50 dark:bg-primary-900/20 flex items-center justify-center text-primary-600">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                            </div>
+                            <h3 class="text-lg font-black text-gray-900 dark:text-white tracking-tight uppercase">Consultation Availability</h3>
+                        </div>
+                        <div class="bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-800/40 rounded-2xl px-5 py-3">
+                            <p class="text-[11px] font-bold text-amber-700 dark:text-amber-300 tracking-tight leading-relaxed">
+                                <span class="font-black uppercase tracking-widest text-[10px]">Required for AI Copilot:</span>
+                                fill in at least one day with <span class="underline">both</span> a time window and a room. Rows with only one field filled are ignored.
+                            </p>
+                        </div>
+                        
+                        <div class="bg-white dark:bg-[#111827] border border-gray-100 dark:border-gray-800 rounded-[2rem] overflow-hidden shadow-inner overflow-x-auto custom-scrollbar">
+                            <table class="min-w-[600px] md:w-full text-left border-collapse">
+                                <thead>
+                                    <tr class="bg-gray-50/50 dark:bg-gray-800/50">
+                                        <th class="px-6 py-4 text-[9px] font-black text-gray-400 uppercase tracking-widest border-b border-gray-100 dark:border-gray-800">Operational Day</th>
+                                        <th class="px-6 py-4 text-[9px] font-black text-gray-400 uppercase tracking-widest border-b border-gray-100 dark:border-gray-800">Temporal Window</th>
+                                        <th class="px-6 py-4 text-[9px] font-black text-gray-400 uppercase tracking-widest border-b border-gray-100 dark:border-gray-800">Location Point</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
+                                    {% for day, time_field, room_field in [
+                                        ('Monday', info_form.cons_mon_time, info_form.cons_mon_room),
+                                        ('Tuesday', info_form.cons_tue_time, info_form.cons_tue_room),
+                                        ('Wednesday', info_form.cons_wed_time, info_form.cons_wed_room),
+                                        ('Thursday', info_form.cons_thu_time, info_form.cons_thu_room),
+                                        ('Friday', info_form.cons_fri_time, info_form.cons_fri_room)
+                                    ] %}
+                                    <tr class="group hover:bg-primary-900/5 transition-colors">
+                                        <td class="px-6 py-4 text-[10px] font-black text-gray-900 dark:text-white uppercase tracking-widest">{{ day }}</td>
+                                        <td class="px-6 py-4">{{ time_field(class="w-full bg-transparent border-0 text-xs font-bold text-primary-600 dark:text-primary-400 focus:ring-0 p-0 placeholder:text-gray-300", placeholder="e.g. 09:00AM - 11:00AM") }}</td>
+                                        <td class="px-6 py-4">{{ room_field(class="w-full bg-transparent border-0 text-xs font-bold text-gray-500 dark:text-gray-400 focus:ring-0 p-0 placeholder:text-gray-300", placeholder="e.g. CIT Lab A") }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="flex justify-end pt-4">
+                        {{ info_form.submit_info(class="px-12 py-4 bg-primary-600 text-white text-[10px] font-black uppercase tracking-[0.2em] rounded-2xl hover:bg-primary-700 transition-all shadow-xl shadow-primary-200 dark:shadow-none cursor-pointer") }}
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Security Sidebar -->
+        <div class="space-y-10">
+            <div class="bg-white dark:bg-[#111827] rounded-[2.5rem] p-10 border border-gray-200 dark:border-gray-800 shadow-sm">
+                <div class="flex items-center gap-3 mb-10 px-1">
+                    <div class="w-10 h-10 rounded-xl bg-red-50 dark:bg-red-900/20 flex items-center justify-center text-red-600">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    </div>
+                    <h3 class="text-xl font-black text-gray-900 dark:text-white tracking-tight uppercase">Security</h3>
+                </div>
+
+                <form method="POST" action="{{ url_for(request.endpoint) }}" class="space-y-8">
+                    {{ pwd_form.hidden_tag() }}
+                    <div class="space-y-6">
+                        <div class="space-y-2">
+                            {{ pwd_form.current_password.label(class="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1") }}
+                            {{ pwd_form.current_password(class="w-full bg-gray-50 dark:bg-gray-800/50 border-gray-200 dark:border-gray-700 rounded-2xl px-5 py-4 text-sm font-bold focus:ring-primary-500 transition-all") }}
+                            {% for error in pwd_form.current_password.errors %}
+                            <p class="text-[10px] font-bold text-red-500 ml-1">{{ error }}</p>
+                            {% endfor %}
+                        </div>
+                        <div class="space-y-2">
+                            {{ pwd_form.new_password.label(class="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1") }}
+                            {{ pwd_form.new_password(class="w-full bg-gray-50 dark:bg-gray-800/50 border-gray-200 dark:border-gray-700 rounded-2xl px-5 py-4 text-sm font-bold focus:ring-primary-500 transition-all") }}
+                            {% for error in pwd_form.new_password.errors %}
+                            <p class="text-[10px] font-bold text-red-500 ml-1">{{ error }}</p>
+                            {% endfor %}
+                            <p class="text-[10px] font-bold text-gray-400 uppercase tracking-tighter ml-1">Min. 8 chars — uppercase, lowercase, number &amp; special character.</p>
+                        </div>
+                        <div class="space-y-2">
+                            {{ pwd_form.confirm_new_password.label(class="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1") }}
+                            {{ pwd_form.confirm_new_password(class="w-full bg-gray-50 dark:bg-gray-800/50 border-gray-200 dark:border-gray-700 rounded-2xl px-5 py-4 text-sm font-bold focus:ring-primary-500 transition-all") }}
+                            {% for error in pwd_form.confirm_new_password.errors %}
+                            <p class="text-[10px] font-bold text-red-500 ml-1">{{ error }}</p>
+                            {% endfor %}
+                        </div>
+                        <div class="pt-4">
+                            {{ pwd_form.submit(class="w-full py-4 bg-gray-50 dark:bg-gray-800 text-gray-500 dark:text-gray-400 text-[10px] font-black uppercase tracking-[0.2em] rounded-2xl hover:bg-primary-600 hover:text-white transition-all border border-gray-100 dark:border-gray-700 cursor-pointer") }}
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% block scripts %}
+<script>
+function previewProfilePhoto(input) {
+    const file = input.files && input.files[0];
+    const preview = document.getElementById('profile-photo-preview');
+    const placeholder = document.getElementById('profile-photo-placeholder');
+    if (!file || !preview) return;
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        preview.src = e.target.result;
+        preview.classList.remove('hidden');
+        if (placeholder) placeholder.classList.add('hidden');
+    };
+    reader.readAsDataURL(file);
+}
+</script>
+{% endblock %}
+{% endblock %}

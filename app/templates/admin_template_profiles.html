@@ -1,0 +1,174 @@
+{% extends "base.html" %}
+
+{% block title %}Teacher Template Profiles{% endblock %}
+
+{% block content %}
+<div class="space-y-8 max-w-6xl mx-auto">
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div class="space-y-1">
+            <p class="text-[10px] uppercase tracking-widest font-black text-gray-400">Admin</p>
+            <h1 class="text-2xl sm:text-3xl font-black text-gray-900 dark:text-white">Teacher Template Profiles</h1>
+            <p class="text-sm text-gray-500 dark:text-gray-400">All template profiles uploaded by teachers, across every department.</p>
+        </div>
+        <div class="flex items-center gap-3">
+            <span class="text-sm font-bold text-gray-500">{{ profiles | length }} profile{{ 's' if profiles | length != 1 else '' }}</span>
+            <a href="{{ url_for('admin.admin_template_profile_analytics') }}" class="px-3 py-1.5 rounded-xl bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 text-[10px] font-black uppercase tracking-widest hover:bg-primary-100">Analytics</a>
+        </div>
+    </div>
+
+    <!-- Filter Tabs -->
+    <div class="flex flex-wrap items-center gap-2" id="admin-profile-filter-tabs">
+        <button data-status="all" class="admin-profile-filter-btn px-4 py-2 rounded-xl bg-primary-600 text-white text-[10px] font-black uppercase tracking-widest transition-all">All <span class="ml-1 opacity-70">({{ profiles|length }})</span></button>
+        <button data-status="confirmed" class="admin-profile-filter-btn px-4 py-2 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 text-[10px] font-black uppercase tracking-widest hover:bg-gray-200 dark:hover:bg-gray-700 transition-all">Confirmed</button>
+        <button data-status="draft" class="admin-profile-filter-btn px-4 py-2 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 text-[10px] font-black uppercase tracking-widest hover:bg-gray-200 dark:hover:bg-gray-700 transition-all">Drafts</button>
+        <button data-status="archived" class="admin-profile-filter-btn px-4 py-2 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 text-[10px] font-black uppercase tracking-widest hover:bg-gray-200 dark:hover:bg-gray-700 transition-all">Archived</button>
+        <div class="flex-1"></div>
+        <div class="relative">
+            <input type="text" id="admin-profile-search" placeholder="Search by name, teacher, department..." class="w-full sm:w-64 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2 text-xs font-bold focus:ring-primary-500 focus:border-primary-500">
+            <svg class="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+        </div>
+    </div>
+
+    <div id="admin-profile-no-results" class="hidden bg-white dark:bg-[#111827] border border-gray-200 dark:border-gray-800 rounded-3xl p-8 text-center">
+        <p class="text-sm text-gray-500 dark:text-gray-400">No profiles match your filter or search criteria.</p>
+    </div>
+
+    {% if profiles %}
+    <div class="bg-white dark:bg-[#111827] border border-gray-200 dark:border-gray-800 rounded-3xl overflow-hidden shadow-sm">
+        <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+                <thead>
+                    <tr class="border-b border-gray-100 dark:border-gray-800">
+                        <th class="px-5 py-4 text-left text-[10px] font-black uppercase tracking-widest text-gray-400">Teacher</th>
+                        <th class="px-5 py-4 text-left text-[10px] font-black uppercase tracking-widest text-gray-400">Department</th>
+                        <th class="px-5 py-4 text-left text-[10px] font-black uppercase tracking-widest text-gray-400">Profile Name</th>
+                        <th class="px-5 py-4 text-left text-[10px] font-black uppercase tracking-widest text-gray-400">Source File</th>
+                        <th class="px-5 py-4 text-left text-[10px] font-black uppercase tracking-widest text-gray-400">Status</th>
+                        <th class="px-5 py-4 text-left text-[10px] font-black uppercase tracking-widest text-gray-400">Created</th>
+                        <th class="px-5 py-4 text-right text-[10px] font-black uppercase tracking-widest text-gray-400">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-50 dark:divide-gray-800/50">
+                    {% for p in profiles %}
+                    {% set user = p.get('users') or {} %}
+                    {% set search_text = ((user.get('first_name', '') + ' ' + user.get('last_name', '') + ' ' + (p.department or '') + ' ' + p.name + ' ' + (p.source_filename or '')) | lower) %}
+                    <tr class="admin-profile-row hover:bg-gray-50 dark:hover:bg-gray-800/30" data-status="{{ p.status }}" data-search="{{ search_text }}">
+                        <td class="px-5 py-3.5">
+                            <p class="font-bold text-gray-900 dark:text-white">{{ user.get('first_name', '') }} {{ user.get('last_name', '') }}</p>
+                            <p class="text-xs text-gray-400">{{ user.get('email', p.user_id) }}</p>
+                        </td>
+                        <td class="px-5 py-3.5 font-bold text-gray-600 dark:text-gray-300">{{ p.department or '—' }}</td>
+                        <td class="px-5 py-3.5 font-bold text-gray-900 dark:text-white">{{ p.name }}</td>
+                        <td class="px-5 py-3.5 text-xs text-gray-500">{{ p.source_filename or '—' }}</td>
+                        <td class="px-5 py-3.5">
+                            {% if p.status == 'confirmed' %}
+                            <span class="text-[10px] px-2 py-1 rounded-lg bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300 font-black uppercase tracking-widest">Confirmed</span>
+                            {% elif p.status == 'draft' %}
+                            <span class="text-[10px] px-2 py-1 rounded-lg bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300 font-black uppercase tracking-widest">Draft</span>
+                            {% elif p.status == 'archived' %}
+                            <span class="text-[10px] px-2 py-1 rounded-lg bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-400 font-black uppercase tracking-widest">Archived</span>
+                            {% else %}
+                            <span class="text-[10px] px-2 py-1 rounded-lg bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400 font-black uppercase tracking-widest">{{ p.status }}</span>
+                            {% endif %}
+                        </td>
+                        <td class="px-5 py-3.5 text-xs text-gray-400">{{ p.created_at[:10] if p.created_at else '—' }}</td>
+                        <td class="px-5 py-3.5 text-right">
+                            <div class="flex items-center justify-end gap-2">
+                                {% if p.status == 'confirmed' %}
+                                <form method="POST" action="{{ url_for('admin.admin_set_default_template_profile', profile_id=p.id) }}" class="inline">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                    {% if p.get('is_department_default') %}
+                                    <button type="submit" class="px-3 py-1.5 rounded-lg bg-violet-100 dark:bg-violet-900/30 text-violet-700 dark:text-violet-300 text-[10px] font-black uppercase tracking-widest hover:bg-violet-200">Remove Default</button>
+                                    {% else %}
+                                    <button type="submit" class="px-3 py-1.5 rounded-lg bg-violet-50 dark:bg-violet-900/20 text-violet-600 dark:text-violet-400 text-[10px] font-black uppercase tracking-widest hover:bg-violet-100">Set Default</button>
+                                    {% endif %}
+                                </form>
+                                {% endif %}
+                                {% if p.status == 'confirmed' %}
+                                <form method="POST" action="{{ url_for('admin.admin_rerender_profile_clps', profile_id=p.id) }}" class="inline" onsubmit="return confirm('Queue re-finalization for all CLPs using this profile?')">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                    <button type="submit" class="px-3 py-1.5 rounded-lg bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 text-[10px] font-black uppercase tracking-widest hover:bg-blue-100">Re-render</button>
+                                </form>
+                                {% endif %}
+                                {% if p.status != 'archived' %}
+                                <form method="POST" action="{{ url_for('admin.admin_archive_template_profile', profile_id=p.id) }}" class="inline" onsubmit="return confirm('Archive this template profile?')">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                    <button type="submit" class="px-3 py-1.5 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 text-[10px] font-black uppercase tracking-widest hover:bg-gray-200 dark:hover:bg-gray-700">Archive</button>
+                                </form>
+                                {% endif %}
+                                <form method="POST" action="{{ url_for('admin.admin_delete_template_profile', profile_id=p.id) }}" class="inline" onsubmit="return confirm('Permanently delete this template profile? This cannot be undone.')">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                    <button type="submit" class="px-3 py-1.5 rounded-lg bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 text-[10px] font-black uppercase tracking-widest hover:bg-red-100 dark:hover:bg-red-900/30">Delete</button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% else %}
+    <div class="bg-white dark:bg-[#111827] border border-gray-200 dark:border-gray-800 rounded-3xl p-8 text-center space-y-4">
+        <div class="w-14 h-14 mx-auto rounded-2xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
+            <svg class="w-7 h-7 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+        </div>
+        <h3 class="text-lg font-black text-gray-900 dark:text-white">No template profiles yet</h3>
+        <p class="text-sm text-gray-500 dark:text-gray-400 max-w-md mx-auto">Teachers have not uploaded any template profiles yet. Profiles will appear here once teachers upload and profile their department templates.</p>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Admin profile filtering script -->
+<script>
+(function() {
+    const searchInput = document.getElementById('admin-profile-search');
+    const filterBtns = document.querySelectorAll('.admin-profile-filter-btn');
+    const rows = document.querySelectorAll('.admin-profile-row');
+    const noResults = document.getElementById('admin-profile-no-results');
+
+    function filterProfiles() {
+        const activeStatus = document.querySelector('.admin-profile-filter-btn.bg-primary-600')?.getAttribute('data-status') || 'all';
+        const query = (searchInput?.value || '').toLowerCase().trim();
+        let visible = 0;
+
+        rows.forEach(function(row) {
+            const status = row.getAttribute('data-status');
+            const searchText = row.getAttribute('data-search') || '';
+
+            const statusMatch = activeStatus === 'all' || status === activeStatus;
+            const searchMatch = !query || searchText.includes(query);
+
+            if (statusMatch && searchMatch) {
+                row.style.display = '';
+                visible++;
+            } else {
+                row.style.display = 'none';
+            }
+        });
+
+        if (noResults) {
+            noResults.style.display = (visible === 0 && rows.length > 0) ? '' : 'none';
+        }
+    }
+
+    if (filterBtns.length) {
+        filterBtns.forEach(function(btn) {
+            btn.addEventListener('click', function() {
+                filterBtns.forEach(function(b) {
+                    b.classList.remove('bg-primary-600', 'text-white');
+                    b.classList.add('bg-gray-100', 'dark:bg-gray-800', 'text-gray-500', 'dark:text-gray-400');
+                });
+                this.classList.remove('bg-gray-100', 'dark:bg-gray-800', 'text-gray-500', 'dark:text-gray-400');
+                this.classList.add('bg-primary-600', 'text-white');
+                filterProfiles();
+            });
+        });
+    }
+
+    if (searchInput) {
+        searchInput.addEventListener('input', filterProfiles);
+    }
+})();
+</script>
+{% endblock %}

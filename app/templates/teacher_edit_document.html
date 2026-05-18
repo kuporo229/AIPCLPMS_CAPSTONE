@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Editing Asset: {{ doc_title }}</title>
+  
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="{{ onlyoffice_api_js_url }}"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+        darkMode: 'class',
+        theme: {
+            extend: {
+                fontFamily: { sans: ['Plus Jakarta Sans', 'sans-serif'] },
+                colors: { primary: {"50":"#eff6ff","100":"#dbeafe","200":"#bfdbfe","300":"#93c5fd","400":"#60a5fa","500":"#3b82f6","600":"#2563eb","700":"#1d4ed8","800":"#1e40af","900":"#1e3a8a","950":"#172554"} }
+            }
+        }
+    }
+  </script>
+
+  <style>
+    html, body { height: 100vh; width: 100vw; margin: 0; padding: 0; overflow: hidden; }
+    #editor { height: 100vh; width: 100vw; }
+    [x-cloak] { display: none !important; }
+  </style>
+</head>
+<body class="bg-gray-50 dark:bg-[#0b0f19] flex flex-col antialiased">
+  {% if inserted_success %}
+  <div id="insert-success-modal" class="fixed inset-0 z-[120] flex items-center justify-center bg-slate-950/70 backdrop-blur-sm px-6">
+      <div class="w-full max-w-xl rounded-[2rem] border border-emerald-400/20 bg-white dark:bg-[#111827] p-8 shadow-2xl">
+          <p class="text-[10px] font-black uppercase tracking-[0.25em] {{ 'text-amber-500' if inserted_flagged else 'text-emerald-500' }}">Template Insert Complete</p>
+          <h2 class="mt-3 text-3xl font-black tracking-tight text-gray-900 dark:text-white">Your CLP was inserted into a new copy of the template.</h2>
+          <p class="mt-4 text-sm leading-7 text-gray-500 dark:text-gray-400">
+              {% if inserted_flagged %}
+              The generated DOCX copy is ready and has been opened in OnlyOffice, but the final AI review still flagged issues for you to inspect after insertion. The source template stays unchanged. Save normally in the editor and the updated document will be written back to this plan.
+              {% else %}
+              The generated DOCX copy is ready and has been opened in OnlyOffice for review and editing. The source template stays unchanged. Save normally in the editor and the updated document will be written back to this plan.
+              {% endif %}
+          </p>
+          <div class="mt-6 flex flex-col sm:flex-row gap-3">
+              <button type="button" onclick="document.getElementById('insert-success-modal').remove()" class="flex-1 px-5 py-3 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white text-[10px] font-black uppercase tracking-widest">
+                  Open In OnlyOffice
+              </button>
+              <a href="{{ url_for('teacher.review_clp_ai_beta', plan_id=plan_id) }}" class="flex-1 px-5 py-3 rounded-2xl bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-100 text-[10px] font-black uppercase tracking-widest text-center">
+                  Back To AI Review
+              </a>
+          </div>
+      </div>
+  </div>
+  {% endif %}
+
+  <!-- Header Section -->
+  <header class="bg-white/80 dark:bg-[#111827]/80 backdrop-blur-xl border-b border-gray-200 dark:border-gray-800 h-16 shrink-0 z-50">
+      <div class="px-6 h-full flex items-center justify-between">
+          <div class="flex items-center gap-4 min-w-0">
+              <div class="w-10 h-10 rounded-xl bg-primary-50 dark:bg-primary-900/20 flex items-center justify-center text-primary-600 shadow-sm shrink-0">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </div>
+              <div class="min-w-0">
+                  <p class="text-[9px] font-black text-primary-600 uppercase tracking-[0.2em] mb-0.5">Asset Revision Terminal</p>
+                  <h1 class="text-sm font-black text-gray-900 dark:text-white truncate uppercase tracking-tighter leading-none">{{ doc_title }}</h1>
+              </div>
+          </div>
+
+          <div class="flex items-center gap-3">
+              <span class="hidden md:inline-flex px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest bg-primary-50 text-primary-700 dark:bg-primary-900/20 dark:text-primary-400 border border-primary-100 dark:border-primary-800">Edit Mode Enabled</span>
+
+              <a href="{{ url_for('teacher.teacher_my_clps') }}" class="inline-flex items-center gap-2 px-5 py-2 bg-gray-900 dark:bg-primary-600 text-white text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-black dark:hover:bg-primary-700 transition-all shadow-xl shadow-gray-200 dark:shadow-none">
+                  <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M15 19l-7-7 7-7" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                  Exit
+              </a>
+          </div>
+      </div>
+  </header>
+
+  <!-- Editor Canvas -->
+  <main id="editor" class="flex-grow bg-white dark:bg-[#111827]"></main>
+
+  <div id="editor-loading-overlay" class="fixed inset-0 z-[110] flex items-center justify-center bg-slate-950/80 backdrop-blur-sm px-6">
+      <div class="w-full max-w-xl rounded-[2rem] border border-primary-400/20 bg-white dark:bg-[#111827] p-8 shadow-2xl text-center">
+          <div class="mx-auto h-16 w-16 rounded-full border-4 border-primary-200 dark:border-primary-900/40 border-t-primary-600 animate-spin"></div>
+          <p class="mt-6 text-[10px] font-black uppercase tracking-[0.25em] text-primary-600">Opening OnlyOffice</p>
+          <h2 class="mt-3 text-3xl font-black tracking-tight text-gray-900 dark:text-white">Preparing your inserted document.</h2>
+          <p id="editor-loading-message" class="mt-4 text-sm leading-7 text-gray-500 dark:text-gray-400">
+              The generated DOCX is loading in OnlyOffice. Please wait while the editor finishes connecting.
+          </p>
+          <p class="mt-4 text-[10px] font-black uppercase tracking-[0.2em] text-gray-400">
+              Do not close or navigate away from this page.
+          </p>
+      </div>
+  </div>
+
+  <!-- Status Notification -->
+  <div id="status" class="fixed bottom-8 right-8 px-6 py-4 rounded-2xl shadow-2xl text-[10px] font-black uppercase tracking-[0.2em] z-[100] hidden animate-fade-in-up"></div>
+
+  <script>
+    function showStatus(msg, isError=false) {
+        const el = document.getElementById('status');
+        el.textContent = msg;
+        el.className = `fixed bottom-8 right-8 px-6 py-4 rounded-2xl shadow-2xl text-[10px] font-black uppercase tracking-[0.2em] z-[100] text-white ${isError ? 'bg-red-600' : 'bg-emerald-600 shadow-emerald-200 dark:shadow-none'}`;
+        el.classList.remove('hidden');
+        setTimeout(() => el.classList.add('hidden'), 5000);
+    }
+
+    function hideEditorLoadingOverlay() {
+        const overlay = document.getElementById('editor-loading-overlay');
+        if (!overlay) return;
+        overlay.classList.add('hidden');
+    }
+
+    const config = {{ config|tojson|safe }};
+    const clientLogUrl = "{{ onlyoffice_client_log_url }}";
+    const onlyofficeAiRewriteUrl = "{{ onlyoffice_ai_rewrite_url }}";
+    const planId = {{ plan_id|tojson|safe }};
+    const insertedSuccess = {{ inserted_success|tojson|safe }};
+    const insertedSource = {{ inserted_source|tojson|safe }};
+    const insertedFlagged = {{ inserted_flagged|tojson|safe }};
+    let docEditor = null;
+    let onlyofficeConnector = null;
+
+    function getOnlyOfficeConnector() {
+        if (onlyofficeConnector) return onlyofficeConnector;
+        if (docEditor && typeof docEditor.createConnector === 'function') {
+            onlyofficeConnector = docEditor.createConnector();
+        }
+        return onlyofficeConnector;
+    }
+
+    async function sendOnlyOfficeLog(event, message, extra = null) {
+        const payload = { event, message };
+        if (extra && typeof extra === 'object') {
+            payload.extra = extra;
+        }
+
+        try {
+            await fetch(clientLogUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'same-origin',
+                body: JSON.stringify(payload)
+            });
+        } catch (err) {
+            console.error('ONLYOFFICE_TEACHER client log failed', err, { planId, event, message, extra });
+        }
+    }
+
+    // Ensure token is attached if not already in config
+    if (!config.token) {
+        config.token = "{{ token }}";
+    }
+
+    const existingEvents = (config.events && typeof config.events === 'object') ? config.events : {};
+    const existingOnAppReady = existingEvents.onAppReady;
+    const existingOnDocumentReady = existingEvents.onDocumentReady;
+    const existingOnError = existingEvents.onError;
+    config.events = {
+        ...existingEvents,
+        onAppReady: function(event) {
+            hideEditorLoadingOverlay();
+            if (typeof existingOnAppReady === 'function') existingOnAppReady(event);
+        },
+        onDocumentReady: function(event) {
+            hideEditorLoadingOverlay();
+            getOnlyOfficeConnector();
+            if (typeof existingOnDocumentReady === 'function') existingOnDocumentReady(event);
+        },
+        onError: function(event) {
+            hideEditorLoadingOverlay();
+            if (typeof existingOnError === 'function') existingOnError(event);
+        }
+    };
+
+    window.addEventListener('error', function(event) {
+        sendOnlyOfficeLog('window.error', event.message || 'Unhandled window error', {
+            filename: event.filename || null,
+            lineno: event.lineno || null,
+            colno: event.colno || null,
+            error: event.error ? String(event.error) : null
+        });
+    });
+
+    window.addEventListener('unhandledrejection', function(event) {
+        sendOnlyOfficeLog('window.unhandledrejection', 'Unhandled promise rejection', {
+            reason: event.reason ? String(event.reason) : null
+        });
+    });
+
+    window.addEventListener('load', function() {
+        sendOnlyOfficeLog('page.load', 'Teacher OnlyOffice page loaded', {
+            docKey: "{{ doc_key }}",
+            docUrl: "{{ doc_url }}",
+            callbackUrl: "{{ callback_url }}",
+            apiUrl: "{{ onlyoffice_api_js_url }}",
+            tokenPresent: Boolean(config.token),
+            insertedSuccess,
+            insertedSource,
+            insertedFlagged
+        });
+        if (insertedSuccess) {
+            showStatus(insertedFlagged ? "Template inserted with flagged issues. Review in OnlyOffice." : "Template inserted. OnlyOffice document is ready.");
+        }
+        if (typeof DocsAPI !== 'undefined') {
+            try {
+                sendOnlyOfficeLog('editor.init', 'Initializing DocsAPI editor');
+                docEditor = new DocsAPI.DocEditor("editor", config);
+                window.setTimeout(hideEditorLoadingOverlay, 5000);
+            } catch (e) {
+                hideEditorLoadingOverlay();
+                sendOnlyOfficeLog('editor.init_failed', e.message || 'Editor initialization failed', {
+                    stack: e.stack || null
+                });
+                showStatus("CRITICAL: Editor Failure - " + e.message, true);
+            }
+        } else {
+            hideEditorLoadingOverlay();
+            sendOnlyOfficeLog('editor.api_missing', 'DocsAPI is undefined in teacher editor');
+            document.getElementById('editor').innerHTML = `
+                <div class="h-full flex flex-col items-center justify-center opacity-50 p-8 text-center">
+                    <svg class="w-16 h-16 text-red-500 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    <p class="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">Connection Failed: ONLYOFFICE API Endpoint Unreachable</p>
+                </div>`;
+        }
+    });
+
+  </script>
+</body>
+</html>

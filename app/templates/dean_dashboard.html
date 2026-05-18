@@ -1,0 +1,214 @@
+{% extends "base.html" %}
+
+{% block title %}Dean Dashboard{% endblock %}
+
+{% block content %}
+<div class="space-y-8 max-w-6xl mx-auto">
+    <!-- Welcome Header -->
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+            <h1 class="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">
+                {{ department or 'Academic' }} Executive
+            </h1>
+            <p class="text-base text-gray-600 dark:text-gray-400 mt-1">Welcome back. Here's your department at a glance.</p>
+        </div>
+        <div class="flex items-center gap-3">
+            <a href="{{ url_for('dean.dean_courses') }}" class="inline-flex items-center gap-2 px-6 py-3 bg-slate-800 dark:bg-slate-700 text-white rounded-xl text-base font-semibold hover:bg-slate-700 dark:hover:bg-slate-600 transition-all shadow">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>
+                Review Plans
+            </a>
+            <a href="{{ url_for('dean.dean_profile') }}" class="inline-flex items-center gap-2 px-6 py-3 bg-white dark:bg-[#1e293b] border border-gray-300 dark:border-gray-600 rounded-xl text-base font-semibold text-gray-800 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all">
+                My Profile
+            </a>
+        </div>
+    </div>
+
+    <!-- Stat Cards -->
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="bg-white dark:bg-[#1e293b] p-6 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm">
+            <div class="flex items-center gap-3 mb-3">
+                <div class="w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-600 dark:text-slate-400">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                </div>
+                <p class="text-sm font-semibold text-slate-500 dark:text-slate-400">Total Plans</p>
+            </div>
+            <p class="text-4xl font-bold text-slate-800 dark:text-white">{{ total }}</p>
+        </div>
+        <div class="bg-white dark:bg-[#1e293b] p-6 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm">
+            <div class="flex items-center gap-3 mb-3">
+                <div class="w-10 h-10 rounded-xl bg-orange-50 dark:bg-orange-900/20 flex items-center justify-center text-orange-600 dark:text-orange-400">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                </div>
+                <p class="text-sm font-semibold text-slate-500 dark:text-slate-400">Need Review</p>
+            </div>
+            <p class="text-4xl font-bold text-orange-600">{{ pending }}</p>
+        </div>
+        <div class="bg-white dark:bg-[#1e293b] p-6 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm">
+            <div class="flex items-center gap-3 mb-3">
+                <div class="w-10 h-10 rounded-xl bg-teal-50 dark:bg-teal-900/20 flex items-center justify-center text-teal-600 dark:text-teal-400">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                </div>
+                <p class="text-sm font-semibold text-slate-500 dark:text-slate-400">Approved</p>
+            </div>
+            <p class="text-4xl font-bold text-teal-600">{{ approved }}</p>
+        </div>
+        <div class="bg-white dark:bg-[#1e293b] p-6 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm">
+            <div class="flex items-center gap-3 mb-3">
+                <div class="w-10 h-10 rounded-xl bg-rose-50 dark:bg-rose-900/20 flex items-center justify-center text-rose-600 dark:text-rose-400">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                </div>
+                <p class="text-sm font-semibold text-slate-500 dark:text-slate-400">Returned</p>
+            </div>
+            <p class="text-4xl font-bold text-rose-600">{{ returned }}</p>
+        </div>
+    </div>
+
+    <!-- Main Grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+        <!-- Pending Reviews -->
+        <div class="lg:col-span-2 bg-white dark:bg-[#1e293b] rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden">
+            <div class="px-6 py-5 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between">
+                <div>
+                    <h2 class="text-lg font-bold text-gray-900 dark:text-white">Pending Reviews</h2>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">{{ pending_plans|length }} plan(s) waiting</p>
+                </div>
+                <a href="{{ url_for('dean.dean_courses') }}" class="text-sm font-semibold text-slate-600 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200">See all &rarr;</a>
+            </div>
+            <div class="divide-y divide-gray-100 dark:divide-gray-700">
+                {% if pending_plans %}
+                    {% for plan in pending_plans[:6] %}
+                    <a href="{{ url_for('dean.dean_review_clp', plan_id=plan.id) }}" class="flex items-center gap-5 px-6 py-5 hover:bg-gray-50 dark:hover:bg-gray-800/40 transition-all group">
+                        <div class="flex-1 min-w-0">
+                            <p class="text-base font-semibold text-gray-900 dark:text-white group-hover:text-primary-600 transition-colors">{{ plan.subject or 'Untitled Plan' }}</p>
+                            <div class="flex items-center gap-4 mt-1.5 text-sm text-gray-500 dark:text-gray-400">
+                                <span>{{ plan.teacher_name }}</span>
+                                {% if plan.date_posted %}
+                                <span>{{ plan.date_posted[:10] }}</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <span class="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-slate-800 dark:bg-slate-600 text-white text-sm font-semibold hover:bg-slate-700 dark:hover:bg-slate-500 transition-colors">
+                            Review
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                        </span>
+                    </a>
+                    {% endfor %}
+                {% else %}
+                <div class="py-12 text-center">
+                    <p class="text-lg font-semibold text-gray-900 dark:text-white">All caught up</p>
+                    <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">No plans waiting for review.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Faculty Quick View -->
+        <div class="bg-white dark:bg-[#1e293b] rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden">
+            <div class="px-6 py-5 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between">
+                <h2 class="text-lg font-bold text-gray-900 dark:text-white">Faculty</h2>
+                <a href="{{ url_for('dean.dean_faculty') }}" class="text-sm font-semibold text-slate-600 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200">See all &rarr;</a>
+            </div>
+            <div class="divide-y divide-gray-50 dark:divide-gray-800/50">
+                {% if faculty_stats %}
+                    {% for fac in faculty_stats[:10] %}
+                    <a href="{{ url_for('dean.view_faculty_profile', user_id=fac.id) }}" class="flex items-center gap-4 px-6 py-4 hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-all group">
+                        <div class="w-11 h-11 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-base font-bold text-slate-600 dark:text-slate-300 shrink-0">
+                            {{ fac.name[:2].upper() }}
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <p class="text-base font-semibold text-gray-900 dark:text-white">{{ fac.name }}</p>
+                            <div class="flex items-center gap-2 text-sm mt-0.5">
+                                {% if fac.pending > 0 %}
+                                <span class="text-orange-600 font-medium">{{ fac.pending }} pending</span>
+                                <span class="text-gray-300 dark:text-gray-600">|</span>
+                                {% endif %}
+                                <span class="text-teal-600 font-medium">{{ fac.approved }} approved</span>
+                                {% if fac.returned > 0 %}
+                                <span class="text-gray-300 dark:text-gray-600">|</span>
+                                <span class="text-rose-500 font-medium">{{ fac.returned }} returned</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </a>
+                    {% endfor %}
+                {% else %}
+                <div class="py-8 text-center">
+                    <p class="text-sm text-gray-500 dark:text-gray-400">No faculty data.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Bottom Grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+        <!-- Recent Activity -->
+        <div class="lg:col-span-2 bg-white dark:bg-[#1e293b] rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden">
+            <div class="px-6 py-5 border-b border-gray-100 dark:border-gray-700">
+                <h2 class="text-lg font-bold text-gray-900 dark:text-white">Recent Activity</h2>
+            </div>
+            <div class="divide-y divide-gray-100 dark:divide-gray-700 max-h-80 overflow-y-auto">
+                {% if recent_activity %}
+                    {% for ev in recent_activity %}
+                    <div class="px-6 py-4 flex items-start gap-3">
+                        <div class="mt-1.5 shrink-0">
+                            {% if ev.level == 'error' %}
+                            <div class="w-3 h-3 rounded-full bg-red-500"></div>
+                            {% elif ev.level == 'warning' %}
+                            <div class="w-3 h-3 rounded-full bg-amber-500"></div>
+                            {% else %}
+                            <div class="w-3 h-3 rounded-full bg-primary-500"></div>
+                            {% endif %}
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <p class="text-sm text-gray-700 dark:text-gray-300">{{ ev.message }}</p>
+                            <p class="text-xs text-gray-400 mt-0.5">{{ ev.created_at[:19] if ev.created_at else '' }}</p>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                <div class="py-8 text-center">
+                    <p class="text-sm text-gray-500 dark:text-gray-400">No recent activity.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Quick Links -->
+        <div class="bg-white dark:bg-[#1e293b] rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm p-6">
+            <h2 class="text-lg font-bold text-gray-900 dark:text-white mb-5">Quick Links</h2>
+            <div class="space-y-3">
+                <a href="{{ url_for('dean.dean_courses') }}" class="flex items-center gap-4 p-4 rounded-xl bg-gray-50 dark:bg-gray-800/50 hover:bg-slate-100 dark:hover:bg-slate-800/70 transition-all">
+                    <div class="w-12 h-12 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-600 dark:text-slate-400 text-xl shrink-0">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    </div>
+                    <div>
+                        <p class="text-base font-semibold text-gray-900 dark:text-white">Course Reviews</p>
+                        <p class="text-sm text-gray-500">Review &amp; approve plans</p>
+                    </div>
+                </a>
+                <a href="{{ url_for('dean.dean_faculty') }}" class="flex items-center gap-4 p-4 rounded-xl bg-gray-50 dark:bg-gray-800/50 hover:bg-slate-100 dark:hover:bg-slate-800/70 transition-all">
+                    <div class="w-12 h-12 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-600 dark:text-slate-400 text-xl shrink-0">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    </div>
+                    <div>
+                        <p class="text-base font-semibold text-gray-900 dark:text-white">Faculty List</p>
+                        <p class="text-sm text-gray-500">View faculty &amp; their progress</p>
+                    </div>
+                </a>
+                <a href="{{ url_for('dean.dean_analytics') }}" class="flex items-center gap-4 p-4 rounded-xl bg-gray-50 dark:bg-gray-800/50 hover:bg-slate-100 dark:hover:bg-slate-800/70 transition-all">
+                    <div class="w-12 h-12 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-600 dark:text-slate-400 text-xl shrink-0">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    </div>
+                    <div>
+                        <p class="text-base font-semibold text-gray-900 dark:text-white">Analytics</p>
+                        <p class="text-sm text-gray-500">Performance &amp; trends</p>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

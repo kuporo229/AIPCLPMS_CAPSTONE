@@ -1,0 +1,552 @@
+{% extends "base.html" %}
+
+{% block title %}Review Template Profile{% endblock %}
+
+{% from "_loading_overlay.html" import loading_overlay with context %}
+
+{% block content %}
+{{ loading_overlay(
+    overlay_id='reprofile-loading',
+    title_prefix='Re-Profiling',
+    stage_text='Re-profiling template...',
+    message_text='Re-reading the DOCX template, extracting format hints, and regenerating the AI generation spec. This may take a moment.',
+    hint_text='Do not close or navigate away from this page',
+) }}
+<div class="max-w-5xl mx-auto space-y-6">
+    <div>
+        <a href="{{ url_for('teacher.list_template_profiles') }}"
+            class="inline-flex items-center gap-1.5 text-xs font-black uppercase tracking-widest text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 mb-3">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24"
+                stroke-width="2.5" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+            </svg>
+            Template Profiles
+        </a>
+        <p class="text-[10px] uppercase tracking-widest font-black text-gray-400">Template Profiling</p>
+        <h1 class="text-2xl sm:text-3xl font-black text-gray-900 dark:text-white">Review Template Profile</h1>
+        <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">{{ profile_row.name }} &mdash; {{
+            profile_row.department or 'General' }}</p>
+        {% if insertion_template_url %}
+        <div class="mt-4 flex items-center gap-3">
+            <a href="{{ url_for('teacher.view_template_profile_generated_template', profile_id=profile_row.id) }}"
+                class="inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-black uppercase tracking-widest">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                        d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                        d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                </svg>
+                Preview
+            </a>
+            <a href="{{ url_for('teacher.view_template_profile_generated_template', profile_id=profile_row.id, mode='edit') }}"
+                class="inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black uppercase tracking-widest">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                        d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                </svg>
+                Edit in OnlyOffice
+            </a>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Status banner -->
+    {% if profile_row.status == 'confirmed' %}
+    <div
+        class="bg-green-50 dark:bg-green-900/10 border border-green-100 dark:border-green-900/30 rounded-3xl p-5 flex items-center gap-4">
+        <div class="w-10 h-10 rounded-2xl bg-green-600 text-white flex items-center justify-center shrink-0">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
+            </svg>
+        </div>
+        <div>
+            <p class="text-[10px] font-black uppercase tracking-widest text-green-700 dark:text-green-300">Confirmed</p>
+            <p class="text-sm font-bold text-gray-700 dark:text-gray-200">This profile is active and will be used for
+                CLP generation.</p>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Warnings -->
+    {% set val_errors = profile_data.get('validation_errors', []) %}
+    {% set doc_errors = profile_data.get('doc_locator_errors', []) %}
+    {% if val_errors or doc_errors %}
+    <div
+        class="bg-amber-50 dark:bg-amber-900/10 border border-amber-100 dark:border-amber-900/30 rounded-3xl p-5 space-y-3">
+        <p class="text-xs font-black uppercase tracking-widest text-amber-700 dark:text-amber-300">Warnings Detected</p>
+        {% if val_errors %}
+        <div>
+            <p class="text-xs font-bold text-amber-800 dark:text-amber-200 mb-1">Schema Warnings ({{ val_errors | length
+                }})</p>
+            <ul class="text-xs text-gray-600 dark:text-gray-400 space-y-0.5 list-disc list-inside">
+                {% for err in val_errors %}<li>{{ err }}</li>{% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+        {% if doc_errors %}
+        <div>
+            <p class="text-xs font-bold text-red-700 dark:text-red-300 mb-1">Locator Issues ({{ doc_errors | length }})
+            </p>
+            <ul class="text-xs text-gray-600 dark:text-gray-400 space-y-0.5 list-disc list-inside">
+                {% for err in doc_errors %}<li>{{ err }}</li>{% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+        <p class="text-xs text-gray-500 mt-2">You may still confirm this profile. Locator issues mean some sections may
+            not be auto-filled.</p>
+    </div>
+    {% endif %}
+
+    <!-- Profile summary -->
+    {% set profile = profile_data.get('profile', {}) %}
+    {% set sections = profile.get('sections', []) %}
+    {% set meta_fields = profile.get('metadata_fields', []) %}
+    {% set align_cols = profile.get('alignment_columns', {}) %}
+    {% set template_context = profile_data.get('template_context', {}) %}
+    {% set context_counts = profile_data.get('template_context_counts', {}) %}
+    {% set generation_spec = profile_data.get('generation_spec', {}) %}
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        <!-- Sections -->
+        <div class="bg-white dark:bg-[#111827] border border-gray-200 dark:border-gray-800 rounded-3xl p-5 space-y-3">
+            <p class="text-[10px] font-black uppercase tracking-widest text-gray-400">Detected Sections</p>
+            <p class="text-3xl font-black text-gray-900 dark:text-white">{{ sections | length }}</p>
+            {% if sections %}
+            <ul class="text-xs text-gray-600 dark:text-gray-400 space-y-1">
+                {% for sec in sections %}
+                <li class="flex items-center gap-2">
+                    <span class="w-1.5 h-1.5 rounded-full bg-primary-400 shrink-0"></span>
+                    <span class="font-bold">{{ sec.label or sec.id }}</span>
+                    <span class="text-gray-400">{{ sec.locator.type if sec.locator else '?' }}</span>
+                </li>
+                {% endfor %}
+            </ul>
+            {% endif %}
+        </div>
+
+        <!-- Metadata fields -->
+        <div class="bg-white dark:bg-[#111827] border border-gray-200 dark:border-gray-800 rounded-3xl p-5 space-y-3">
+            <p class="text-[10px] font-black uppercase tracking-widest text-gray-400">Metadata Fields</p>
+            <p class="text-3xl font-black text-gray-900 dark:text-white">{{ meta_fields | length }}</p>
+            {% if meta_fields %}
+            <ul class="text-xs text-gray-600 dark:text-gray-400 space-y-1">
+                {% for mf in meta_fields %}
+                <li class="flex items-center gap-2">
+                    <span class="w-1.5 h-1.5 rounded-full bg-indigo-400 shrink-0"></span>
+                    <span class="font-bold">{{ mf.label or mf.field }}</span>
+                </li>
+                {% endfor %}
+            </ul>
+            {% endif %}
+        </div>
+
+        <!-- Alignment columns -->
+        <div class="bg-white dark:bg-[#111827] border border-gray-200 dark:border-gray-800 rounded-3xl p-5 space-y-3">
+            <p class="text-[10px] font-black uppercase tracking-widest text-gray-400">Alignment Columns</p>
+            <p class="text-3xl font-black text-gray-900 dark:text-white">{{ align_cols | length }}</p>
+            {% if align_cols %}
+            <ul class="text-xs text-gray-600 dark:text-gray-400 space-y-1">
+                {% for col_id, col_info in align_cols.items() %}
+                <li class="flex items-center gap-2">
+                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0"></span>
+                    <span class="font-bold">{{ col_info.label if col_info is mapping else col_id }}</span>
+                </li>
+                {% endfor %}
+            </ul>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Generation shape -->
+    <div class="bg-white dark:bg-[#111827] border border-gray-200 dark:border-gray-800 rounded-3xl p-5 space-y-4">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <div>
+                <p class="text-[10px] font-black uppercase tracking-widest text-gray-400">AI Copilot Generation Shape
+                </p>
+                <h2 class="text-lg font-black text-gray-900 dark:text-white">Detected Dynamic Inputs</h2>
+                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Copilot will use these counts when generating
+                    CLOs and weekly rows.</p>
+            </div>
+            <div class="flex flex-wrap gap-2 text-[10px] font-black uppercase tracking-widest text-gray-500">
+                <span class="px-2.5 py-1 rounded-lg bg-gray-100 dark:bg-gray-800">Groups {{
+                    generation_spec.get('clo_groups', [])|length }}</span>
+                <span class="px-2.5 py-1 rounded-lg bg-gray-100 dark:bg-gray-800">PO-IO {{
+                    generation_spec.get('program_institutional_alignments', [])|length }}</span>
+                <span class="px-2.5 py-1 rounded-lg bg-gray-100 dark:bg-gray-800">Weeks {{
+                    generation_spec.get('weekly_outline', {}).get('row_count', 0) }}</span>
+                <span class="px-2.5 py-1 rounded-lg bg-gray-100 dark:bg-gray-800">Metadata {{
+                    generation_spec.get('metadata_fields', [])|length }}</span>
+                <span class="px-2.5 py-1 rounded-lg bg-gray-100 dark:bg-gray-800">Consult {{
+                    generation_spec.get('consultation', {}).get('row_capacity', 0) }}</span>
+                <span class="px-2.5 py-1 rounded-lg bg-gray-100 dark:bg-gray-800">Sign {{
+                    generation_spec.get('signatories', {}).get('row_capacity', 0) }}</span>
+            </div>
+        </div>
+        {% if generation_spec.get('warnings') %}
+        <div class="rounded-2xl bg-amber-50 dark:bg-amber-900/10 border border-amber-100 dark:border-amber-900/30 p-4">
+            <p class="text-[10px] font-black uppercase tracking-widest text-amber-700 dark:text-amber-300 mb-2">
+                Generation Warnings</p>
+            <ul class="text-xs text-gray-600 dark:text-gray-400 list-disc list-inside space-y-1">
+                {% for warning in generation_spec.get('warnings', [])[:6] %}
+                <li>{{ warning }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+        {% if generation_spec.get('weekly_outline') %}
+        {% set weekly = generation_spec.get('weekly_outline', {}) %}
+        <div class="rounded-2xl border border-gray-100 dark:border-gray-800 p-4 space-y-3">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                <div>
+                    <p class="text-xs font-black text-gray-700 dark:text-gray-200">Weekly Outline</p>
+                    <p class="mt-1 text-[11px] font-bold text-gray-500 dark:text-gray-400">
+                        Table {{ weekly.get('locator', {}).get('table_index', '?') }} ·
+                        {{ weekly.get('row_count', 0) }} writable row{{ 's' if weekly.get('row_count', 0) != 1 else ''
+                        }} ·
+                        {{ weekly.get('skipped_rows', [])|length }} skipped row{{ 's' if weekly.get('skipped_rows',
+                        [])|length != 1 else '' }}
+                    </p>
+                </div>
+                <div class="text-[10px] font-black uppercase tracking-widest text-gray-400">
+                    Rows {{ weekly.get('locator', {}).get('start_row', '?') }}-{{ weekly.get('locator',
+                    {}).get('end_row', '?') }}
+                </div>
+            </div>
+            {% if weekly.get('columns') %}
+            <div class="flex flex-wrap gap-1.5">
+                {% for key, col in weekly.get('columns', {}).items() %}
+                <span class="px-2 py-1 rounded-lg bg-gray-50 dark:bg-gray-900 text-[10px] font-bold text-gray-500">{{
+                    col.get('label') or key }}</span>
+                {% endfor %}
+            </div>
+            {% endif %}
+            {% if weekly.get('rows') %}
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+                {% for row in weekly.get('rows', [])[:18] %}
+                <div class="rounded-xl bg-gray-50 dark:bg-gray-900 px-3 py-2">
+                    <p class="text-[11px] font-black text-gray-700 dark:text-gray-200">{{ row.get('label') }}</p>
+                    <p class="text-[10px] font-bold text-gray-400">source row {{ row.get('source_row') }} · {{
+                        row.get('row_kind') or 'detected' }}</p>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+            {% if weekly.get('skipped_rows') %}
+            <details
+                class="rounded-xl bg-amber-50 dark:bg-amber-900/10 border border-amber-100 dark:border-amber-900/30">
+                <summary
+                    class="px-3 py-2 cursor-pointer text-[10px] font-black uppercase tracking-widest text-amber-700 dark:text-amber-300">
+                    Skipped Weekly Rows</summary>
+                <ul class="px-3 pb-3 text-xs text-gray-600 dark:text-gray-400 space-y-1">
+                    {% for row in weekly.get('skipped_rows', [])[:12] %}
+                    <li><span class="font-black">{{ row.get('reason') }}</span> · row {{ row.get('row') }}{% if
+                        row.get('label') %}: {{ row.get('label') }}{% endif %}</li>
+                    {% endfor %}
+                </ul>
+            </details>
+            {% endif %}
+        </div>
+        {% endif %}
+        {% if generation_spec.get('program_institutional_alignments') %}
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+            {% for alignment in generation_spec.get('program_institutional_alignments', []) %}
+            <div class="rounded-2xl border border-gray-100 dark:border-gray-800 p-4 space-y-2">
+                <p class="text-xs font-black text-gray-700 dark:text-gray-200">Program-Institutional Checkmark Matrix
+                </p>
+                <p class="text-[11px] font-bold text-gray-500 dark:text-gray-400">
+                    Table {{ alignment.get('locator', {}).get('table_index', '?') }} ·
+                    {{ alignment.get('row_labels_normalized', [])|length }} row{{ 's' if
+                    alignment.get('row_labels_normalized', [])|length != 1 else '' }} ·
+                    {{ alignment.get('column_labels_normalized', [])|length }} column{{ 's' if
+                    alignment.get('column_labels_normalized', [])|length != 1 else '' }}
+                </p>
+                <div class="flex flex-wrap gap-1.5">
+                    {% for label in alignment.get('column_labels_normalized', []) %}
+                    <span
+                        class="px-2 py-1 rounded-lg bg-gray-50 dark:bg-gray-900 text-[10px] font-bold text-gray-500">{{
+                        label }}</span>
+                    {% endfor %}
+                </div>
+                <p class="text-[10px] font-bold text-gray-400">{{ alignment.get('required_alignment_keys', [])|length }}
+                    required checkmark cells</p>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        {% if generation_spec.get('clo_groups') %}
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+            {% for group in generation_spec.get('clo_groups', []) %}
+            <div class="rounded-2xl border border-gray-100 dark:border-gray-800 p-4">
+                <p class="text-xs font-black text-gray-700 dark:text-gray-200">{{ group.get('label') or group.get('id')
+                    }}</p>
+                <p class="mt-1 text-[11px] font-bold text-gray-500 dark:text-gray-400">{{ group.get('row_count', 0) }}
+                    CLO row{{ 's' if group.get('row_count', 0) != 1 else '' }}</p>
+                {% set scope = group.get('program_scope', {}) %}
+                {% if scope %}
+                <p class="mt-2 text-[11px] text-gray-500 dark:text-gray-400">
+                    <span class="font-black text-gray-700 dark:text-gray-200">{{ scope.get('program_name') or
+                        scope.get('program_code') }}</span>
+                    {% if scope.get('course_context', {}).get('course_code') %} · {{ scope.get('course_context',
+                    {}).get('course_code') }}{% endif %}
+                    {% if scope.get('items') %} · {{ scope.get('items')|length }} PLOs{% endif %}
+                </p>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Extracted academic context -->
+    <div class="bg-white dark:bg-[#111827] border border-gray-200 dark:border-gray-800 rounded-3xl p-5 space-y-5">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <div>
+                <p class="text-[10px] font-black uppercase tracking-widest text-gray-400">Template Academic Context</p>
+                <h2 class="text-lg font-black text-gray-900 dark:text-white">Extracted Framework Data</h2>
+                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">These values will guide AI generation before
+                    admin defaults are used.</p>
+            </div>
+            <div class="flex flex-wrap gap-2 text-[10px] font-black uppercase tracking-widest text-gray-500">
+                <span class="px-2.5 py-1 rounded-lg bg-gray-100 dark:bg-gray-800">PLO {{
+                    context_counts.get('program_outcomes', 0) }}</span>
+                <span class="px-2.5 py-1 rounded-lg bg-gray-100 dark:bg-gray-800">IO {{
+                    context_counts.get('institutional_outcomes', 0) }}</span>
+                <span class="px-2.5 py-1 rounded-lg bg-gray-100 dark:bg-gray-800">SDG {{
+                    context_counts.get('sdg_context', 0) }}</span>
+                <span class="px-2.5 py-1 rounded-lg bg-gray-100 dark:bg-gray-800">Core {{
+                    context_counts.get('core_values', 0) }}</span>
+                <span class="px-2.5 py-1 rounded-lg bg-gray-100 dark:bg-gray-800">GA {{
+                    context_counts.get('graduate_attributes', 0) }}</span>
+                <span class="px-2.5 py-1 rounded-lg bg-gray-100 dark:bg-gray-800">Inst {{
+                    context_counts.get('institutional_context', 0) }}</span>
+            </div>
+        </div>
+
+        {% if template_context.get('warnings') %}
+        <div class="rounded-2xl bg-amber-50 dark:bg-amber-900/10 border border-amber-100 dark:border-amber-900/30 p-4">
+            <p class="text-[10px] font-black uppercase tracking-widest text-amber-700 dark:text-amber-300 mb-2">Context
+                Warnings</p>
+            <ul class="text-xs text-gray-600 dark:text-gray-400 list-disc list-inside space-y-1">
+                {% for warning in template_context.get('warnings', [])[:6] %}
+                <li>{{ warning }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <div class="rounded-2xl border border-gray-100 dark:border-gray-800 p-4">
+                <p class="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-3">Program Outcomes</p>
+                {% set plo_groups = template_context.get('program_outcomes', []) %}
+                {% if plo_groups %}
+                {% for group in plo_groups %}
+                <div class="mb-3 last:mb-0">
+                    {% set group_items = group.get('items', []) %}
+                    <p class="text-xs font-black text-gray-700 dark:text-gray-200">
+                        {{ group.get('program_name') or group.get('program_code') or 'Program' }}
+                        <span class="ml-1 text-[10px] font-black uppercase tracking-widest text-gray-400">{{
+                            group_items|length }} POs</span>
+                    </p>
+                    <ul class="mt-2 space-y-1 text-xs text-gray-500 dark:text-gray-400">
+                        {% for item in group_items %}
+                        <li><span class="font-black text-gray-700 dark:text-gray-200">{{ item.get('code') }}</span> {{
+                            item.get('description') or item.get('title') }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                {% endfor %}
+                {% else %}
+                <p class="text-xs text-gray-400">No PLO table detected.</p>
+                {% endif %}
+            </div>
+
+            <div class="rounded-2xl border border-gray-100 dark:border-gray-800 p-4">
+                <p class="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-3">Outcomes, Values,
+                    Attributes</p>
+                {% for label, key in [('Institutional Outcomes', 'institutional_outcomes'), ('SDGs', 'sdg_context'),
+                ('Core Values', 'core_values'), ('Graduate Attributes', 'graduate_attributes'), ('PQF',
+                'pqf_alignment'), ('AQRF', 'aqrf_alignment')] %}
+                <div class="mb-3 last:mb-0">
+                    <p class="text-xs font-black text-gray-700 dark:text-gray-200">{{ label }}</p>
+                    {% set items = template_context.get(key, []) %}
+                    {% if items %}
+                    <div class="mt-2 space-y-2">
+                        {% for item in items[:10] %}
+                        {% set item_label = item.get('code') or item.get('title') %}
+                        {% set item_desc = item.get('description') or item.get('title') %}
+                        <div class="rounded-xl bg-gray-50 dark:bg-gray-900 px-3 py-2">
+                            <p class="text-[11px] font-black text-gray-700 dark:text-gray-200">{{ item_label }}</p>
+                            {% if item_desc and item_desc != item_label %}
+                            <p class="mt-0.5 text-[11px] leading-relaxed text-gray-500 dark:text-gray-400">{{ item_desc
+                                }}</p>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <p class="mt-1 text-xs text-gray-400">None detected.</p>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        {% set inst = template_context.get('institutional_context', {}) %}
+        {% if inst and (inst.get('vision') or inst.get('mission') or inst.get('core_competencies') or
+        inst.get('institutional_objectives')) %}
+        <div class="rounded-2xl border border-gray-100 dark:border-gray-800 p-4">
+            <p class="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-3">Institutional Context</p>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 text-xs text-gray-600 dark:text-gray-400">
+                {% if inst.get('vision') %}
+                <div>
+                    <p class="font-black text-gray-800 dark:text-gray-100 mb-1">Vision</p>
+                    <p>{{ inst.get('vision') }}</p>
+                </div>
+                {% endif %}
+                {% if inst.get('mission') %}
+                <div>
+                    <p class="font-black text-gray-800 dark:text-gray-100 mb-1">Mission</p>
+                    <p>{{ inst.get('mission') }}</p>
+                </div>
+                {% endif %}
+                {% if inst.get('core_competencies') %}
+                <div>
+                    <p class="font-black text-gray-800 dark:text-gray-100 mb-1">Core Competencies</p>
+                    <ul class="space-y-1 list-disc list-inside">
+                        {% for item in inst.get('core_competencies', [])[:8] %}
+                        <li>{{ item }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                {% endif %}
+                {% if inst.get('institutional_objectives') %}
+                <div>
+                    <p class="font-black text-gray-800 dark:text-gray-100 mb-1">Institutional Objectives</p>
+                    <ol class="space-y-1 list-decimal list-inside">
+                        {% for item in inst.get('institutional_objectives', [])[:10] %}
+                        <li>{{ item }}</li>
+                        {% endfor %}
+                    </ol>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+
+        <details class="rounded-2xl bg-gray-50 dark:bg-gray-900">
+            <summary class="px-4 py-3 cursor-pointer text-[10px] font-black uppercase tracking-widest text-gray-400">
+                View Raw Extracted Context</summary>
+            <pre
+                class="px-4 pb-4 text-xs text-gray-700 dark:text-gray-300 overflow-x-auto max-h-80 font-mono">{{ template_context | tojson(indent=2) }}</pre>
+        </details>
+    </div>
+
+    <!-- Raw JSON (collapsible) -->
+    <details class="bg-white dark:bg-[#111827] border border-gray-200 dark:border-gray-800 rounded-3xl overflow-hidden">
+        <summary
+            class="px-5 py-4 cursor-pointer text-xs font-black uppercase tracking-widest text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 select-none">
+            View Raw Profile JSON
+        </summary>
+        <div class="px-5 pb-5">
+            <pre
+                class="bg-gray-50 dark:bg-gray-900 rounded-2xl p-4 text-xs text-gray-700 dark:text-gray-300 overflow-x-auto max-h-96 font-mono leading-relaxed">{{ profile_json }}</pre>
+        </div>
+    </details>
+
+    <!-- Source info -->
+    <div class="bg-white dark:bg-[#111827] border border-gray-200 dark:border-gray-800 rounded-3xl p-5">
+        <div class="flex flex-wrap gap-6 text-xs text-gray-500">
+            <div><span class="font-black uppercase tracking-widest">Source:</span> {{ profile_row.source_filename or '—'
+                }}</div>
+            <div><span class="font-black uppercase tracking-widest">Hash:</span> <code
+                    class="text-[10px]">{{ profile_row.source_file_hash[:16] if profile_row.source_file_hash else '—' }}…</code>
+            </div>
+            <div><span class="font-black uppercase tracking-widest">Status:</span> {{ profile_row.status }}</div>
+            {% if profile_data.get('structure_summary') %}
+            <div><span class="font-black uppercase tracking-widest">Tables:</span> {{
+                profile_data.structure_summary.total_tables }}</div>
+            <div><span class="font-black uppercase tracking-widest">Paragraphs:</span> {{
+                profile_data.structure_summary.total_paragraphs }}</div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Actions -->
+    {% if profile_row.status == 'draft' %}
+    <div class="flex flex-wrap gap-3">
+        <form method="POST">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <input type="hidden" name="action" value="confirm">
+            <button type="submit"
+                class="px-6 py-3 rounded-2xl bg-green-600 hover:bg-green-700 text-white text-xs font-black uppercase tracking-widest shadow-lg shadow-green-200 dark:shadow-none">Confirm
+                Profile</button>
+        </form>
+        <form method="POST" onsubmit="return confirm('Discard this draft profile?')">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <input type="hidden" name="action" value="delete">
+            <button type="submit"
+                class="px-6 py-3 rounded-2xl bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 text-xs font-black uppercase tracking-widest hover:bg-red-100 dark:hover:bg-red-900/30">Discard</button>
+        </form>
+        <form method="POST">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <input type="hidden" name="action" value="reprofile">
+            <button type="submit"
+                class="px-6 py-3 rounded-2xl bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 text-xs font-black uppercase tracking-widest hover:bg-gray-200 dark:hover:bg-gray-700">Re-Profile</button>
+        </form>
+        {% if profile_row.source_storage_path %}
+        <form method="POST"
+              onsubmit="document.getElementById('reprofile-loading').classList.remove('hidden'); document.getElementById('reprofile-loading').classList.add('flex');">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <input type="hidden" name="action" value="refresh_context">
+            <button type="submit"
+                class="px-6 py-3 rounded-2xl bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 text-xs font-black uppercase tracking-widest hover:bg-blue-100 dark:hover:bg-blue-900/30">Refresh
+                From Stored DOCX</button>
+        </form>
+        {% endif %}
+    </div>
+    {% else %}
+    <div class="flex flex-wrap gap-3">
+        <a href="{{ url_for('teacher.list_template_profiles') }}"
+            class="px-6 py-3 rounded-2xl bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 text-xs font-black uppercase tracking-widest hover:bg-gray-200 dark:hover:bg-gray-700">Back
+            to Profiles</a>
+        {% if profile_row.source_storage_path %}
+        <form method="POST" class="inline reprofile-form"
+              onsubmit="document.getElementById('reprofile-loading').classList.remove('hidden'); document.getElementById('reprofile-loading').classList.add('flex');">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <input type="hidden" name="action" value="refresh_context">
+            <button type="submit"
+                class="px-6 py-3 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black uppercase tracking-widest shadow-lg shadow-emerald-200 dark:shadow-none">Re-Profile
+                Stored DOCX</button>
+        </form>
+        {% else %}
+        <a href="{{ url_for('teacher.confirm_template_profile', profile_id=profile_row.id, show_reprofile=1) }}"
+            class="px-6 py-3 rounded-2xl bg-amber-500 hover:bg-amber-600 text-white text-xs font-black uppercase tracking-widest">Re-Upload
+            &amp; Re-Profile</a>
+        {% endif %}
+        <a href="{{ url_for('teacher.confirm_template_profile', profile_id=profile_row.id, show_reprofile=1) }}"
+            class="px-6 py-3 rounded-2xl bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 text-xs font-black uppercase tracking-widest hover:bg-blue-100 dark:hover:bg-blue-900/30">Upload
+            New DOCX</a>
+    </div>
+    {% endif %}
+    {% if request.args.get('show_reprofile') %}
+    <div class="mt-4 p-5 rounded-2xl bg-blue-50 dark:bg-blue-900/10 border border-blue-100 dark:border-blue-900/20">
+        <p class="text-[10px] font-black uppercase tracking-widest text-blue-600 dark:text-blue-400 mb-3">Upload Updated
+            Template</p>
+        <form method="POST" enctype="multipart/form-data"
+            action="{{ url_for('teacher.reprofile_template_profile', profile_id=profile_row.id) }}"
+            class="flex flex-col sm:flex-row items-start sm:items-end gap-3">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <div class="flex-1 w-full">
+                <input type="file" name="file" accept=".docx" required
+                    class="w-full text-sm file:mr-3 file:px-4 file:py-2 file:rounded-xl file:border-0 file:font-bold file:bg-blue-100 file:text-blue-700 hover:file:bg-blue-200">
+            </div>
+            <button type="submit"
+                class="px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-[10px] font-black uppercase tracking-widest whitespace-nowrap">Re-Profile
+                Now</button>
+        </form>
+        <p class="mt-2 text-xs text-gray-500">Upload an updated .docx template. The existing profile data will be
+            replaced with new AI profiling results.</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

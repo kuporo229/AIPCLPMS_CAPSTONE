@@ -1,0 +1,131 @@
+{% extends "base.html" %}
+
+{% block title %}My Profile{% endblock %}
+
+{% block content %}
+<div class="space-y-8 max-w-5xl mx-auto">
+    <!-- Header -->
+    <div class="flex flex-col gap-2">
+        <h1 class="text-3xl font-black text-gray-900 dark:text-white tracking-tight">Account Settings</h1>
+        <p class="text-gray-500 dark:text-gray-400 font-medium">Manage your personal information and security preferences.</p>
+    </div>
+
+    <!-- Profile Header Card -->
+    <div class="bg-white dark:bg-[#111827] rounded-3xl overflow-hidden border border-gray-200 dark:border-gray-800 shadow-sm">
+        <div class="h-32 bg-gradient-to-r from-primary-600 to-primary-400"></div>
+        <div class="px-8 pb-8">
+            <div class="relative flex flex-col md:flex-row items-center md:items-end -mt-12 gap-6">
+                <div class="h-24 w-24 rounded-3xl border-4 border-white dark:border-[#111827] bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-3xl font-black text-primary-600 shadow-xl overflow-hidden uppercase">
+                    {{ user.first_name[0] }}{{ user.last_name[0] }}
+                </div>
+                <div class="flex-1 text-center md:text-left mb-2">
+                    <h2 class="text-2xl font-black text-gray-900 dark:text-white tracking-tight">
+                        {{ user.first_name }} {{ user.last_name }}<span class="text-gray-400 font-medium ml-2 text-lg">{% if user.title %}, {{ user.title }}{% endif %}</span>
+                    </h2>
+                    <div class="flex flex-wrap justify-center md:justify-start items-center gap-4 mt-1">
+                        <span class="inline-flex items-center text-sm font-bold text-gray-500 dark:text-gray-400">
+                            <svg class="w-4 h-4 mr-1.5 text-primary-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                            {{ user.email }}
+                        </span>
+                        <span class="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300">
+                            {{ user.role }}
+                        </span>
+                        {% if user.assigned_department %}
+                        <span class="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400">
+                            {{ user.assigned_department }}
+                        </span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- Forms Column -->
+        <div class="lg:col-span-2 space-y-8">
+            <div class="bg-white dark:bg-[#111827] rounded-3xl p-8 border border-gray-200 dark:border-gray-800 shadow-sm">
+                <div class="flex items-center gap-3 mb-8">
+                    <div class="w-10 h-10 rounded-xl bg-primary-50 dark:bg-primary-900/20 flex items-center justify-center text-primary-600">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    </div>
+                    <h3 class="text-xl font-black text-gray-900 dark:text-white tracking-tight">Personal Information</h3>
+                </div>
+
+                <form method="POST" enctype="multipart/form-data" action="{{ url_for(request.endpoint) }}" class="space-y-6">
+                    {{ info_form.hidden_tag() }}
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="space-y-2">
+                            {{ info_form.first_name.label(class="text-xs font-black text-gray-400 uppercase tracking-widest ml-1") }}
+                            {{ info_form.first_name(class="w-full bg-gray-50 dark:bg-gray-800/50 border-gray-200 dark:border-gray-700 rounded-2xl px-4 py-3 text-sm font-bold focus:ring-primary-500 focus:border-primary-500 transition-all") }}
+                        </div>
+                        <div class="space-y-2">
+                            {{ info_form.last_name.label(class="text-xs font-black text-gray-400 uppercase tracking-widest ml-1") }}
+                            {{ info_form.last_name(class="w-full bg-gray-50 dark:bg-gray-800/50 border-gray-200 dark:border-gray-700 rounded-2xl px-4 py-3 text-sm font-bold focus:ring-primary-500 focus:border-primary-500 transition-all") }}
+                        </div>
+                        <div class="md:col-span-2 space-y-2">
+                            {{ info_form.title.label(class="text-xs font-black text-gray-400 uppercase tracking-widest ml-1") }}
+                            {{ info_form.title(class="w-full bg-gray-50 dark:bg-gray-800/50 border-gray-200 dark:border-gray-700 rounded-2xl px-4 py-3 text-sm font-bold focus:ring-primary-500 focus:border-primary-500 transition-all") }}
+                            <p class="text-[10px] text-gray-400 font-bold px-1">Professional title used in generated documents.</p>
+                        </div>
+                    </div>
+
+                    <div class="space-y-3">
+                        <label class="text-xs font-black text-gray-400 uppercase tracking-widest ml-1">Digital Signature</label>
+                        <div class="flex flex-col md:flex-row items-center gap-6 p-6 bg-gray-50 dark:bg-gray-800/50 rounded-3xl border-2 border-dashed border-gray-200 dark:border-gray-700">
+                            <div class="w-48 h-24 bg-white dark:bg-[#111827] rounded-xl flex items-center justify-center p-2 shadow-sm shrink-0 border border-gray-100 dark:border-gray-800">
+                                {% if user.signature_url %}
+                                    <img src="{{ user.signature_url }}" alt="Signature" class="max-h-full max-w-full object-contain">
+                                {% else %}
+                                    <div class="text-center">
+                                        <svg class="w-8 h-8 text-gray-300 mx-auto mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.036 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                                        <span class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">No Signature</span>
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <div class="space-y-2">
+                                {{ info_form.signature(class="block w-full text-xs text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-[10px] file:font-black file:uppercase file:tracking-widest file:bg-primary-100 file:text-primary-700 hover:file:bg-primary-200 transition-all cursor-pointer") }}
+                                <p class="text-[10px] text-gray-400 font-bold leading-relaxed">Recommended: PNG image with transparent background (max 2MB).</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex justify-end pt-4">
+                        {{ info_form.submit_info(class="px-8 py-3.5 bg-primary-600 text-white text-sm font-black rounded-2xl hover:bg-primary-700 transition-all shadow-lg shadow-primary-200 dark:shadow-none uppercase tracking-widest cursor-pointer") }}
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Security Sidebar -->
+        <div class="space-y-8">
+            <div class="bg-white dark:bg-[#111827] rounded-3xl p-8 border border-gray-200 dark:border-gray-800 shadow-sm">
+                <div class="flex items-center gap-3 mb-8">
+                    <div class="w-10 h-10 rounded-xl bg-red-50 dark:bg-red-900/20 flex items-center justify-center text-red-600">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    </div>
+                    <h3 class="text-xl font-black text-gray-900 dark:text-white tracking-tight">Security</h3>
+                </div>
+
+                <form method="POST" action="{{ url_for(request.endpoint) }}" class="space-y-6">
+                    {{ pwd_form.hidden_tag() }}
+                    <div class="space-y-4">
+                        <div class="space-y-2">
+                            {{ pwd_form.new_password.label(class="text-xs font-black text-gray-400 uppercase tracking-widest ml-1") }}
+                            {{ pwd_form.new_password(class="w-full bg-gray-50 dark:bg-gray-800/50 border-gray-200 dark:border-gray-700 rounded-2xl px-4 py-3 text-sm font-bold focus:ring-primary-500 focus:border-primary-500 transition-all") }}
+                        </div>
+                        <div class="space-y-2">
+                            {{ pwd_form.confirm_new_password.label(class="text-xs font-black text-gray-400 uppercase tracking-widest ml-1") }}
+                            {{ pwd_form.confirm_new_password(class="w-full bg-gray-50 dark:bg-gray-800/50 border-gray-200 dark:border-gray-700 rounded-2xl px-4 py-3 text-sm font-bold focus:ring-primary-500 focus:border-primary-500 transition-all") }}
+                        </div>
+                        <div class="pt-4">
+                            {{ pwd_form.submit(class="w-full py-3.5 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 text-xs font-black rounded-2xl hover:bg-primary-600 hover:text-white dark:hover:bg-primary-600 transition-all uppercase tracking-widest cursor-pointer border border-gray-200 dark:border-gray-700") }}
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

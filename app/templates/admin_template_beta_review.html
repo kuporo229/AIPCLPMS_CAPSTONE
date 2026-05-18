@@ -1,0 +1,146 @@
+{% extends "base.html" %}
+
+{% block title %}Beta Template Review{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto space-y-8">
+    <div class="rounded-[2rem] border border-gray-200 dark:border-gray-800 bg-white dark:bg-[#111827] p-8 md:p-10 shadow-sm">
+        <div class="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6">
+            <div class="space-y-3">
+                <div class="flex items-center gap-3 flex-wrap">
+                    <span class="inline-flex items-center px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-[0.22em] {% if draft.status == 'promoted' %}bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-300{% elif draft.status == 'discarded' %}bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300{% else %}bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300{% endif %}">
+                        {{ draft.status|replace('_', ' ')|title }}
+                    </span>
+                    {% if department_name %}
+                        <span class="inline-flex items-center px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-[0.22em] bg-primary-50 text-primary-700 dark:bg-primary-900/30 dark:text-primary-300">{{ department_name }}</span>
+                    {% endif %}
+                </div>
+                <h1 class="text-3xl md:text-4xl font-black tracking-tight text-gray-900 dark:text-white">{{ draft.name }}</h1>
+                <p class="text-sm text-gray-600 dark:text-gray-300 max-w-3xl">This draft is still isolated from the production template library. It keeps the uploaded CLP as the document base, replaces detected inputs with placeholders, and should be reviewed before promotion.</p>
+                {% if draft.notes %}
+                    <div class="rounded-2xl bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-800 px-4 py-3 text-sm text-gray-600 dark:text-gray-300">
+                        <span class="font-black uppercase tracking-[0.18em] text-[10px] text-gray-400 block mb-2">Admin Notes</span>
+                        {{ draft.notes }}
+                    </div>
+                {% endif %}
+            </div>
+
+            <div class="flex flex-col gap-3 min-w-[260px]">
+                <a href="{{ edit_url }}" class="inline-flex items-center justify-center px-5 py-3.5 rounded-2xl bg-primary-600 hover:bg-primary-700 text-white text-[11px] font-black uppercase tracking-[0.18em]">Open In OnlyOffice</a>
+                <a href="{{ url_for('admin.generate_template_beta') }}" class="inline-flex items-center justify-center px-5 py-3.5 rounded-2xl bg-gray-100 hover:bg-gray-200 dark:bg-gray-900/60 dark:hover:bg-gray-900 text-gray-700 dark:text-gray-200 text-[11px] font-black uppercase tracking-[0.18em]">Back To Beta Generator</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 xl:grid-cols-[0.9fr_1.1fr] gap-8">
+        <div class="space-y-6">
+            <div class="rounded-[2rem] border border-gray-200 dark:border-gray-800 bg-white dark:bg-[#111827] p-6 shadow-sm">
+                <h2 class="text-xl font-black tracking-tight text-gray-900 dark:text-white mb-4">Generation Summary</h2>
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="rounded-2xl bg-gray-50 dark:bg-gray-900/50 p-4 border border-gray-200 dark:border-gray-800 col-span-2">
+                        <p class="text-[10px] font-black uppercase tracking-[0.22em] text-gray-400">AI Assist</p>
+                        <p class="mt-2 text-sm font-bold text-gray-900 dark:text-white">
+                            {% if ai_task_status and ai_task_status.status in ['queued', 'processing'] %}
+                                AI assist is {{ ai_task_status.status }}{% if ai_task_status.progress_label %}: {{ ai_task_status.progress_label }}{% endif %}. Refresh this page in a moment to see the updated draft summary.
+                            {% elif ai_task_status and ai_task_status.status == 'failed' %}
+                                AI assist failed{% if ai_task_status.error_message %}: {{ ai_task_status.error_message }}{% endif %}
+                            {% elif summary.used_ai %}
+                                Enabled for this draft. {{ summary.ai_suggestions_applied or 0 }} AI suggestions were applied.
+                            {% elif summary.ai_requested %}
+                                Requested, but no AI suggestions were applied.
+                            {% else %}
+                                Not used for this draft.
+                            {% endif %}
+                        </p>
+                    </div>
+                    <div class="rounded-2xl bg-gray-50 dark:bg-gray-900/50 p-4 border border-gray-200 dark:border-gray-800">
+                        <p class="text-[10px] font-black uppercase tracking-[0.22em] text-gray-400">Placeholders</p>
+                        <p class="mt-2 text-2xl font-black text-gray-900 dark:text-white">{{ summary.placeholder_count or 0 }}</p>
+                    </div>
+                    <div class="rounded-2xl bg-gray-50 dark:bg-gray-900/50 p-4 border border-gray-200 dark:border-gray-800">
+                        <p class="text-[10px] font-black uppercase tracking-[0.22em] text-gray-400">Segments Replaced</p>
+                        <p class="mt-2 text-2xl font-black text-gray-900 dark:text-white">{{ summary.segments_replaced or 0 }}</p>
+                    </div>
+                    <div class="rounded-2xl bg-gray-50 dark:bg-gray-900/50 p-4 border border-gray-200 dark:border-gray-800">
+                        <p class="text-[10px] font-black uppercase tracking-[0.22em] text-gray-400">Segments Scanned</p>
+                        <p class="mt-2 text-2xl font-black text-gray-900 dark:text-white">{{ summary.segments_scanned or 0 }}</p>
+                    </div>
+                    <div class="rounded-2xl bg-gray-50 dark:bg-gray-900/50 p-4 border border-gray-200 dark:border-gray-800">
+                        <p class="text-[10px] font-black uppercase tracking-[0.22em] text-gray-400">Segments Skipped</p>
+                        <p class="mt-2 text-2xl font-black text-gray-900 dark:text-white">{{ summary.segments_skipped or 0 }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="rounded-[2rem] border border-gray-200 dark:border-gray-800 bg-white dark:bg-[#111827] p-6 shadow-sm">
+                <h2 class="text-xl font-black tracking-tight text-gray-900 dark:text-white mb-4">Warnings</h2>
+                {% if warnings %}
+                    <div class="space-y-3">
+                        {% for warning in warnings %}
+                            <div class="rounded-2xl border border-amber-200 dark:border-amber-900/50 bg-amber-50 dark:bg-amber-950/20 px-4 py-3 text-sm text-amber-800 dark:text-amber-300">{{ warning }}</div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="rounded-2xl border border-emerald-200 dark:border-emerald-900/50 bg-emerald-50 dark:bg-emerald-950/20 px-4 py-3 text-sm text-emerald-700 dark:text-emerald-300">No warnings were recorded for this beta draft.</div>
+                {% endif %}
+            </div>
+
+            <div class="rounded-[2rem] border border-gray-200 dark:border-gray-800 bg-white dark:bg-[#111827] p-6 shadow-sm">
+                <h2 class="text-xl font-black tracking-tight text-gray-900 dark:text-white mb-4">Actions</h2>
+                <div class="space-y-4">
+                    <form method="POST" action="{{ url_for('admin.promote_template_beta_draft', draft_id=draft.id) }}" class="space-y-4">
+                        {{ promote_form.hidden_tag() }}
+                        <div class="space-y-2">
+                            {{ promote_form.is_default.label(class="text-[10px] font-black uppercase tracking-[0.22em] text-gray-400") }}
+                            {{ promote_form.is_default(class="w-full rounded-2xl border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/40 px-4 py-3 text-sm font-semibold") }}
+                        </div>
+                        {{ promote_form.submit(class="w-full px-5 py-3.5 rounded-2xl bg-primary-600 hover:bg-primary-700 text-white text-[11px] font-black uppercase tracking-[0.18em]") }}
+                    </form>
+
+                    <form method="POST" action="{{ url_for('admin.discard_template_beta_draft', draft_id=draft.id) }}">
+                        {{ discard_form.hidden_tag() }}
+                        <button type="submit" class="w-full px-5 py-3.5 rounded-2xl bg-red-50 hover:bg-red-100 dark:bg-red-950/20 dark:hover:bg-red-950/40 border border-red-200 dark:border-red-900/50 text-red-700 dark:text-red-300 text-[11px] font-black uppercase tracking-[0.18em]">Discard Draft</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="rounded-[2rem] border border-gray-200 dark:border-gray-800 bg-white dark:bg-[#111827] p-6 shadow-sm">
+            <div class="flex items-center justify-between gap-4 mb-4">
+                <h2 class="text-xl font-black tracking-tight text-gray-900 dark:text-white">Detected Placeholders</h2>
+                <span class="text-[10px] font-black uppercase tracking-[0.22em] text-gray-400">{{ summary.placeholder_count or 0 }} total</span>
+            </div>
+
+            {% if summary.placeholders %}
+                <div class="space-y-3 max-h-[70vh] overflow-y-auto pr-1">
+                    {% for item in summary.placeholders %}
+                        <div class="rounded-2xl border border-gray-200 dark:border-gray-800 bg-gray-50/70 dark:bg-gray-900/40 p-4">
+                            <div class="flex items-start justify-between gap-4">
+                                <code class="text-sm font-black text-primary-700 dark:text-primary-300 break-all">{{ item.placeholder }}</code>
+                                <span class="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400">{{ item.location }}</span>
+                            </div>
+                            <p class="mt-3 text-sm text-gray-700 dark:text-gray-200"><span class="font-black text-gray-400 uppercase tracking-[0.18em] text-[10px] block mb-2">Original Text</span>{{ item.original_text }}</p>
+                            <p class="mt-3 text-xs text-gray-500 dark:text-gray-400">Reason: {{ item.reason }}</p>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="rounded-2xl border border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-900/40 p-6 text-sm text-gray-500 dark:text-gray-400">
+                    No placeholders were generated. This usually means the document was mostly static or the beta generator could not safely identify enough variable content.
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+{% if ai_task_status and ai_task_status.status in ['queued', 'processing'] %}
+<script>
+    window.setTimeout(function () {
+        window.location.reload();
+    }, 5000);
+</script>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+
+{% block title %}AIPCLPMS{% endblock %}
+
+{% block content %}
+<div class="space-y-32 pb-24">
+    <!-- Hero Section -->
+    <div class="relative pt-16 overflow-hidden">
+        <div class="absolute top-0 right-0 -mt-20 -mr-20 w-[600px] h-[600px] bg-primary-50 dark:bg-primary-900/10 rounded-full blur-[120px] -z-10 animate-pulse"></div>
+        <div class="absolute bottom-0 left-0 -mb-20 -ml-20 w-[400px] h-[400px] bg-purple-50 dark:bg-purple-900/10 rounded-full blur-[100px] -z-10"></div>
+        
+        <div class="text-center space-y-10 max-w-5xl mx-auto px-4">
+            <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary-50 dark:bg-primary-900/20 border border-primary-100 dark:border-primary-800 text-primary-600 dark:text-primary-400 text-[10px] font-black uppercase tracking-[0.2em] shadow-sm">
+                <span class="relative flex h-2 w-2">
+                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary-400 opacity-75"></span>
+                    <span class="relative inline-flex rounded-full h-2 w-2 bg-primary-500"></span>
+                </span>
+                AIPCLPMS v2.0
+            </div>
+            
+            <h1 class="text-5xl md:text-7xl lg:text-8xl font-black text-gray-900 dark:text-white tracking-tighter leading-[0.9] text-balance">
+                AI-Powered Course Learning Plan <br/><span class="text-primary-600">Management System</span>
+            </h1>
+            
+            <p class="text-lg md:text-xl text-gray-500 dark:text-gray-400 font-medium max-w-3xl mx-auto leading-relaxed text-pretty">
+                Revolutionize your curriculum with AIPCLPMS. Effortlessly generate, manage, and align academic documentation using the power of Gemini 3.5 AI.
+            </p>
+            
+            <div class="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
+                <a href="{{ url_for('auth.signup') }}" class="w-full sm:w-auto px-10 py-5 bg-primary-600 text-white font-black uppercase tracking-[0.2em] rounded-2xl hover:bg-primary-700 hover:-translate-y-1 transition-all shadow-2xl shadow-primary-200 dark:shadow-none text-xs">Get Started Free</a>
+                <a href="{{ url_for('auth.login') }}" class="w-full sm:w-auto px-10 py-5 bg-white dark:bg-[#111827] text-gray-700 dark:text-gray-200 font-black uppercase tracking-[0.2em] rounded-2xl border border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all text-xs">Member Login</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Power Grid -->
+    <div class="max-w-7xl mx-auto px-4">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div class="group p-10 bg-white dark:bg-[#111827] rounded-[3rem] border border-gray-200 dark:border-gray-800 shadow-sm hover:shadow-2xl transition-all duration-500">
+                <div class="w-14 h-14 bg-primary-50 dark:bg-primary-900/20 rounded-2xl flex items-center justify-center text-primary-600 mb-8 group-hover:scale-110 transition-transform">
+                    <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M13 10V3L4 14h7v7l9-11h-7z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </div>
+                <h3 class="text-2xl font-black text-gray-900 dark:text-white tracking-tight mb-4">AI-Gen Engine</h3>
+                <p class="text-gray-500 dark:text-gray-400 font-medium leading-relaxed text-sm">Deploy state-of-the-art LLMs to generate consistent Course Learning Plans from simple metadata in seconds.</p>
+            </div>
+
+            <div class="group p-10 bg-white dark:bg-[#111827] rounded-[3rem] border border-gray-200 dark:border-gray-800 shadow-sm hover:shadow-2xl transition-all duration-500">
+                <div class="w-14 h-14 bg-purple-50 dark:bg-purple-900/20 rounded-2xl flex items-center justify-center text-purple-600 mb-8 group-hover:scale-110 transition-transform">
+                    <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </div>
+                <h3 class="text-2xl font-black text-gray-900 dark:text-white tracking-tight mb-4">Quality Guard</h3>
+                <p class="text-gray-500 dark:text-gray-400 font-medium leading-relaxed text-sm">Automated validator ensuring outcome alignment and curriculum integrity across every department.</p>
+            </div>
+
+            <div class="group p-10 bg-white dark:bg-[#111827] rounded-[3rem] border border-gray-200 dark:border-gray-800 shadow-sm hover:shadow-2xl transition-all duration-500">
+                <div class="w-14 h-14 bg-emerald-50 dark:bg-emerald-900/20 rounded-2xl flex items-center justify-center text-emerald-600 mb-8 group-hover:scale-110 transition-transform">
+                    <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </div>
+                <h3 class="text-2xl font-black text-gray-900 dark:text-white tracking-tight mb-4">Deep Insight</h3>
+                <p class="text-gray-500 dark:text-gray-400 font-medium leading-relaxed text-sm">Comprehensive departmental metrics providing deans with real-time oversight of academic progress.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Workflow Strip -->
+    <div class="bg-gray-900 dark:bg-primary-600 py-32 overflow-hidden relative">
+        <div class="absolute inset-0 opacity-10 pointer-events-none">
+            <div class="grid grid-cols-12 gap-4 h-full transform -skew-y-12">
+                {% for i in range(24) %}<div class="border-r border-white h-full"></div>{% endfor %}
+            </div>
+        </div>
+        
+        <div class="max-w-7xl mx-auto px-4 relative flex flex-col md:flex-row items-center gap-20">
+            <div class="flex-1 space-y-6">
+                <h2 class="text-4xl md:text-5xl font-black text-white tracking-tighter leading-none">Standardize. <br/>Collaborate. <br/>Deliver.</h2>
+                <p class="text-primary-100 font-medium max-w-md">Our streamlined 3-step workflow ensures your institution maintains high-quality academic standards with zero friction.</p>
+            </div>
+            
+            <div class="flex-1 grid grid-cols-1 gap-4 w-full">
+                <div class="p-6 bg-white/10 backdrop-blur-xl border border-white/10 rounded-3xl flex items-center gap-6">
+                    <span class="text-3xl font-black text-primary-400">01</span>
+                    <div>
+                        <p class="text-white font-black uppercase tracking-widest text-[10px]">Creation</p>
+                        <p class="text-primary-100 text-sm font-medium">Generate or upload course plans instantly.</p>
+                    </div>
+                </div>
+                <div class="p-6 bg-white/10 backdrop-blur-xl border border-white/10 rounded-3xl flex items-center gap-6 md:translate-x-4">
+                    <span class="text-3xl font-black text-primary-400">02</span>
+                    <div>
+                        <p class="text-white font-black uppercase tracking-widest text-[10px]">Review</p>
+                        <p class="text-primary-100 text-sm font-medium">Real-time feedback loops with Deans.</p>
+                    </div>
+                </div>
+                <div class="p-6 bg-white/10 backdrop-blur-xl border border-white/10 rounded-3xl flex items-center gap-6 md:translate-x-8">
+                    <span class="text-3xl font-black text-primary-400">03</span>
+                    <div>
+                        <p class="text-white font-black uppercase tracking-widest text-[10px]">Archive</p>
+                        <p class="text-primary-100 text-sm font-medium">Automatic document finalization & storage.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Final CTA -->
+    <div class="max-w-4xl mx-auto px-4 text-center space-y-10">
+        <h2 class="text-4xl md:text-5xl font-black text-gray-900 dark:text-white tracking-tighter">Ready to evolve your <span class="text-primary-600">curriculum?</span></h2>
+        <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+            <a href="{{ url_for('auth.signup') }}" class="w-full sm:w-auto px-12 py-5 bg-gray-900 dark:bg-white text-white dark:text-gray-900 font-black uppercase tracking-[0.2em] rounded-2xl hover:bg-black dark:hover:bg-gray-100 transition-all text-xs">Join AIPCLPMS Today</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

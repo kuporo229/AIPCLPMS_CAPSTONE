@@ -1,0 +1,228 @@
+{% extends "base.html" %}
+
+{% block title %}Global Content Manager{% endblock %}
+
+{% block content %}
+<div class="space-y-10">
+    <div class="flex flex-col lg:flex-row lg:items-end justify-between gap-6">
+        <div class="space-y-1">
+            <h1 class="text-3xl font-black text-gray-900 dark:text-white tracking-tight leading-tight uppercase">Global Content <span class="text-primary-600">Manager</span></h1>
+            <p class="text-sm font-medium text-gray-500 dark:text-gray-400 italic">Review all CLPs with clearer context, safer deletes, and faster filtering.</p>
+        </div>
+        <form method="GET" action="{{ url_for('admin.manage_clps') }}" class="w-full lg:max-w-4xl bg-white dark:bg-[#111827] p-4 rounded-[1.75rem] border border-gray-200 dark:border-gray-800 shadow-sm grid grid-cols-1 md:grid-cols-4 gap-3">
+            <input type="text" name="q" value="{{ query }}" placeholder="Search subject, author, or department" class="px-4 py-3 bg-gray-50 dark:bg-gray-800/50 border-gray-200 dark:border-gray-700 rounded-xl text-sm font-semibold">
+            <select name="status" class="px-4 py-3 bg-gray-50 dark:bg-gray-800/50 border-gray-200 dark:border-gray-700 rounded-xl text-[10px] font-black uppercase tracking-widest">
+                <option value="">All Statuses</option>
+                <option value="approved" {% if status_filter == 'approved' %}selected{% endif %}>Approved</option>
+                <option value="pending" {% if status_filter == 'pending' %}selected{% endif %}>Pending</option>
+                <option value="returned_for_revision" {% if status_filter == 'returned_for_revision' %}selected{% endif %}>Returned</option>
+                <option value="draft" {% if status_filter == 'draft' %}selected{% endif %}>Draft</option>
+            </select>
+            <select name="department" class="px-4 py-3 bg-gray-50 dark:bg-gray-800/50 border-gray-200 dark:border-gray-700 rounded-xl text-[10px] font-black uppercase tracking-widest">
+                <option value="">All Departments</option>
+                {% for department in department_options %}
+                <option value="{{ department }}" {% if department_filter == department|lower %}selected{% endif %}>{{ department }}</option>
+                {% endfor %}
+            </select>
+            <div class="flex gap-3">
+                <button type="submit" class="flex-1 px-5 py-3 bg-primary-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest">Apply</button>
+                <a href="{{ url_for('admin.manage_clps') }}" class="px-5 py-3 bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-300 rounded-xl text-[10px] font-black uppercase tracking-widest text-center">Reset</a>
+            </div>
+        </form>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div class="bg-white dark:bg-[#111827] p-6 rounded-[2rem] border border-gray-200 dark:border-gray-800 shadow-sm">
+            <p class="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">Visible Plans</p>
+            <p class="mt-3 text-3xl font-black text-primary-600 tracking-tighter">{{ plans|length }}</p>
+        </div>
+        <div class="bg-white dark:bg-[#111827] p-6 rounded-[2rem] border border-gray-200 dark:border-gray-800 shadow-sm">
+            <p class="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">Delete Policy</p>
+            <p class="mt-3 text-sm font-black text-gray-900 dark:text-white leading-relaxed">Hard delete remains available, but related history, mappings, tasks, and AI logs are disclosed first.</p>
+        </div>
+        <div class="bg-white dark:bg-[#111827] p-6 rounded-[2rem] border border-gray-200 dark:border-gray-800 shadow-sm">
+            <p class="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">Safer Review</p>
+            <p class="mt-3 text-sm font-black text-gray-900 dark:text-white leading-relaxed">View author, department, lifecycle status, and protected records before taking action.</p>
+        </div>
+    </div>
+
+    <div class="md:hidden space-y-4">
+        {% for plan in plans %}
+        {% set deps = dependency_summaries.get(plan.id|string, {}) %}
+        <div class="bg-white dark:bg-[#111827] p-6 rounded-[2rem] border border-gray-200 dark:border-gray-800 shadow-sm space-y-4">
+            <div class="flex justify-between items-start gap-4">
+                <div class="min-w-0">
+                    <h4 class="text-base font-black text-gray-900 dark:text-white truncate uppercase tracking-tight">{{ plan.subject }}</h4>
+                    <p class="text-[10px] font-bold text-primary-600 uppercase tracking-widest mt-1">{{ plan.department }}</p>
+                </div>
+                <span class="shrink-0 px-2 py-0.5 rounded-lg text-[9px] font-black uppercase border
+                    {% if plan.status == 'approved' %}bg-emerald-50 text-emerald-700 border-emerald-100
+                    {% elif plan.status == 'pending' %}bg-amber-50 text-amber-700 border-amber-100
+                    {% elif plan.status == 'returned_for_revision' %}bg-red-50 text-red-700 border-red-100
+                    {% else %}bg-gray-50 text-gray-600 border-gray-100{% endif %}">
+                    {{ plan.status.replace('_', ' ') }}
+                </span>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4 py-3 border-y border-gray-100 dark:border-gray-800">
+                <div>
+                    <p class="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1">Author</p>
+                    <p class="text-[10px] font-bold text-gray-700 dark:text-gray-300 uppercase">@{{ plan.author.username }}</p>
+                </div>
+                <div>
+                    <p class="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1">Posted</p>
+                    <p class="text-[10px] font-bold text-gray-700 dark:text-gray-300 uppercase">{{ plan.date_posted.strftime('%d %b %Y') }}</p>
+                </div>
+            </div>
+
+            <div class="rounded-2xl bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-700 p-4">
+                <p class="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-2">Dependency Warning</p>
+                <p class="text-xs font-semibold text-gray-600 dark:text-gray-300 leading-relaxed">
+                    {{ deps.history_entries or 0 }} history, {{ deps.versions or 0 }} versions, {{ deps.comments or 0 }} comments, {{ deps.mappings or 0 }} mappings, {{ deps.tasks or 0 }} tasks, {{ deps.ai_runs or 0 }} AI logs
+                </p>
+            </div>
+
+            <div class="flex gap-2">
+                <a href="{{ url_for('admin.admin_edit_clp_document', plan_id=plan.id) }}" class="flex-1 py-3 bg-primary-600 text-white text-[10px] font-black uppercase tracking-widest rounded-xl text-center shadow-lg shadow-primary-200 dark:shadow-none">View/Edit</a>
+                <button
+                    type="button"
+                    class="flex-1 py-3 bg-red-50 dark:bg-red-900/20 text-red-600 text-[10px] font-black uppercase tracking-widest rounded-xl border border-red-100 dark:border-red-900/30"
+                    onclick='openDeleteModal({{ plan.id }}, {{ plan.subject|tojson }}, {{ deps|tojson }})'>
+                    Delete
+                </button>
+            </div>
+        </div>
+        {% else %}
+        <div class="py-20 bg-gray-50/50 dark:bg-gray-800/20 border-2 border-dashed border-gray-100 dark:border-gray-800 rounded-[2.5rem] flex flex-col items-center justify-center opacity-50 text-center px-4">
+            <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest">No CLPs match the current filter.</p>
+        </div>
+        {% endfor %}
+    </div>
+
+    <div class="hidden md:block bg-white dark:bg-[#111827] rounded-[2.5rem] border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden">
+        {% if plans %}
+        <div class="overflow-x-auto custom-scrollbar">
+            <table class="w-full text-left border-collapse">
+                <thead>
+                    <tr class="bg-gray-50/50 dark:bg-gray-800/20 border-b border-gray-100 dark:border-gray-800">
+                        <th class="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest">Subject</th>
+                        <th class="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest">Department</th>
+                        <th class="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest">Author</th>
+                        <th class="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest">Status</th>
+                        <th class="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest">Protected Records</th>
+                        <th class="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest">Posted</th>
+                        <th class="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
+                    {% for plan in plans %}
+                    {% set deps = dependency_summaries.get(plan.id|string, {}) %}
+                    <tr class="group hover:bg-gray-50/50 dark:hover:bg-primary-900/5 transition-all">
+                        <td class="px-8 py-6">
+                            <div class="flex items-center gap-4">
+                                <div class="w-10 h-10 rounded-xl bg-gray-50 dark:bg-gray-800 flex items-center justify-center text-primary-600 shrink-0">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                                </div>
+                                <div class="min-w-0">
+                                    <h4 class="text-sm font-black text-gray-900 dark:text-white truncate tracking-tight uppercase">{{ plan.subject }}</h4>
+                                    <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{{ plan.upload_type.replace('_', ' ').title() }}</p>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-8 py-6 text-xs font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest">{{ plan.department }}</td>
+                        <td class="px-8 py-6 text-xs font-black text-gray-700 dark:text-gray-300 uppercase">@{{ plan.author.username }}</td>
+                        <td class="px-8 py-6">
+                            <span class="px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest border
+                                {% if plan.status == 'approved' %}bg-emerald-50 text-emerald-700 border-emerald-100 dark:bg-emerald-900/20 dark:text-emerald-400 dark:border-emerald-800
+                                {% elif plan.status == 'pending' %}bg-amber-50 text-amber-700 border-amber-100 dark:bg-amber-900/20 dark:text-amber-400 dark:border-amber-800
+                                {% elif plan.status == 'returned_for_revision' %}bg-red-50 text-red-700 border-red-100 dark:bg-red-900/20 dark:text-red-400 dark:border-red-800
+                                {% else %}bg-gray-50 text-gray-600 border-gray-100 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-700{% endif %}">
+                                {{ plan.status.replace('_', ' ') }}
+                            </span>
+                        </td>
+                        <td class="px-8 py-6 text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+                            {{ deps.history_entries or 0 }} history / {{ deps.versions or 0 }} versions / {{ deps.mappings or 0 }} mappings
+                        </td>
+                        <td class="px-8 py-6 text-[10px] font-black text-gray-400 uppercase tracking-widest whitespace-nowrap">{{ plan.date_posted.strftime('%Y-%m-%d') }}</td>
+                        <td class="px-8 py-6 text-right whitespace-nowrap">
+                            <div class="flex items-center justify-end gap-2">
+                                <a href="{{ url_for('admin.admin_edit_clp_document', plan_id=plan.id) }}" class="px-4 py-2 text-[10px] font-black text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 rounded-lg transition-all">View/Edit</a>
+                                <button
+                                    type="button"
+                                    class="px-4 py-2 text-[10px] font-black text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-all"
+                                    onclick='openDeleteModal({{ plan.id }}, {{ plan.subject|tojson }}, {{ deps|tojson }})'>
+                                    Delete
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="py-32 flex flex-col items-center justify-center opacity-50">
+            <div class="w-20 h-20 bg-gray-50 dark:bg-gray-800 rounded-[2rem] flex items-center justify-center mb-6">
+                <svg class="w-10 h-10 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" stroke-width="2"/></svg>
+            </div>
+            <p class="text-sm font-black text-gray-400 uppercase tracking-widest">Archive Empty</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<div id="deleteModal" class="fixed inset-0 z-[300] hidden overflow-y-auto" role="dialog" aria-modal="true">
+    <div class="flex items-center justify-center min-h-screen p-4 text-center">
+        <div class="fixed inset-0 bg-gray-900/60 backdrop-blur-sm transition-opacity" onclick="closeDeleteModal()"></div>
+        <div class="inline-block align-bottom bg-white dark:bg-[#111827] rounded-[2.5rem] text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full border border-gray-200 dark:border-gray-800">
+            <form id="deleteForm" method="POST" action="">
+                {{ delete_form.hidden_tag() }}
+                <div class="p-10 space-y-6">
+                    <div class="text-center">
+                        <div class="mx-auto w-16 h-16 rounded-[1.5rem] bg-red-50 dark:bg-red-900/20 text-red-600 flex items-center justify-center mb-6">
+                            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        </div>
+                        <h3 class="text-2xl font-black text-gray-900 dark:text-white tracking-tighter mb-2">Delete Plan?</h3>
+                        <p class="text-sm text-gray-500 dark:text-gray-400 font-medium leading-relaxed">This will permanently remove <span id="deleteItemName" class="text-red-600 font-bold uppercase"></span> and its dependent workflow records.</p>
+                    </div>
+
+                    <div class="rounded-[1.75rem] bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-700 p-5">
+                        <p class="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-3">Dependency Warning</p>
+                        <div id="deleteDependencySummary" class="space-y-2 text-sm font-semibold text-gray-600 dark:text-gray-300"></div>
+                    </div>
+                </div>
+                <div class="px-10 pb-10 flex flex-col gap-3">
+                    <button type="submit" class="w-full py-4 bg-red-600 text-white text-[10px] font-black uppercase tracking-[0.2em] rounded-2xl hover:bg-red-700 transition-all shadow-xl shadow-red-200 dark:shadow-none">Confirm Permanent Delete</button>
+                    <button type="button" onclick="closeDeleteModal()" class="w-full py-4 bg-gray-50 dark:bg-gray-800 text-gray-500 dark:text-gray-400 text-[10px] font-black uppercase tracking-[0.2em] rounded-2xl hover:bg-gray-100 dark:hover:bg-gray-700 transition-all">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    function openDeleteModal(id, name, deps) {
+        const summary = document.getElementById('deleteDependencySummary');
+        const entries = [
+            ['History entries', deps.history_entries || 0],
+            ['Saved versions', deps.versions || 0],
+            ['Comments', deps.comments || 0],
+            ['Mappings', deps.mappings || 0],
+            ['Background tasks', deps.tasks || 0],
+            ['AI usage logs', deps.ai_runs || 0],
+        ];
+        document.getElementById('deleteModal').classList.remove('hidden');
+        document.getElementById('deleteItemName').textContent = name;
+        document.getElementById('deleteForm').action = "/admin/clp/" + id + "/delete";
+        summary.innerHTML = entries.map(([label, value]) => `
+            <div class="flex items-center justify-between gap-4">
+                <span>${label}</span>
+                <span class="px-2 py-1 rounded-lg bg-white dark:bg-[#111827] border border-gray-200 dark:border-gray-700 text-[10px] font-black uppercase tracking-widest">${value}</span>
+            </div>
+        `).join('');
+    }
+    function closeDeleteModal() {
+        document.getElementById('deleteModal').classList.add('hidden');
+    }
+</script>
+{% endblock %}

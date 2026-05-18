@@ -1,0 +1,92 @@
+# Secrets / environment
+.env
+.env.*
+!.env.example
+
+# Python runtime/build/test artifacts
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+.coverage.*
+htmlcov/
+
+# Virtual environments
+venv/
+env/
+.venv/
+.venv*/
+
+# Local IDE/editor/system files
+.vscode/
+.idea/
+.cursor/
+.claude/
+.codex/
+.openclaude/
+.cursorrules
+.windsurfrules
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# Local tooling/cache state
+.pi/
+.lean-ctx/
+.graphify-cache/
+graphify-out/
+graphify-out-template-context/
+
+# Node/npm generated artifacts
+node_modules/
+npm-debug.log*
+yarn-error.log*
+/package.json
+/package-lock.json
+/*.mjs
+
+# Local app state / generated data
+instance/
+local_storage/
+license_state.json
+backup.sql
+*.sql.backup
+*.sqlite
+*.sqlite-shm
+*.sqlite-wal
+generated_dump.txt
+extraction_result.json
+sample.txt
+
+# Generated/temporary patches and scripts
+patch_*.py
+/diag_db.py
+/dump_docx.py
+/test_extraction.py
+scripts/
+
+# Non-runtime docs/assets kept local
+*.md
+!README.md
+!RUNTIME_SETUP.md
+/*.docx
+/*.docx.bak
+/*.png
+
+# Local repos/sandboxes
+superpowers_repo/
+scratch/
+revert/
+lpms/
+
+# Non-runtime project content
+docs/
+tests/
+
+# Keep runtime template explicitly
+!app/clp_templates/nursing.docx

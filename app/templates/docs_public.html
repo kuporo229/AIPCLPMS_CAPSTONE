@@ -1,0 +1,63 @@
+{% extends "docs_base.html" %}
+
+{% block title %}Docs | AIPCLPMS{% endblock %}
+
+{% block docs_kicker %}AIPCLPMS Documentation{% endblock %}
+{% block docs_title %}Public Guide{% endblock %}
+{% block docs_description %}Everything you need to understand AIPCLPMS before logging in.{% endblock %}
+
+{% block docs_markdown %}
+## 1. What AIPCLPMS Does
+
+**AIPCLPMS (AI-Powered Course Learning Plan Management System)** is a comprehensive platform designed for academic institutions to streamline the creation, refinement, and approval of Course Learning Plans (CLPs). By leveraging artificial intelligence and structured workflows, it ensures that every course syllabus is aligned with institutional and program learning outcomes.
+
+### Core Features
+- **AI-Generated CLPs**: Quickly generate full course drafts from basic metadata like course titles and credits.
+- **Outcome Mapping**: Visualize how Course Outcomes (CO) map to Program Outcomes (PO) and Institutional Outcomes (IO).
+- **Multi-Role Workflow**: Secure transitions between Teacher drafts, Dean reviews, and Admin approvals.
+- **DOCX Exporting**: Download professional, pre-formatted Word documents ready for official printing.
+
+## 2. Roles Overview
+
+AIPCLPMS uses a role-based access control system to ensure that users only see what is relevant to their job.
+
+### Teacher (The Creator)
+Teachers are the primary users who develop the curriculum. They can create new CLPs using the AI generator, upload existing Word documents for conversion, and use the built-in editor to fine-tune weekly roadmaps and assessment tasks.
+
+### Dean (The Reviewer)
+Deans act as quality controllers for their respective departments. They review submitted plans, provide feedback, and either approve the CLP for finalization or return it to the teacher for necessary revisions.
+
+### Admin (The Maintainer)
+Administrators manage the system's underlying infrastructure. This includes approving new user accounts, configuring global institutional outcomes, managing DOCX templates, and monitoring system-wide audit logs.
+
+## 3. How to Start
+
+### Creating an Account
+If your institution has just adopted AIPCLPMS, you can register by clicking **Create Account** on any login page. You will need to provide your full name, academic email, and select your primary department. 
+
+> **Note**: New accounts typically require manual approval by an Administrator before you can access the dashboard.
+
+### Logging In
+Once approved, use your credentials on the **Member Login** page. If you forget your password, please contact your department's administrator.
+
+## 4. Understanding CLP Statuses
+
+Tracking the progress of a curriculum plan is easy using the status indicators:
+
+| Status | Description | Action Required |
+|--------|-------------|-----------------|
+| **Draft** | The plan is being edited by the teacher. | Teacher continues editing. |
+| **Draft Review** | The teacher has used AI to refine the document. | Teacher reviews AI changes. |
+| **Pending** | The plan has been submitted and is awaiting Dean review. | Dean reviews the content. |
+| **Approved** | The plan is finalized and ready for export. | No action; ready for download. |
+| **Returned** | The Dean requested changes based on feedback. | Teacher updates and resubmits. |
+
+## 5. Security & Best Practices
+
+- **Session Expiry**: For security, sessions will automatically log out after a period of inactivity. This period is longer for teachers than it is for administrators.
+- **Data Privacy**: All AI generations are based on institutional knowledge bases provided by your school to ensure privacy and compliance.
+- **Shared Devices**: Always click **Logout** when using public lab computers to protect your curriculum drafts.
+
+## 6. Support
+If you encounter technical errors (such as the AI generator hanging), try refreshing the page after 60 seconds. For account issues or policy questions, please contact your institution's help desk or system administrator.
+{% endblock %}

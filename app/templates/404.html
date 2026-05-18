@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block title %}Point Not Found{% endblock %}
+
+{% block content %}
+<div class="flex flex-col items-center justify-center min-h-[calc(100vh-160px)] px-4 text-center">
+    <div class="relative mb-12">
+        <div class="absolute inset-0 bg-primary-100 dark:bg-primary-900/20 rounded-full blur-3xl opacity-50 scale-150 animate-pulse"></div>
+        <h1 class="relative text-[10rem] md:text-[15rem] font-black text-gray-900 dark:text-white tracking-tighter leading-none select-none opacity-10">404</h1>
+        <div class="absolute inset-0 flex flex-col items-center justify-center">
+            <div class="w-20 h-20 bg-white dark:bg-[#111827] rounded-[2rem] border border-gray-200 dark:border-gray-800 shadow-2xl flex items-center justify-center text-primary-600 mb-4">
+                <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+            <p class="text-xs font-black text-primary-600 uppercase tracking-[0.3em]">Endpoint Missing</p>
+        </div>
+    </div>
+
+    <div class="max-w-md space-y-6 relative">
+        <h2 class="text-3xl font-black text-gray-900 dark:text-white tracking-tight uppercase">Operational <span class="text-primary-600">Error</span></h2>
+        <p class="text-sm font-medium text-gray-500 dark:text-gray-400 italic leading-relaxed">The requested registry point does not exist or has been de-indexed from our central core.</p>
+        
+        <div class="pt-6">
+            <a href="{{ url_for('main.dashboard') }}" class="inline-flex items-center gap-3 px-10 py-4 bg-primary-600 text-white text-[10px] font-black uppercase tracking-[0.2em] rounded-2xl hover:bg-primary-700 transition-all shadow-xl shadow-primary-200 dark:shadow-none group">
+                <svg class="w-4 h-4 group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M15 19l-7-7 7-7" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                Return to Dashboard
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

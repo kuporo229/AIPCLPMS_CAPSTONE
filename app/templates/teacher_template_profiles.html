@@ -1,0 +1,279 @@
+{% extends "base.html" %}
+
+{% block title %}My Template Profiles{% endblock %}
+
+{% from "_loading_overlay.html" import loading_overlay with context %}
+
+{% block content %}
+{{ loading_overlay(
+    overlay_id='reprofile-loading',
+    title_prefix='Re-Profiling',
+    stage_text='Re-profiling template...',
+    message_text='Re-reading the DOCX template, extracting format hints, and regenerating the AI generation spec. This may take a moment.',
+    hint_text='Do not close or navigate away from this page',
+) }}
+<div class="max-w-6xl mx-auto space-y-6">
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+            <p class="text-[10px] uppercase tracking-widest font-black text-gray-400">Template Profiles</p>
+            <h1 class="text-2xl sm:text-3xl font-black text-gray-900 dark:text-white">My Template Profiles</h1>
+            <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Upload your department's CLP template to
+                auto-detect its structure</p>
+        </div>
+        <div class="flex gap-2">
+            <form method="POST" action="{{ url_for('teacher.import_template_profile') }}" enctype="multipart/form-data"
+                class="flex items-center gap-2">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <input type="file" name="file" accept=".json" class="hidden" id="import-profile-file"
+                    onchange="this.form.submit()">
+                <label for="import-profile-file"
+                    class="cursor-pointer inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 text-xs font-black uppercase tracking-widest hover:bg-gray-200 dark:hover:bg-gray-700">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                            d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                    </svg>
+                    Import
+                </label>
+            </form>
+            <a href="{{ url_for('teacher.upload_template_profile') }}"
+                class="inline-flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-primary-600 hover:bg-primary-700 text-white text-xs font-black uppercase tracking-widest shadow-lg shadow-primary-200 dark:shadow-none">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4" />
+                </svg>
+                Upload Template
+            </a>
+        </div>
+    </div>
+
+    <!-- Filter Tabs -->
+    <div class="flex flex-wrap items-center gap-2" id="profile-filter-tabs">
+        <button data-status="all" class="profile-filter-btn px-4 py-2 rounded-xl bg-primary-600 text-white text-[10px] font-black uppercase tracking-widest transition-all">All <span class="ml-1 opacity-70">({{ profiles|length }})</span></button>
+        <button data-status="draft" class="profile-filter-btn px-4 py-2 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 text-[10px] font-black uppercase tracking-widest hover:bg-gray-200 dark:hover:bg-gray-700 transition-all">Drafts</button>
+        <button data-status="confirmed" class="profile-filter-btn px-4 py-2 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 text-[10px] font-black uppercase tracking-widest hover:bg-gray-200 dark:hover:bg-gray-700 transition-all">Confirmed</button>
+        <button data-status="archived" class="profile-filter-btn px-4 py-2 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 text-[10px] font-black uppercase tracking-widest hover:bg-gray-200 dark:hover:bg-gray-700 transition-all">Archived</button>
+        <div class="flex-1"></div>
+        <div class="relative">
+            <input type="text" id="profile-search" placeholder="Search profiles..." class="w-full sm:w-56 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2 text-xs font-bold focus:ring-primary-500 focus:border-primary-500">
+            <svg class="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+        </div>
+    </div>
+
+    <div id="profile-no-results" class="hidden bg-white dark:bg-[#111827] border border-gray-200 dark:border-gray-800 rounded-3xl p-8 text-center">
+        <p class="text-sm text-gray-500 dark:text-gray-400">No profiles match your filter or search criteria.</p>
+    </div>
+
+    {% if profiles %}
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4" id="profile-grid">
+        {% for profile in profiles %}
+        <div class="profile-card bg-white dark:bg-[#111827] border border-gray-200 dark:border-gray-800 rounded-3xl p-5 space-y-4" data-status="{{ profile.status }}" data-search="{{ (profile.name + ' ' + (profile.department or '') + ' ' + (profile.source_filename or '')) | lower }}">
+            <div class="flex items-start justify-between gap-3">
+                <div>
+                    <p class="text-[10px] uppercase tracking-widest font-black text-primary-500">{{ profile.department
+                        or 'General' }}</p>
+                    <a href="{{ url_for('teacher.confirm_template_profile', profile_id=profile.id) }}"
+                        class="inline-block text-lg font-black text-gray-900 dark:text-white hover:text-primary-600 dark:hover:text-primary-400 transition-colors">
+                        {{ profile.name }}
+                    </a>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">{{ profile.source_filename or 'No source
+                        file' }}</p>
+                </div>
+                {% if profile.status == 'confirmed' %}
+                <span
+                    class="text-[10px] px-2 py-1 rounded-lg bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300 font-black uppercase tracking-widest">Confirmed</span>
+                {% elif profile.status == 'draft' %}
+                <span
+                    class="text-[10px] px-2 py-1 rounded-lg bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300 font-black uppercase tracking-widest">Draft</span>
+                {% else %}
+                <span
+                    class="text-[10px] px-2 py-1 rounded-lg bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400 font-black uppercase tracking-widest">{{
+                    profile.status }}</span>
+                {% endif %}
+            </div>
+
+            {% set pdata = profile.profile_data %}
+            {% if pdata is string %}
+            {% set pdata = pdata | tojson | safe %}
+            {% endif %}
+            {% if pdata and pdata is mapping %}
+            {% set sections_count = (pdata.get('profile', {}).get('sections', []) | length) if pdata.get('profile') else
+            0 %}
+            {% set context_counts = pdata.get('template_context_counts', {}) %}
+            {% set context_total = context_counts.values() | sum if context_counts else 0 %}
+            {% set val_errors = pdata.get('validation_errors', []) | length %}
+            {% set doc_errors = pdata.get('doc_locator_errors', []) | length %}
+            <div class="flex flex-wrap gap-3 text-[10px] font-bold uppercase tracking-widest text-gray-500">
+                <span>{{ sections_count }} sections</span>
+                <span>{{ context_total }} context items</span>
+                {% if val_errors %}<span class="text-amber-600">{{ val_errors }} schema warnings</span>{% endif %}
+                {% if doc_errors %}<span class="text-red-600">{{ doc_errors }} locator issues</span>{% endif %}
+            </div>
+            {% endif %}
+
+            <div class="flex items-center gap-2 pt-2 border-t border-gray-100 dark:border-gray-800">
+                {% if profile.status == 'draft' %}
+                <a href="{{ url_for('teacher.confirm_template_profile', profile_id=profile.id) }}"
+                    class="px-4 py-2 rounded-xl bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 text-[10px] font-black uppercase tracking-widest hover:bg-primary-100 dark:hover:bg-primary-900/30">Review
+                    & Confirm</a>
+                {% else %}
+                <a href="{{ url_for('teacher.confirm_template_profile', profile_id=profile.id) }}"
+                    class="px-4 py-2 rounded-xl bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 text-[10px] font-black uppercase tracking-widest hover:bg-primary-100 dark:hover:bg-primary-900/30">Open
+                    Profile</a>
+                {% endif %}
+                {% if profile.source_storage_path %}
+                <form method="POST" action="{{ url_for('teacher.confirm_template_profile', profile_id=profile.id) }}"
+                    class="inline reprofile-form">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <input type="hidden" name="action" value="refresh_context">
+                    <button type="button" onclick="showCustomConfirm('Re-profile this template from the stored DOCX and regenerate its insertion template?', () => { document.getElementById('reprofile-loading').classList.remove('hidden'); document.getElementById('reprofile-loading').classList.add('flex'); this.closest('form').submit(); }, 'Re-Profile')"
+                        class="px-4 py-2 rounded-xl bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-300 text-[10px] font-black uppercase tracking-widest hover:bg-emerald-100 dark:hover:bg-emerald-900/30">Re-Profile</button>
+                </form>
+                {% else %}
+                <a href="{{ url_for('teacher.confirm_template_profile', profile_id=profile.id, show_reprofile=1) }}"
+                    class="px-4 py-2 rounded-xl bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-300 text-[10px] font-black uppercase tracking-widest hover:bg-amber-100 dark:hover:bg-amber-900/30">Upload
+                    & Re-Profile</a>
+                {% endif %}
+                <a href="{{ url_for('teacher.template_profile_versions', profile_id=profile.id) }}"
+                    class="px-4 py-2 rounded-xl bg-gray-50 dark:bg-gray-800/50 text-gray-600 dark:text-gray-400 text-[10px] font-black uppercase tracking-widest hover:bg-gray-100 dark:hover:bg-gray-700">History</a>
+                {% if profile.status == 'confirmed' %}
+                <a href="{{ url_for('teacher.export_template_profile', profile_id=profile.id) }}"
+                    class="px-4 py-2 rounded-xl bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 text-[10px] font-black uppercase tracking-widest hover:bg-blue-100 dark:hover:bg-blue-900/30">Export</a>
+                {% endif %}
+                <form method="POST" action="{{ url_for('teacher.delete_template_profile', profile_id=profile.id) }}"
+                    class="inline" onsubmit="return confirm('Delete this template profile?')">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="submit"
+                        class="px-4 py-2 rounded-xl bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 text-[10px] font-black uppercase tracking-widest hover:bg-red-100 dark:hover:bg-red-900/30">Delete</button>
+                </form>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div
+        class="bg-white dark:bg-[#111827] border border-gray-200 dark:border-gray-800 rounded-3xl p-8 text-center space-y-4">
+        <div class="w-14 h-14 mx-auto rounded-2xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
+            <svg class="w-7 h-7 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+        </div>
+        <h3 class="text-lg font-black text-gray-900 dark:text-white">No template profiles yet</h3>
+        <p class="text-sm text-gray-500 dark:text-gray-400 max-w-md mx-auto">Upload your department's CLP DOCX template
+            and the AI will analyze its structure so generated content fits perfectly.</p>
+        <a href="{{ url_for('teacher.upload_template_profile') }}"
+            class="inline-flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-primary-600 hover:bg-primary-700 text-white text-xs font-black uppercase tracking-widest">Upload
+            Your First Template</a>
+    </div>
+    {% endif %}
+
+    <!-- Cloneable Profiles from Department -->
+    {% if cloneable %}
+    <div class="space-y-3">
+        <div class="flex items-center gap-2">
+            <span class="w-2 h-2 rounded-full bg-violet-500"></span>
+            <h2 class="text-sm font-black uppercase tracking-widest text-gray-500 dark:text-gray-400">Available from
+                Department</h2>
+        </div>
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            {% for cp in cloneable %}
+            {% set owner = cp.get('users') or {} %}
+            <div
+                class="bg-white dark:bg-[#111827] border border-violet-100 dark:border-violet-900/30 rounded-2xl p-4 flex items-center justify-between gap-3">
+                <div class="min-w-0">
+                    <div class="flex items-center gap-2">
+                        <p class="text-sm font-black text-gray-900 dark:text-white truncate">{{ cp.name }}</p>
+                        {% if cp.get('is_department_default') %}
+                        <span
+                            class="text-[9px] px-1.5 py-0.5 rounded bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-300 font-black uppercase tracking-widest">Default</span>
+                        {% endif %}
+                    </div>
+                    <p class="text-xs text-gray-400 truncate">{{ owner.get('first_name', '') }} {{
+                        owner.get('last_name', '') }} &middot; {{ cp.source_filename or 'No source' }}</p>
+                </div>
+                <form method="POST" action="{{ url_for('teacher.clone_template_profile', profile_id=cp.id) }}"
+                    class="flex-shrink-0">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="submit"
+                        class="px-3 py-1.5 rounded-xl bg-violet-50 dark:bg-violet-900/20 text-violet-600 dark:text-violet-400 text-[10px] font-black uppercase tracking-widest hover:bg-violet-100 dark:hover:bg-violet-900/30 whitespace-nowrap">Clone</button>
+                </form>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+{% if confirmed_count > 0 %}
+<div class="max-w-6xl mx-auto">
+<div class="bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-emerald-950/30 dark:to-teal-950/30 border border-emerald-200 dark:border-emerald-900/40 rounded-2xl p-5">
+    <div class="flex items-center gap-4">
+        <div class="w-10 h-10 rounded-xl bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center text-emerald-600 shrink-0">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
+        </div>
+        <div class="flex-1">
+            <p class="text-sm font-bold text-gray-900 dark:text-white">Template profile ready</p>
+            <p class="text-xs text-gray-600 dark:text-gray-400 mt-0.5">Add your subjects for this term so AI Copilot can use them to generate CLPs.</p>
+        </div>
+        <a href="{{ url_for('teacher.manage_subjects') }}" class="inline-flex items-center gap-1.5 px-5 py-2.5 bg-emerald-600 text-white rounded-xl text-xs font-bold hover:bg-emerald-700 transition-all shadow-sm shrink-0">
+            Go to Subjects
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
+        </a>
+    </div>
+</div>
+</div>
+{% endif %}
+
+<!-- Profile filtering script -->
+<script>
+(function() {
+    const searchInput = document.getElementById('profile-search');
+    const filterBtns = document.querySelectorAll('.profile-filter-btn');
+    const cards = document.querySelectorAll('.profile-card');
+    const noResults = document.getElementById('profile-no-results');
+    const grid = document.getElementById('profile-grid');
+
+    function filterProfiles() {
+        const activeStatus = document.querySelector('.profile-filter-btn.bg-primary-600')?.getAttribute('data-status') || 'all';
+        const query = (searchInput?.value || '').toLowerCase().trim();
+        let visible = 0;
+
+        cards.forEach(function(card) {
+            const status = card.getAttribute('data-status');
+            const searchText = card.getAttribute('data-search') || '';
+
+            const statusMatch = activeStatus === 'all' || status === activeStatus;
+            const searchMatch = !query || searchText.includes(query);
+
+            if (statusMatch && searchMatch) {
+                card.style.display = '';
+                visible++;
+            } else {
+                card.style.display = 'none';
+            }
+        });
+
+        if (noResults) {
+            noResults.style.display = (visible === 0 && cards.length > 0) ? '' : 'none';
+        }
+    }
+
+    if (filterBtns.length) {
+        filterBtns.forEach(function(btn) {
+            btn.addEventListener('click', function() {
+                filterBtns.forEach(function(b) {
+                    b.classList.remove('bg-primary-600', 'text-white');
+                    b.classList.add('bg-gray-100', 'dark:bg-gray-800', 'text-gray-500', 'dark:text-gray-400');
+                });
+                this.classList.remove('bg-gray-100', 'dark:bg-gray-800', 'text-gray-500', 'dark:text-gray-400');
+                this.classList.add('bg-primary-600', 'text-white');
+                filterProfiles();
+            });
+        });
+    }
+
+    if (searchInput) {
+        searchInput.addEventListener('input', filterProfiles);
+    }
+})();
+</script>
+{% endblock %}

@@ -1,0 +1,160 @@
+{% extends "base.html" %}
+
+{% block title %}Production Copilot Data{% endblock %}
+
+{% block content %}
+<div class="space-y-10 max-w-[1600px] mx-auto pb-20">
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
+        <div class="space-y-1">
+            <h1 class="text-3xl font-black text-gray-900 dark:text-white tracking-tight leading-tight uppercase tracking-tighter">Production Copilot Data</h1>
+            <p class="text-sm font-medium text-gray-500 dark:text-gray-400 italic">Manage the department-specific reference tables used by AI for CLO and alignment generation.</p>
+        </div>
+    </div>
+
+    <div class="bg-white dark:bg-[#111827] rounded-[2.5rem] p-8 md:p-10 border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden">
+        <div class="flex items-center gap-3 mb-8 px-1">
+            <div class="w-10 h-10 rounded-xl bg-primary-50 dark:bg-primary-900/20 flex items-center justify-center text-primary-600">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+            <h3 class="text-xl font-black text-gray-900 dark:text-white tracking-tight">Add Reference Row</h3>
+        </div>
+
+        <form method="POST" class="space-y-8">
+            {{ form.hidden_tag() }}
+            <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+                <div class="space-y-2">
+                    {{ form.department.label(class="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1") }}
+                    {{ form.department(class="w-full bg-gray-50 dark:bg-gray-800/50 border-gray-200 dark:border-gray-700 rounded-2xl px-4 py-3.5 text-[10px] font-black uppercase tracking-widest focus:ring-primary-500 transition-all") }}
+                </div>
+                <div class="space-y-2">
+                    {{ form.category.label(class="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1") }}
+                    {{ form.category(class="w-full bg-gray-50 dark:bg-gray-800/50 border-gray-200 dark:border-gray-700 rounded-2xl px-4 py-3.5 text-[10px] font-black uppercase tracking-widest focus:ring-primary-500 transition-all") }}
+                </div>
+                <div class="space-y-2">
+                    {{ form.code.label(class="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1") }}
+                    {{ form.code(class="w-full bg-gray-50 dark:bg-gray-800/50 border-gray-200 dark:border-gray-700 rounded-2xl px-4 py-3.5 text-sm font-bold focus:ring-primary-500 transition-all") }}
+                </div>
+                <div class="space-y-2">
+                    {{ form.title.label(class="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1") }}
+                    {{ form.title(class="w-full bg-gray-50 dark:bg-gray-800/50 border-gray-200 dark:border-gray-700 rounded-2xl px-4 py-3.5 text-sm font-bold focus:ring-primary-500 transition-all") }}
+                </div>
+            </div>
+            <div class="space-y-2">
+                {{ form.description.label(class="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1") }}
+                {{ form.description(class="w-full bg-gray-50 dark:bg-gray-800/50 border-gray-200 dark:border-gray-700 rounded-[2rem] p-6 text-sm font-medium focus:ring-primary-500 transition-all leading-relaxed", rows="3") }}
+                <p class="text-xs text-gray-500 dark:text-gray-400 ml-1">Use this meaning/guidance column to make AI alignment more factual and easier to audit.</p>
+            </div>
+            <div class="flex justify-end">
+                {{ form.submit(class="px-12 py-4 bg-primary-600 text-white text-[10px] font-black uppercase tracking-[0.2em] rounded-2xl hover:bg-primary-700 transition-all shadow-xl shadow-primary-200 dark:shadow-none cursor-pointer") }}
+            </div>
+        </form>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
+        <div class="lg:col-span-4 space-y-6">
+            <div class="bg-white dark:bg-[#111827] p-2 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm flex items-center gap-2 overflow-x-auto custom-scrollbar whitespace-nowrap">
+                {% for dept_id, dept_name in departments.items() %}
+                <button onclick="openTab(event, 'dept-{{ dept_id }}')"
+                    class="tab-btn px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all duration-300
+                    {% if loop.first %}bg-primary-600 text-white shadow-lg shadow-primary-200 dark:shadow-none{% else %}text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800/50 hover:text-gray-600{% endif %}">
+                    {{ dept_name }}
+                </button>
+                {% endfor %}
+            </div>
+
+            {% for dept_id, dept_name in departments.items() %}
+            <div id="dept-{{ dept_id }}" class="tab-content {% if not loop.first %}hidden{% endif %} animate-fade-in-up space-y-8">
+                <div class="grid grid-cols-1 xl:grid-cols-2 gap-8">
+                    {% for category, rows in grouped_entries.get(dept_id, {}).items() %}
+                    <section class="bg-white dark:bg-[#111827] rounded-[2rem] border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden">
+                        <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-800 bg-gray-50/80 dark:bg-gray-900/40">
+                            <h3 class="text-lg font-black text-gray-900 dark:text-white tracking-tight uppercase">{{ category_labels.get(category, category) }}</h3>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full text-sm">
+                                <thead class="bg-gray-50 dark:bg-gray-900/40">
+                                    <tr>
+                                        <th class="px-4 py-3 text-left text-[10px] font-black uppercase tracking-widest text-gray-400">Code</th>
+                                        <th class="px-4 py-3 text-left text-[10px] font-black uppercase tracking-widest text-gray-400">Label</th>
+                                        <th class="px-4 py-3 text-left text-[10px] font-black uppercase tracking-widest text-gray-400">Meaning / Guidance</th>
+                                        <th class="px-4 py-3 text-right text-[10px] font-black uppercase tracking-widest text-gray-400">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for row in rows %}
+                                    <tr class="border-t border-gray-100 dark:border-gray-800 align-top">
+                                        <td class="px-4 py-4 text-xs font-black text-primary-600 uppercase tracking-wider whitespace-nowrap">{{ row.code or '-' }}</td>
+                                        <td class="px-4 py-4 text-sm font-bold text-gray-900 dark:text-white">{{ row.title }}</td>
+                                        <td class="px-4 py-4 text-sm text-gray-600 dark:text-gray-300 leading-6">{{ row.description or 'No meaning/guidance added yet.' }}</td>
+                                        <td class="px-4 py-4 text-right">
+                                            <button type="button" class="text-red-600 text-[10px] font-black uppercase tracking-widest hover:underline" onclick="openDeleteModal('{{ row.id }}', '{{ row.title|e }}')">Delete</button>
+                                        </td>
+                                    </tr>
+                                    {% else %}
+                                    <tr>
+                                        <td colspan="4" class="px-4 py-10 text-center text-[10px] font-black uppercase tracking-widest text-gray-400 italic">No reference rows yet.</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </section>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<div id="deleteModal" class="fixed inset-0 z-[300] hidden overflow-y-auto" role="dialog" aria-modal="true">
+    <div class="flex items-center justify-center min-h-screen p-4 text-center">
+        <div class="fixed inset-0 bg-gray-900/60 backdrop-blur-sm transition-opacity" onclick="closeDeleteModal()"></div>
+        <div class="inline-block align-bottom bg-white dark:bg-[#111827] rounded-[2.5rem] text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-md sm:w-full border border-gray-200 dark:border-gray-800">
+            <form id="deleteForm" method="POST" action="">
+                {{ delete_form.hidden_tag() }}
+                <div class="p-10 text-center">
+                    <div class="mx-auto w-16 h-16 rounded-[1.5rem] bg-red-50 dark:bg-red-900/20 text-red-600 flex items-center justify-center mb-6">
+                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    </div>
+                    <h3 class="text-2xl font-black text-gray-900 dark:text-white tracking-tighter mb-2">Delete Reference Row</h3>
+                    <p class="text-sm text-gray-500 dark:text-gray-400 font-medium leading-relaxed">Are you sure you want to delete <span id="deleteItemName" class="text-red-600 font-bold"></span>? This action cannot be undone.</p>
+                </div>
+                <div class="px-10 pb-10 flex flex-col gap-3">
+                    <button type="submit" class="w-full py-4 bg-red-600 text-white text-[10px] font-black uppercase tracking-[0.2em] rounded-2xl hover:bg-red-700 transition-all shadow-xl shadow-red-200 dark:shadow-none">Confirm Delete</button>
+                    <button type="button" onclick="closeDeleteModal()" class="w-full py-4 bg-gray-50 dark:bg-gray-800 text-gray-500 dark:text-gray-400 text-[10px] font-black uppercase tracking-[0.2em] rounded-2xl hover:bg-gray-100 dark:hover:bg-gray-700 transition-all">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    function openDeleteModal(id, name) {
+        document.getElementById('deleteModal').classList.remove('hidden');
+        document.getElementById('deleteItemName').textContent = name;
+        document.getElementById('deleteForm').action = "/admin/copilot-data/delete/" + id;
+    }
+    function closeDeleteModal() { document.getElementById('deleteModal').classList.add('hidden'); }
+
+    function openTab(evt, tabName) {
+        const content = document.getElementsByClassName("tab-content");
+        for (let i = 0; i < content.length; i++) content[i].classList.add("hidden");
+
+        const btns = document.getElementsByClassName("tab-btn");
+        for (let i = 0; i < btns.length; i++) {
+            btns[i].classList.remove("bg-primary-600", "text-white", "shadow-lg", "shadow-primary-200");
+            btns[i].classList.add("text-gray-400", "hover:bg-gray-50", "dark:hover:bg-gray-800/50");
+        }
+
+        document.getElementById(tabName).classList.remove("hidden");
+        evt.currentTarget.classList.remove("text-gray-400", "hover:bg-gray-50", "dark:hover:bg-gray-800/50");
+        evt.currentTarget.classList.add("bg-primary-600", "text-white", "shadow-lg", "shadow-primary-200");
+    }
+</script>
+
+<style>
+    @keyframes fadeInUp { from { opacity: 0; transform: translate3d(0, 10px, 0); } to { opacity: 1; transform: translate3d(0, 0, 0); } }
+    .animate-fade-in-up { animation: fadeInUp 0.3s ease-out; }
+</style>
+{% endblock %}

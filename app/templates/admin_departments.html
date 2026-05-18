@@ -1,0 +1,248 @@
+{% extends "base.html" %}
+
+{% block title %}Manage Departments{% endblock %}
+
+{% block content %}
+<div class="space-y-10 max-w-5xl mx-auto">
+    <!-- Header -->
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
+        <div class="space-y-1">
+            <h1 class="text-3xl font-black text-gray-900 dark:text-white tracking-tight leading-tight uppercase tracking-tighter">Departments</h1>
+            <p class="text-sm font-medium text-gray-500 dark:text-gray-400 italic">Add and manage university departments.</p>
+        </div>
+    </div>
+
+    <!-- Quick Add Section -->
+    <div class="bg-white dark:bg-[#111827] rounded-[2.5rem] p-6 sm:p-8 border border-gray-200 dark:border-gray-800 shadow-sm">
+        <div class="flex items-center gap-3 mb-6 px-1">
+            <div class="w-10 h-10 rounded-xl bg-primary-50 dark:bg-primary-900/20 flex items-center justify-center text-primary-600">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 4v16m8-8H4" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+            <div>
+                <h3 class="text-xl font-black text-gray-900 dark:text-white tracking-tight">Add New Department</h3>
+                <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Create the department first, then save its default signatories for beta-generated CLP documents.</p>
+            </div>
+        </div>
+        <form method="POST" class="space-y-6">
+            {{ form.hidden_tag() }}
+            <div class="grid grid-cols-1 xl:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)] gap-6">
+                <div class="space-y-3">
+                    <label class="block text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 px-1">Department Identity</label>
+                    {{ form.name(class="w-full bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-2xl px-6 py-4 text-sm font-bold focus:ring-primary-500 transition-all", placeholder="e.g. College of Information Technology") }}
+                </div>
+                <div class="rounded-[2rem] border border-gray-200 dark:border-gray-800 bg-gray-50/80 dark:bg-gray-900/40 p-5 sm:p-6">
+                    <p class="text-[10px] font-black uppercase tracking-[0.22em] text-primary-600">Document Signatory Defaults</p>
+                    <p class="mt-2 text-sm leading-6 text-gray-500 dark:text-gray-400">These names and titles will prefill the beta CLP signatory blocks for reviewed, endorsed, and approved sections.</p>
+                </div>
+            </div>
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                <div class="rounded-[2rem] border border-gray-200 dark:border-gray-800 bg-gray-50/60 dark:bg-gray-900/30 p-5 space-y-4">
+                    <div>
+                        <p class="text-[10px] font-black uppercase tracking-[0.22em] text-gray-400">Reviewed By</p>
+                        <h4 class="mt-1 text-sm font-black text-gray-900 dark:text-white">Program Coordinator</h4>
+                    </div>
+                    <div class="space-y-3">
+                        {{ form.program_coordinator_name(class="w-full bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-700 rounded-2xl px-5 py-3.5 text-sm font-medium focus:ring-primary-500 transition-all", placeholder="Program Coordinator Name") }}
+                        {{ form.program_coordinator_title(class="w-full bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-700 rounded-2xl px-5 py-3.5 text-sm font-medium focus:ring-primary-500 transition-all", placeholder="Program Coordinator Title") }}
+                    </div>
+                </div>
+                <div class="rounded-[2rem] border border-gray-200 dark:border-gray-800 bg-gray-50/60 dark:bg-gray-900/30 p-5 space-y-4">
+                    <div>
+                        <p class="text-[10px] font-black uppercase tracking-[0.22em] text-gray-400">Endorsed By</p>
+                        <h4 class="mt-1 text-sm font-black text-gray-900 dark:text-white">Dean</h4>
+                    </div>
+                    <div class="space-y-3">
+                        {{ form.dean_name(class="w-full bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-700 rounded-2xl px-5 py-3.5 text-sm font-medium focus:ring-primary-500 transition-all", placeholder="Dean Name") }}
+                        {{ form.dean_title(class="w-full bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-700 rounded-2xl px-5 py-3.5 text-sm font-medium focus:ring-primary-500 transition-all", placeholder="Dean Title") }}
+                    </div>
+                </div>
+                <div class="rounded-[2rem] border border-gray-200 dark:border-gray-800 bg-gray-50/60 dark:bg-gray-900/30 p-5 space-y-4">
+                    <div>
+                        <p class="text-[10px] font-black uppercase tracking-[0.22em] text-gray-400">Approved By</p>
+                        <h4 class="mt-1 text-sm font-black text-gray-900 dark:text-white">Vice President</h4>
+                    </div>
+                    <div class="space-y-3">
+                        {{ form.vice_president_name(class="w-full bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-700 rounded-2xl px-5 py-3.5 text-sm font-medium focus:ring-primary-500 transition-all", placeholder="Vice President Name") }}
+                        {{ form.vice_president_title(class="w-full bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-700 rounded-2xl px-5 py-3.5 text-sm font-medium focus:ring-primary-500 transition-all", placeholder="Vice President Title") }}
+                    </div>
+                </div>
+            </div>
+            <div class="flex justify-end pt-2">
+                {{ form.submit(class="w-full sm:w-auto min-w-[220px] px-8 py-4 bg-primary-600 text-white text-[10px] font-black uppercase tracking-[0.2em] rounded-2xl hover:bg-primary-700 transition-all shadow-xl shadow-primary-200 dark:shadow-none cursor-pointer") }}
+            </div>
+        </form>
+    </div>
+
+    <!-- Active Directory -->
+    <div class="space-y-4 md:hidden">
+        {% for dept in departments %}
+        <div class="bg-white dark:bg-[#111827] p-6 rounded-[2rem] border border-gray-200 dark:border-gray-800 shadow-sm space-y-4">
+            <div class="flex justify-between items-center">
+                <span class="text-[10px] font-black text-primary-600 bg-primary-50 dark:bg-primary-900/30 px-2.5 py-1 rounded-lg uppercase tracking-widest">#{{ dept.id }}</span>
+                <div class="flex items-center gap-2">
+                    <button type="button"
+                        data-dept-id="{{ dept.id }}"
+                        data-dept-name="{{ dept.name or '' }}"
+                        data-program-coordinator-name="{{ dept.program_coordinator_name or '' }}"
+                        data-program-coordinator-title="{{ dept.program_coordinator_title or '' }}"
+                        data-dean-name="{{ dept.dean_name or '' }}"
+                        data-dean-title="{{ dept.dean_title or '' }}"
+                        data-vice-president-name="{{ dept.vice_president_name or '' }}"
+                        data-vice-president-title="{{ dept.vice_president_title or '' }}"
+                        onclick="openEditModal(this)"
+                        class="p-2 text-gray-400 hover:text-primary-600 transition-all">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    </button>
+                    <button type="button" onclick="openDeleteModal('{{ dept.id }}', '{{ dept.name }}')" class="p-2 text-gray-400 hover:text-red-600 transition-all">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    </button>
+                </div>
+            </div>
+            <h4 class="text-sm font-black text-gray-900 dark:text-white uppercase tracking-tight">{{ dept.name }}</h4>
+            <div class="space-y-2 text-xs text-gray-500 dark:text-gray-400">
+                <p><span class="font-black uppercase tracking-widest text-[10px] text-gray-400">Program Coordinator</span><br>{{ dept.program_coordinator_name or 'Not set' }}{% if dept.program_coordinator_title %} • {{ dept.program_coordinator_title }}{% endif %}</p>
+                <p><span class="font-black uppercase tracking-widest text-[10px] text-gray-400">Dean</span><br>{{ dept.dean_name or 'Not set' }}{% if dept.dean_title %} • {{ dept.dean_title }}{% endif %}</p>
+                <p><span class="font-black uppercase tracking-widest text-[10px] text-gray-400">Vice President</span><br>{{ dept.vice_president_name or 'Not set' }}{% if dept.vice_president_title %} • {{ dept.vice_president_title }}{% endif %}</p>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <div class="hidden md:block bg-white dark:bg-[#111827] rounded-[2.5rem] border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden">
+        <div class="overflow-x-auto custom-scrollbar">
+            <table class="w-full text-left border-collapse">
+                <thead>
+                    <tr class="bg-gray-50/50 dark:bg-gray-800/20 border-b border-gray-100 dark:border-gray-800">
+                        <th class="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest">ID</th>
+                        <th class="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest">Department Name</th>
+                        <th class="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest">Signatories</th>
+                        <th class="px-8 py-5 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
+                    {% for dept in departments %}
+                    <tr class="group hover:bg-gray-50/50 dark:hover:bg-primary-900/5 transition-all">
+                        <td class="px-8 py-6">
+                            <span class="text-xs font-black text-primary-600 bg-primary-50 dark:bg-primary-900/30 px-2.5 py-1 rounded-lg uppercase tracking-widest">#{{ dept.id }}</span>
+                        </td>
+                        <td class="px-8 py-6">
+                            <h4 class="text-sm font-black text-gray-900 dark:text-white uppercase tracking-tight">{{ dept.name }}</h4>
+                        </td>
+                        <td class="px-8 py-6 text-xs text-gray-500 dark:text-gray-400">
+                            <div class="space-y-1">
+                                <p><span class="font-black uppercase tracking-widest text-[10px] text-gray-400">PC</span> {{ dept.program_coordinator_name or 'Not set' }}{% if dept.program_coordinator_title %} • {{ dept.program_coordinator_title }}{% endif %}</p>
+                                <p><span class="font-black uppercase tracking-widest text-[10px] text-gray-400">Dean</span> {{ dept.dean_name or 'Not set' }}{% if dept.dean_title %} • {{ dept.dean_title }}{% endif %}</p>
+                                <p><span class="font-black uppercase tracking-widest text-[10px] text-gray-400">VP</span> {{ dept.vice_president_name or 'Not set' }}{% if dept.vice_president_title %} • {{ dept.vice_president_title }}{% endif %}</p>
+                            </div>
+                        </td>
+                        <td class="px-8 py-6 text-right whitespace-nowrap">
+                            <div class="flex items-center justify-end gap-2">
+                                <button type="button"
+                                    data-dept-id="{{ dept.id }}"
+                                    data-dept-name="{{ dept.name or '' }}"
+                                    data-program-coordinator-name="{{ dept.program_coordinator_name or '' }}"
+                                    data-program-coordinator-title="{{ dept.program_coordinator_title or '' }}"
+                                    data-dean-name="{{ dept.dean_name or '' }}"
+                                    data-dean-title="{{ dept.dean_title or '' }}"
+                                    data-vice-president-name="{{ dept.vice_president_name or '' }}"
+                                    data-vice-president-title="{{ dept.vice_president_title or '' }}"
+                                    onclick="openEditModal(this)"
+                                    class="p-2.5 text-gray-400 hover:text-primary-600 hover:bg-primary-50 dark:hover:bg-primary-900/20 rounded-xl transition-all" title="Edit">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                                </button>
+                                <button type="button" onclick="openDeleteModal('{{ dept.id }}', '{{ dept.name }}')" class="p-2.5 text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl transition-all" title="Delete">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% if not departments %}
+        <div class="py-20 flex flex-col items-center justify-center opacity-50">
+            <p class="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">No departments found.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Refined Modals -->
+<div id="editModal" class="fixed inset-0 z-[300] hidden overflow-y-auto" role="dialog" aria-modal="true">
+    <div class="flex items-center justify-center min-h-screen p-4">
+        <div class="fixed inset-0 bg-gray-900/60 backdrop-blur-sm transition-opacity" onclick="closeEditModal()"></div>
+        <div class="inline-block align-bottom bg-white dark:bg-[#111827] rounded-[2.5rem] text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-md sm:w-full border border-gray-200 dark:border-gray-800">
+            <form id="editForm" method="POST" action="" class="p-10 space-y-8">
+                {{ form.hidden_tag() }}
+                <div class="text-center">
+                    <div class="mx-auto w-16 h-16 rounded-[1.5rem] bg-primary-50 dark:bg-primary-900/20 text-primary-600 flex items-center justify-center mb-6">
+                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    </div>
+                    <h3 class="text-lg leading-6 font-medium text-gray-900 dark:text-white" id="modal-title">Edit Department</h3>
+                </div>
+                <div class="space-y-2">
+                    <label for="new_name" class="block text-sm font-medium text-gray-700 dark:text-gray-300 ml-1">Department Name</label>
+                    <input type="text" name="new_name" id="new_name" class="w-full bg-gray-50 dark:bg-gray-800/50 border-gray-200 dark:border-gray-700 rounded-2xl px-6 py-4 text-sm font-bold focus:ring-primary-500 transition-all" required>
+                </div>
+                <div class="grid grid-cols-1 gap-4">
+                    <input type="text" name="program_coordinator_name" id="program_coordinator_name" class="w-full bg-gray-50 dark:bg-gray-800/50 border-gray-200 dark:border-gray-700 rounded-2xl px-6 py-4 text-sm font-medium focus:ring-primary-500 transition-all" placeholder="Program Coordinator Name">
+                    <input type="text" name="program_coordinator_title" id="program_coordinator_title" class="w-full bg-gray-50 dark:bg-gray-800/50 border-gray-200 dark:border-gray-700 rounded-2xl px-6 py-4 text-sm font-medium focus:ring-primary-500 transition-all" placeholder="Program Coordinator Title">
+                    <input type="text" name="dean_name" id="dean_name" class="w-full bg-gray-50 dark:bg-gray-800/50 border-gray-200 dark:border-gray-700 rounded-2xl px-6 py-4 text-sm font-medium focus:ring-primary-500 transition-all" placeholder="Dean Name">
+                    <input type="text" name="dean_title" id="dean_title" class="w-full bg-gray-50 dark:bg-gray-800/50 border-gray-200 dark:border-gray-700 rounded-2xl px-6 py-4 text-sm font-medium focus:ring-primary-500 transition-all" placeholder="Dean Title">
+                    <input type="text" name="vice_president_name" id="vice_president_name" class="w-full bg-gray-50 dark:bg-gray-800/50 border-gray-200 dark:border-gray-700 rounded-2xl px-6 py-4 text-sm font-medium focus:ring-primary-500 transition-all" placeholder="Vice President Name">
+                    <input type="text" name="vice_president_title" id="vice_president_title" class="w-full bg-gray-50 dark:bg-gray-800/50 border-gray-200 dark:border-gray-700 rounded-2xl px-6 py-4 text-sm font-medium focus:ring-primary-500 transition-all" placeholder="Vice President Title">
+                </div>
+                <div class="flex flex-col gap-3">
+                    <button type="submit" class="w-full py-4 bg-primary-600 text-white text-[10px] font-black uppercase tracking-[0.2em] rounded-2xl hover:bg-primary-700 transition-all shadow-xl shadow-primary-200 dark:shadow-none">Save Changes</button>
+                    <button type="button" onclick="closeEditModal()" class="w-full py-4 bg-gray-50 dark:bg-gray-800 text-gray-500 dark:text-gray-400 text-[10px] font-black uppercase tracking-[0.2em] rounded-2xl hover:bg-gray-100 dark:hover:bg-gray-700 transition-all">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div id="deleteModal" class="fixed inset-0 z-[300] hidden overflow-y-auto" role="dialog" aria-modal="true">
+    <div class="flex items-center justify-center min-h-screen p-4">
+        <div class="fixed inset-0 bg-gray-900/60 backdrop-blur-sm transition-opacity" onclick="closeDeleteModal()"></div>
+        <div class="inline-block align-bottom bg-white dark:bg-[#111827] rounded-[2.5rem] text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-md sm:w-full border border-gray-200 dark:border-gray-800">
+            <form id="deleteForm" method="POST" action="" class="p-10">
+                {{ delete_form.hidden_tag() }}
+                <div class="text-center mb-10">
+                    <div class="mx-auto w-16 h-16 rounded-[1.5rem] bg-red-50 dark:bg-red-900/20 text-red-600 flex items-center justify-center mb-6">
+                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    </div>
+                    <h3 class="text-lg leading-6 font-medium text-gray-900 dark:text-white" id="modal-title">Delete Department</h3>
+                    <p class="text-sm text-gray-500 dark:text-gray-400 font-medium leading-relaxed">Are you sure you want to delete <span id="deleteDeptName" class="text-red-600 font-bold uppercase"></span>? This action cannot be undone.</p>
+                </div>
+                <div class="flex flex-col gap-3">
+                    <button type="submit" class="w-full py-4 bg-red-600 text-white text-[10px] font-black uppercase tracking-[0.2em] rounded-2xl hover:bg-red-700 transition-all shadow-xl shadow-red-200 dark:shadow-none">Confirm Delete</button>
+                    <button type="button" onclick="closeDeleteModal()" class="w-full py-4 bg-gray-50 dark:bg-gray-800 text-gray-500 dark:text-gray-400 text-[10px] font-black uppercase tracking-[0.2em] rounded-2xl hover:bg-gray-100 dark:hover:bg-gray-700 transition-all">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    function openEditModal(button) {
+        const dept = button.dataset;
+        document.getElementById('editModal').classList.remove('hidden');
+        document.getElementById('new_name').value = dept.deptName || '';
+        document.getElementById('program_coordinator_name').value = dept.programCoordinatorName || '';
+        document.getElementById('program_coordinator_title').value = dept.programCoordinatorTitle || '';
+        document.getElementById('dean_name').value = dept.deanName || '';
+        document.getElementById('dean_title').value = dept.deanTitle || '';
+        document.getElementById('vice_president_name').value = dept.vicePresidentName || '';
+        document.getElementById('vice_president_title').value = dept.vicePresidentTitle || '';
+        document.getElementById('editForm').action = "/admin/departments/edit/" + dept.deptId;
+    }
+    function closeEditModal() { document.getElementById('editModal').classList.add('hidden'); }
+    function openDeleteModal(id, name) {
+        document.getElementById('deleteModal').classList.remove('hidden');
+        document.getElementById('deleteDeptName').textContent = name;
+        document.getElementById('deleteForm').action = "/admin/departments/delete/" + id;
+    }
+    function closeDeleteModal() { document.getElementById('deleteModal').classList.add('hidden'); }
+</script>
+{% endblock %}

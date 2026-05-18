@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+
+{% block title %}Sign In{% endblock %}
+
+{% block content %}
+<div class="flex flex-col items-center justify-center min-h-[calc(100vh-160px)] px-4">
+    <div class="w-full max-w-md">
+        <!-- Brand / Logo -->
+        <div class="text-center mb-10">
+            <div
+                class="inline-flex items-center justify-center w-16 h-16 bg-primary-600 rounded-[2rem] text-white shadow-2xl shadow-primary-200 dark:shadow-none mb-6 overflow-hidden">
+                {% if institution_logo %}
+                <img src="{{ institution_logo }}" alt="{{ institution_name }} logo" class="w-full h-full object-cover">
+                {% else %}
+                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path
+                        d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+                        stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+                {% endif %}
+            </div>
+            <h1 class="text-3xl font-black text-gray-900 dark:text-white tracking-tighter uppercase">AIPCLPMS
+            </h1>
+            <p class="text-gray-500 dark:text-gray-400 font-bold text-[10px] uppercase tracking-[0.2em] mt-2">
+                AI-POWERED COURSE LEARNING PLAN MANAGEMENT SYSTEM</p>
+        </div>
+
+        <!-- Form Card -->
+        <div
+            class="bg-white dark:bg-[#111827] rounded-[2.5rem] border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden p-10">
+            <form id="login-form" method="post" action="{{ url_for('auth.login') }}" class="space-y-6" novalidate>
+                {{ form.hidden_tag() }}
+
+                <div class="space-y-2">
+                    {{ form.email.label(class="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1") }}
+                    <div class="relative">
+                        <div class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path
+                                    d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.206"
+                                    stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
+                            </svg>
+                        </div>
+                        {{ form.email(class="w-full bg-gray-50 dark:bg-gray-800/50 border-gray-200 dark:border-gray-700
+                        rounded-2xl pl-12 pr-4 py-4 text-sm font-bold focus:ring-primary-500 transition-all",
+                        placeholder="Email address") }}
+                    </div>
+                    {% for error in form.email.errors %}
+                    <p class="text-red-500 text-[10px] font-bold mt-1 ml-1 uppercase tracking-tighter">{{ error }}</p>
+                    {% endfor %}
+                </div>
+
+                <div class="space-y-2">
+                    {{ form.password.label(class="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1")
+                    }}
+                    <div class="relative">
+                        <div class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path
+                                    d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+                                    stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
+                            </svg>
+                        </div>
+                        {{ form.password(id="password-field", class="w-full bg-gray-50 dark:bg-gray-800/50
+                        border-gray-200 dark:border-gray-700 rounded-2xl pl-12 pr-4 py-4 text-sm font-bold
+                        focus:ring-primary-500 transition-all", placeholder="Password") }}
+                    </div>
+                    {% for error in form.password.errors %}
+                    <p class="text-red-500 text-[10px] font-bold mt-1 ml-1 uppercase tracking-tighter">{{ error }}</p>
+                    {% endfor %}
+                </div>
+
+                <div class="pt-2">
+                    {{ form.submit(class="w-full py-4 bg-primary-600 text-white text-xs font-black uppercase
+                    tracking-[0.2em] rounded-2xl hover:bg-primary-700 transition-all shadow-xl shadow-primary-200
+                    dark:shadow-none cursor-pointer") }}
+                </div>
+            </form>
+
+            <div class="mt-8 pt-8 border-t border-gray-100 dark:border-gray-800 text-center">
+                <p class="text-xs font-bold text-gray-400 uppercase tracking-widest">
+                    New academic member? <a
+                        class="text-primary-600 hover:text-primary-700 underline underline-offset-4 ml-1"
+                        href="{{ url_for('auth.signup') }}">Create Account</a>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.getElementById('login-form').addEventListener('submit', function (e) {
+        const passwordField = document.getElementById('password-field');
+        if (passwordField.value) {
+            passwordField.value = btoa(passwordField.value);
+        }
+    });
+
+</script>
+{% endblock %}
