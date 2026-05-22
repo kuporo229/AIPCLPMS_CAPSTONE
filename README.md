@@ -35,6 +35,7 @@ Development-only folders such as `.pi/`, `.codex/`, `.lean-ctx/`, `tests/`, `scr
 
 ## Official Downloads
 
+- Repository Download: https://github.com/kuporo229/AIPCLPMS_CAPSTONE
 - Python for Windows: https://www.python.org/downloads/windows/
 - PostgreSQL for Windows: https://www.postgresql.org/download/windows/
 - pgvector extension: https://github.com/pgvector/pgvector
